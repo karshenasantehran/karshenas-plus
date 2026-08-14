@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>سامانه جامع و هوشمند کارشناسان رسمی دادگستری (تعرفه ۱۴۰۵)</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b0f19">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="تعرفه کارشناسان ۱۴۰۵">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(22, 30, 49, 0.85);
+            --accent-glow: #6366f1;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-rose: #f43f5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.12);
+            --input-bg: rgba(15, 23, 42, 0.7);
+            --section-bg: rgba(15, 23, 42, 0.4);
+            --bill-bg: #ffffff;
+            --bill-text: #0f172a;
+        }
+
+        .light-mode {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --accent-glow: #4f46e5;
+            --accent-cyan: #0284c7;
+            --accent-emerald: #059669;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: #cbd5e1;
+            --input-bg: #f1f5f9;
+            --section-bg: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; overflow: hidden; pointer-events: none;
+        }
+
+        .glow-sphere {
+            position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.25;
+            animation: float 12s infinite alternate ease-in-out;
+        }
+        .glow-1 { width: 350px; height: 350px; background: #4f46e5; top: -80px; right: -80px; }
+        .glow-2 { width: 300px; height: 300px; background: #06b6d4; bottom: -60px; left: -60px; animation-delay: -6s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, 40px) scale(1.15); }
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 560px;
+            background: var(--card-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .top-nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .install-banner {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(6, 182, 212, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 16px;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            animation: slideDown 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .install-banner-icon {
+            width: 36px; height: 36px; flex-shrink: 0; border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #06b6d4);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+            animation: bounce 2.4s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        .install-banner-text { flex: 1; min-width: 0; }
+        .install-banner-title { font-size: 0.8rem; font-weight: 800; color: var(--text-main); }
+        .install-banner-sub { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
+        .install-banner-btn {
+            flex-shrink: 0; border: none; border-radius: 10px; padding: 8px 14px;
+            background: linear-gradient(135deg, #6366f1, #06b6d4); color: white;
+            font-size: 0.75rem; font-weight: 800; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+        .install-banner-close {
+            flex-shrink: 0; background: transparent; border: none; color: var(--text-muted);
+            font-size: 1.1rem; cursor: pointer; padding: 2px 4px; line-height: 1;
+        }
+
+        .nav-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover { border-color: var(--accent-glow); }
+
+        /* --- Account / Cloud Sync UI --- */
+        .account-btn {
+            height: 38px; padding: 0 10px 0 4px; border-radius: 12px;
+            background: var(--input-bg); border: 1px solid var(--border-color);
+            color: var(--text-main); display: flex; align-items: center; gap: 6px;
+            cursor: pointer; transition: all 0.2s; font-size: 0.72rem; font-weight: 700;
+        }
+        .account-btn:hover { border-color: var(--accent-glow); }
+        .account-avatar {
+            width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+            background: linear-gradient(135deg, #6366f1, #06b6d4);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 800; font-size: 0.75rem; overflow: hidden;
+        }
+        .account-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .account-btn .acc-label { max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sync-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0;
+        }
+        .sync-dot.synced { background: var(--accent-emerald); box-shadow: 0 0 6px var(--accent-emerald); }
+        .sync-dot.syncing { background: var(--accent-cyan); animation: pulseDot 1s infinite; }
+        @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+        .google-signin-btn {
+            width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: #fff; color: #1f2937; border: 1px solid #dadce0; border-radius: 14px;
+            padding: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer;
+            transition: box-shadow 0.2s; margin-top: 4px;
+        }
+        .google-signin-btn:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
+        .account-panel-profile { display: flex; align-items: center; gap: 10px; padding: 6px 2px 14px; border-bottom: 1px solid var(--border-color); margin-bottom: 12px; }
+        .account-panel-profile .account-avatar { width: 46px; height: 46px; font-size: 1.1rem; }
+        .account-panel-name { font-weight: 800; font-size: 0.9rem; }
+        .account-panel-email { font-size: 0.72rem; color: var(--text-muted); }
+        .account-sync-status { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-muted); margin-top: 8px; }
+
+        /* Cloud reminder toast */
+        .cloud-toast {
+            position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(140%);
+            width: calc(100% - 32px); max-width: 500px; z-index: 999;
+            background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--accent-glow); border-radius: 18px; padding: 14px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+            display: flex; align-items: flex-start; gap: 10px;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .cloud-toast.show { transform: translateX(-50%) translateY(0); }
+        .cloud-toast-icon {
+            width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            background: linear-gradient(135deg, #6366f1, #06b6d4);
+            display: flex; align-items: center; justify-content: center; color: #fff;
+        }
+        .cloud-toast-text { flex: 1; }
+        .cloud-toast-title { font-size: 0.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 2px; }
+        .cloud-toast-sub { font-size: 0.71rem; color: var(--text-muted); line-height: 1.5; }
+        .cloud-toast-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .cloud-toast-actions button {
+            border: none; border-radius: 10px; padding: 7px 12px; font-size: 0.72rem; font-weight: 800; cursor: pointer;
+        }
+        .cloud-toast-actions .cta-primary { background: linear-gradient(135deg, #4f46e5, #06b6d4); color: #fff; }
+        .cloud-toast-actions .cta-secondary { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color) !important; }
+        .cloud-toast-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; line-height: 1; padding: 2px; }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .header-icon {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, #6366f1, #06b6d4);
+            border-radius: 18px; display: inline-flex;
+            align-items: center; justify-content: center;
+            margin-bottom: 10px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+        }
+        .header-icon svg { width: 28px; height: 28px; fill: white; }
+        .header h1 { font-size: 1.3rem; font-weight: 800; margin-bottom: 2px; color: var(--text-main); }
+        .header p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .tab-group {
+            display: flex; background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 4px; border-radius: 16px; margin-bottom: 18px;
+        }
+
+        .tab-btn {
+            flex: 1; padding: 9px 0; border: none; background: transparent;
+            color: var(--text-muted); font-size: 0.82rem; font-weight: 700;
+            border-radius: 12px; cursor: pointer; transition: all 0.25s;
+        }
+
+        .tab-btn.active {
+            color: white; background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .section-box {
+            background: var(--section-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px; padding: 14px; margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 0.85rem; font-weight: 800; color: var(--accent-cyan);
+            margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+        }
+
+        .section-title.collapsible {
+            cursor: pointer; margin-bottom: 0; padding-bottom: 2px;
+            justify-content: space-between; user-select: none;
+            transition: color 0.2s ease;
+        }
+        .section-title.collapsible:active { color: var(--accent-glow); }
+        .section-title.collapsible .st-left { display: flex; align-items: center; gap: 6px; }
+        .section-title .chevron {
+            width: 18px; height: 18px; flex-shrink: 0; color: var(--text-muted);
+            transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1), color 0.25s ease;
+        }
+        .section-box.expanded > .section-title.collapsible .chevron {
+            transform: rotate(180deg); color: var(--accent-cyan);
+        }
+
+        .section-content-wrap {
+            display: grid;
+            grid-template-rows: 0fr;
+            opacity: 0;
+            transition: grid-template-rows 0.4s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.3s ease, margin-top 0.4s ease;
+            margin-top: 0;
+        }
+        .section-box.expanded > .section-content-wrap {
+            grid-template-rows: 1fr;
+            opacity: 1;
+            margin-top: 14px;
+        }
+        .section-content-inner { overflow: hidden; min-height: 0; }
+
+        .input-group { margin-bottom: 14px; }
+        .label-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        label { font-size: 0.8rem; font-weight: 700; color: var(--text-main); }
+        .unit-badge { font-size: 0.7rem; padding: 2px 6px; background: rgba(99, 102, 241, 0.15); color: var(--accent-glow); border-radius: 6px; font-weight: 700; }
+
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%; background: var(--input-bg);
+            border: 1.5px solid var(--border-color); border-radius: 14px;
+            padding: 10px 14px; font-size: 0.95rem; font-weight: 700; color: var(--text-main);
+            outline: none; direction: ltr; text-align: right; transition: all 0.2s;
+        }
+
+        textarea { direction: rtl; resize: vertical; min-height: 75px; font-weight: 500; font-size: 0.85rem; line-height: 1.6; }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .words-hint { font-size: 0.75rem; color: var(--accent-cyan); margin-top: 4px; min-height: 16px; font-weight: 700; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .select-card {
+            background: var(--input-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 8px; text-align: center; cursor: pointer; transition: all 0.2s;
+        }
+        .select-card.active { border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.12); }
+        .select-card-title { font-size: 0.72rem; color: var(--text-muted); }
+        .select-card-val { font-size: 0.88rem; font-weight: 800; color: var(--text-main); }
+
+        .addon-item {
+            background: var(--input-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 10px; margin-bottom: 8px;
+        }
+        .addon-item.active { border-color: var(--accent-glow); }
+
+        .checkbox-label { display: flex; align-items: center; cursor: pointer; gap: 10px; }
+        .custom-checkbox {
+            width: 18px; height: 18px; border-radius: 6px; border: 1.5px solid var(--text-muted);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .checkbox-label input { display: none; }
+        .checkbox-label input:checked + .custom-checkbox { background: var(--accent-glow); border-color: transparent; }
+        .custom-checkbox svg { width: 12px; height: 12px; stroke: white; stroke-width: 3; display: none; }
+        .checkbox-label input:checked + .custom-checkbox svg { display: block; }
+        .addon-text { font-size: 0.78rem; font-weight: 700; color: var(--text-main); flex-grow: 1; }
+
+        .addon-subinput {
+            margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border-color);
+            display: none; gap: 8px; align-items: center;
+        }
+        .addon-subinput label { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+        .addon-subinput input { padding: 4px 8px; font-size: 0.85rem; border-radius: 8px; }
+        input[type="range"] { accent-color: var(--accent-glow); height: 18px; }
+        .addon-subinput select { width: 100%; }
+
+        .calc-btn {
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #6366f1, #06b6d4);
+            border: none; border-radius: 16px; color: white; font-size: 1rem; font-weight: 800;
+            cursor: pointer; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px;
+        }
+
+        .results-box {
+            background: var(--section-bg); border: 1.5px solid var(--accent-emerald);
+            border-radius: 18px; padding: 16px; display: none; margin-bottom: 18px; position: relative; overflow: hidden;
+        }
+
+        .res-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-color); }
+        .res-row:last-child { border-bottom: none; }
+        .res-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; }
+        .res-val { font-size: 0.88rem; font-weight: 700; color: var(--text-main); direction: ltr; }
+
+        .res-highlight {
+            background: rgba(16, 185, 129, 0.12); border-radius: 12px; padding: 10px; margin-top: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .res-highlight .res-label { color: var(--accent-emerald); font-weight: 800; }
+        .res-highlight .res-val { font-size: 1.15rem; font-weight: 900; color: var(--accent-emerald); }
+
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+        .btn-action {
+            padding: 10px; border-radius: 12px; border: 1px solid var(--border-color);
+            background: var(--input-bg); color: var(--text-main); font-size: 0.78rem;
+            font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-action:hover { border-color: var(--accent-glow); }
+
+        .telegram-banner {
+            background: linear-gradient(135deg, rgba(36, 161, 222, 0.2), rgba(0, 136, 204, 0.05));
+            border: 1px solid #24A1DE; border-radius: 16px; padding: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 16px; text-decoration: none; color: var(--text-main); transition: all 0.25s;
+        }
+        .telegram-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 161, 222, 0.25); }
+        .tg-icon { width: 36px; height: 36px; background: #24A1DE; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .tg-icon svg { width: 20px; height: 20px; fill: white; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px);
+            z-index: 100; display: flex; align-items: center; justify-content: center;
+            padding: 16px; opacity: 0; visibility: hidden; transition: all 0.25s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 20px; width: 100%; max-width: 540px; max-height: 88vh;
+            display: flex; flex-direction: column; box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 14px 18px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-title { font-size: 0.9rem; font-weight: 800; color: var(--accent-cyan); }
+        .modal-close {
+            background: transparent; border: none; color: var(--text-muted);
+            font-size: 1.2rem; cursor: pointer;
+        }
+
+        .modal-body { padding: 16px; overflow-y: auto; font-size: 0.8rem; line-height: 1.6; }
+
+        .accordion-item {
+            background: var(--input-bg); border: 1px solid var(--border-color);
+            border-radius: 12px; margin-bottom: 8px; overflow: hidden;
+        }
+        .accordion-header {
+            padding: 8px 12px; background: rgba(255, 255, 255, 0.03);
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; font-weight: 700; font-size: 0.78rem;
+        }
+        .accordion-body { padding: 10px; display: none; border-top: 1px solid var(--border-color); }
+        .accordion-item.active .accordion-body { display: block; }
+
+        /* PREVIEW STYLES */
+        .bill-template {
+            background: var(--bill-bg); color: var(--bill-text); padding: 16px; border-radius: 8px;
+            font-family: 'Vazirmatn', sans-serif; direction: rtl; text-align: right;
+            border: 1px solid #cbd5e1; position: relative; font-size: 0.75rem; line-height: 1.45;
+        }
+        .bill-header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 6px; margin-bottom: 8px; }
+        .bill-info-container { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; margin-bottom: 8px; }
+        .bill-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.72rem; }
+        
+        .bill-experts-list {
+            margin-top: 5px; padding-top: 5px; border-top: 1px dashed #cbd5e1;
+            display: flex; flex-direction: column; gap: 3px;
+        }
+        .expert-line-item {
+            font-weight: 800; color: #0f172a; font-size: 0.72rem;
+            background: #ffffff; padding: 3px 6px; border-radius: 4px; border: 1px solid #e2e8f0;
+        }
+
+        .bill-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+        .bill-table th, .bill-table td { border: 1px solid #cbd5e1; padding: 5px; font-size: 0.72rem; text-align: center; }
+
+        .bill-petition-box {
+            margin-top: 8px; background: #f8fafc; border: 1.5px solid #0f172a;
+            border-radius: 6px; padding: 8px; font-size: 0.72rem; line-height: 1.5; color: #000000 !important;
+        }
+
+        .signatures-container {
+            margin-top: 12px; border-top: 1.5px solid #cbd5e1; padding-top: 8px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px;
+        }
+        .signature-card {
+            border: 1px dashed #94a3b8; border-radius: 6px; padding: 5px; text-align: center;
+            background: #fafafa; font-size: 0.68rem;
+        }
+        .signature-card-name { font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+        .signature-card-lic { font-size: 0.62rem; color: #475569; }
+        .signature-space { height: 35px; margin-top: 4px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 0.6rem; }
+
+        /* STRICT EXACT 1-PAGE A4 PRINT CSS (Zero Multi-page/Duplicates) */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 6mm 8mm;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                height: 100% !important;
+            }
+            body > *:not(.modal-overlay.active) {
+                display: none !important;
+            }
+            .modal-overlay.active {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: none !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+            }
+            .modal-card {
+                background: #ffffff !important;
+                border: none !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .modal-header, .no-print, .calc-btn, .btn-action {
+                display: none !important;
+            }
+            .modal-body {
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            .bill-template {
+                border: 1.5px solid #000000 !important;
+                padding: 12px !important;
+                font-size: 0.76rem !important;
+                line-height: 1.4 !important;
+                color: #000000 !important;
+                box-sizing: border-box !important;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
+            }
+            .bill-header { margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #000; }
+            .bill-header h4 { font-size: 1.05rem; font-weight: 900; }
+            .bill-info-container { padding: 6px 8px; margin-bottom: 6px; border: 1px solid #000; }
+            .bill-info-grid { gap: 4px; font-size: 0.74rem; }
+            .expert-line-item { font-size: 0.74rem; padding: 2px 5px; }
+            .bill-table th, .bill-table td { padding: 4px 6px; font-size: 0.74rem; border: 1px solid #000; }
+            .bill-table th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; }
+            .bill-petition-box { padding: 6px; margin-top: 6px; font-size: 0.74rem; border: 1px solid #000; }
+            .signatures-container { margin-top: 10px; gap: 8px; padding-top: 6px; border-top: 1px solid #000; }
+            .signature-card { padding: 4px; font-size: 0.7rem; border: 1px dashed #000; }
+            .signature-space { height: 32px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-bg">
+        <div class="glow-sphere glow-1"></div>
+        <div class="glow-sphere glow-2"></div>
+    </div>
+
+    <div class="app-container">
+        
+        <div class="top-nav-bar">
+            <button class="account-btn" id="accountBtn" onclick="openModal('accountModal')" title="حساب کاربری و همگام‌سازی ابری">
+                <span class="account-avatar" id="accountAvatar">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </span>
+                <span class="acc-label" id="accountLabel">ورود با گوگل</span>
+                <span class="sync-dot" id="syncDot"></span>
+            </button>
+            <button class="nav-btn" onclick="toggleTheme()" title="تغییر تم (تاریک/روشن)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </button>
+            <div style="display: flex; gap: 8px;">
+                <button class="nav-btn" id="installNavBtn" onclick="triggerInstall()" title="نصب برنامه" style="display:none; color: var(--accent-cyan); border-color: var(--accent-cyan);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                </button>
+                <button class="nav-btn" onclick="resetForm()" title="پاکسازی فرم">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                </button>
+                <button class="nav-btn" onclick="openModal('helpModal')" title="راهنما و متن تعرفه ۱۴۰۵">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01M12 8a3 3 0 0 0-3 3h1a2 2 0 1 1 2 2c-.8 0-1.5.7-1.5 1.5V15h1v-.5c0-.8.8-1.5 1.5-1.5a3 3 0 0 0 1-5.83z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="install-banner no-print" id="installBanner">
+            <div class="install-banner-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            </div>
+            <div class="install-banner-text">
+                <div class="install-banner-title">نصب روی صفحه اصلی گوشی</div>
+                <div class="install-banner-sub">بدون نیاز به اینترنت هم باز می‌شود، مثل یک اپلیکیشن</div>
+            </div>
+            <button class="install-banner-btn" onclick="triggerInstall()">نصب</button>
+            <button class="install-banner-close" onclick="dismissInstallBanner()" title="بستن">&times;</button>
+        </div>
+
+        <div class="header">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM7 7H9V9H7V7ZM11 7H13V9H11V7ZM15 7H17V9H15V7ZM7 11H9V13H7V11ZM11 11H13V13H11V11ZM15 11H17V13H15V11ZM7 15H9V17H7V15ZM11 15H13V17H11V15ZM15 15H17V17H15V15Z"/></svg>
+            </div>
+            <h1>سامانه جامع کارشناسان رسمی</h1>
+            <p>محاسبه هوشمند تعرفه دستمزد مصوب سال ۱۴۰۵</p>
+        </div>
+
+        <div class="tab-group">
+            <button class="tab-btn active" onclick="setTariff('1405', this)">تعرفه ۱۴۰۵ (ابلاغی)</button>
+            <button class="tab-btn" onclick="setTariff('1402', this)">تعرفه ۱۴۰۲</button>
+        </div>
+
+        <div class="section-box">
+            <div class="section-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>موضوع ارزیابی و صلاحیت</span>
+            </div>
+
+            <div class="input-group">
+                <div class="label-row">
+                    <label for="categorySelect">رشته / گروه کارشناسی:</label>
+                </div>
+                <select id="categorySelect" onchange="calculate()">
+                    <option value="general">ارزیابی عمومی (ماده ۱۱)</option>
+                    <option value="contract">پیمانکاری و صورت‌وضعیت (+۱۰۰٪)</option>
+                    <option value="delay">تخلف یا تأخیر قرارداد (+۵۰٪)</option>
+                    <option value="brand">برند و دارایی نامشهود (+۵۰٪)</option>
+                    <option value="audit">حسابداری و حسابرسی (+۵۰٪)</option>
+                    <option value="household">لوازم خانگی و اداری - ماده ۲۳ (+۲۰٪)</option>
+                    <option value="landSplit">افراز/تفکیک املاک و تقسیم ترکه - ماده ۳۷ (+۲۰٪)</option>
+                    <option value="agriSplit">افراز املاک کشاورزی - ماده ۵۲ (+۲۰٪)</option>
+                    <option value="software">کارشناسی نرم‌افزار کامپیوتر - تبصره۲ ماده۴۵ (+۵۰٪)</option>
+                    <option value="rent">تعیین اجاره‌بها (ماده ۱۳)</option>
+                </select>
+            </div>
+
+            <div class="input-group" id="valuationGroup">
+                <div class="label-row">
+                    <label for="amountInput" id="valuationLabel">ارزش موضوع کارشناسی / اجاره‌بها:</label>
+                    <span class="unit-badge">ریال</span>
+                </div>
+                <input type="text" id="amountInput" placeholder="۰" oninput="handleInput(this)">
+                <div class="words-hint" id="wordsHint"></div>
+            </div>
+
+            <div class="options-grid">
+                <div class="select-card active" id="singleCard" onclick="setMode('single')">
+                    <div class="select-card-title">نوع بررسی</div>
+                    <div class="select-card-val">یک‌نفره</div>
+                </div>
+                <div class="select-card" id="boardCard" onclick="setMode('board')">
+                    <div class="select-card-title">نوع بررسی</div>
+                    <div class="select-card-val">هیاتی (هم‌رشته)</div>
+                </div>
+            </div>
+
+            <div class="input-group" id="memberCounterGroup" style="display: none;">
+                <div class="label-row"><label>تعداد اعضای هیات:</label></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <button class="nav-btn" onclick="changeMembers(-1)">-</button>
+                    <span id="memberCountText" style="font-weight: 800;">۳ نفر</span>
+                    <button class="nav-btn" onclick="changeMembers(1)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-box" id="sectionServices">
+            <div class="section-title collapsible" onclick="toggleSection('sectionServices')">
+                <span class="st-left">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    <span>خدمات و هزینه‌های افزوده قانونی</span>
+                </span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="section-content-wrap"><div class="section-content-inner">
+
+            <div class="addon-item" id="item-missionIn">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkMissionIn" onchange="toggleAddon('missionIn')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">مأموریت داخل استان (۷.۵ میلیون ریال/روز)</span>
+                </label>
+                <div class="addon-subinput" id="sub-missionIn">
+                    <label>تعداد روز:</label>
+                    <input type="number" id="daysMissionIn" value="1" min="1" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-missionOut">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkMissionOut" onchange="toggleAddon('missionOut')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">مأموریت خارج استان (۱۵ میلیون ریال/روز)</span>
+                </label>
+                <div class="addon-subinput" id="sub-missionOut">
+                    <label>تعداد روز:</label>
+                    <input type="number" id="daysMissionOut" value="1" min="1" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-tamin">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkTamin" onchange="toggleAddon('tamin')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">تأمین دلیل (حداقل ۲۰ میلیون ریال)</span>
+                </label>
+            </div>
+
+            <div class="addon-item" id="item-aerial">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkAerial" onchange="toggleAddon('aerial')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">تفسیر عکس هوایی / ماهواره‌ای (ماده ۱۴)</span>
+                </label>
+                <div class="addon-subinput" id="sub-aerial" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="flex-shrink:0;">تعداد عکس/تصویر مستقل:</label>
+                        <input type="number" id="photosAerial" value="1" min="1" oninput="calculate()">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="flex-shrink:0;">قدمت (سال پیش):</label>
+                        <input type="number" id="yearsAerial" value="0" min="0" oninput="calculate()">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="flex-shrink:0; font-size: 0.68rem;">موارد متعدد متصل اضافی (٪۴۰ هرکدام):</label>
+                        <input type="number" id="extraAerial" value="0" min="0" oninput="calculate()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-mapMatch">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkMapMatch" onchange="toggleAddon('mapMatch')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">تطبیق نقشه با محل (مترمربع)</span>
+                </label>
+                <div class="addon-subinput" id="sub-mapMatch">
+                    <label>متراژ (m²):</label>
+                    <input type="number" id="areaMapMatch" value="100" min="1" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-strength">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkStrength" onchange="toggleAddon('strength')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">کنترل نقشه معماری/سازه و گزارش استحکام بنا (ماده ۳۶)</span>
+                </label>
+                <div class="addon-subinput" id="sub-strength" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                    <select id="typeStrength" onchange="calculate()">
+                        <option value="strength">گزارش فنی استحکام بنا (۲۵,۰۰۰ ریال/متر - سقف ۱۵۰م)</option>
+                        <option value="arch">طرح معماری کلی (۲۵,۰۰۰ ریال/متر - سقف ۱۵۰م)</option>
+                        <option value="structure">طراحی/کنترل محاسبات سازه (۳۰,۰۰۰ ریال/متر - سقف ۲۰۰م)</option>
+                        <option value="approve">تأیید/عدم‌تأیید استحکام برای سایر رشته‌ها (٪۵۰ بند استحکام)</option>
+                    </select>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="flex-shrink:0;">متراژ (m²):</label>
+                        <input type="number" id="areaStrength" value="100" min="1" oninput="calculate()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-poverty">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkPoverty" onchange="toggleAddon('poverty')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">تخفیف عدم استطاعت مالی / اعسار (۵۰٪)</span>
+                </label>
+            </div>
+            </div></div>
+        </div>
+
+        <div class="section-box" id="sectionArticles">
+            <div class="section-title collapsible" onclick="toggleSection('sectionArticles')">
+                <span class="st-left">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 15l4-6 4 3 5-8"/></svg>
+                    <span>سایر بندهای تخصصی تعرفه (مواد ۱۴ الی ۴۶)</span>
+                </span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="section-content-wrap"><div class="section-content-inner">
+
+            <div class="addon-item" id="item-m39">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkM39" onchange="toggleAddon('m39')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">پیاده کردن محدوده پلاک ثبتی (ماده ۳۹)</span>
+                </label>
+                <div class="addon-subinput" id="sub-m39" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="flex-shrink:0;">مساحت پلاک (m²):</label>
+                        <input type="number" id="areaM39" value="1000" min="1" oninput="calculate()">
+                    </div>
+                    <select id="gozarM39" onchange="calculate()">
+                        <option value="1">گذر مشخص باشد</option>
+                        <option value="0">گذر مشخص نباشد</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-m40">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkM40" onchange="toggleAddon('m40')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">نقشه‌برداری اراضی و تهیه پروفیل (ماده ۴۰)</span>
+                </label>
+                <div class="addon-subinput" id="sub-m40">
+                    <label>مساحت اراضی (m²):</label>
+                    <input type="number" id="areaM40" value="1000" min="1" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-m41">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkM41" onchange="toggleAddon('m41')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">مطالعه پرونده و تعیین محل پلاک ثبتی (ماده ۴۱)</span>
+                </label>
+                <div class="addon-subinput" id="sub-m41">
+                    <label>مساحت ملک (m²):</label>
+                    <input type="number" id="areaM41" value="1000" min="1" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-m43">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkM43" onchange="toggleAddon('m43')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">تشخیص حدود ثبتی و اختلاف حدود (ماده ۴۳)</span>
+                </label>
+                <div class="addon-subinput" id="sub-m43">
+                    <label>مساحت (هکتار):</label>
+                    <input type="number" id="areaM43" value="1" min="0" step="0.1" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-m20">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkM20" onchange="toggleAddon('m20')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">تعیین حریم کانال، انهار و رودخانه (ماده ۲۰)</span>
+                </label>
+                <div class="addon-subinput" id="sub-m20" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                    <select id="widthM20" onchange="updateM20Range()">
+                        <option value="narrow">عرض بستر کمتر از ۱۲ متر (نرخ ۲۰ تا ۸۰ میلیون ریال/کیلومتر)</option>
+                        <option value="wide">عرض بستر ۱۲ متر و بیشتر (نرخ ۲۰ تا ۱۲۰ میلیون ریال/کیلومتر)</option>
+                    </select>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <label style="flex-shrink:0;">طول مسیر (کیلومتر):</label>
+                        <input type="number" id="kmM20" value="1" min="0" oninput="calculate()">
+                    </div>
+                    <div>
+                        <div class="label-row" style="margin-bottom:2px;"><label style="font-size:0.72rem;">نرخ هر کیلومتر:</label><span class="unit-badge" id="rateM20Display">۲۰,۰۰۰,۰۰۰ ریال</span></div>
+                        <input type="range" id="rateM20" min="20000000" max="80000000" step="1000000" value="20000000" oninput="document.getElementById('rateM20Display').innerText = Number(this.value).toLocaleString('fa-IR') + ' ریال'; calculate();" style="width:100%;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-m31">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkM31" onchange="toggleAddon('m31')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">کارشناسی وسایل نقلیه زمینی (ماده ۳۱)</span>
+                </label>
+                <div class="addon-subinput" id="sub-m31" style="flex-direction: column; align-items: stretch; gap: 6px;">
+                    <label class="checkbox-label" style="font-size:0.75rem;"><input type="checkbox" class="m31-chip" onchange="calculate()"><span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span><span>اصالت خودرو</span></label>
+                    <label class="checkbox-label" style="font-size:0.75rem;"><input type="checkbox" class="m31-chip" onchange="calculate()"><span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span><span>علت تصادف و تعیین مقصر</span></label>
+                    <label class="checkbox-label" style="font-size:0.75rem;"><input type="checkbox" class="m31-chip" onchange="calculate()"><span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span><span>مدل و تناژ</span></label>
+                    <div class="words-hint" style="color: var(--text-muted);">هرکدام ۲۰ میلیون ریال؛ مجموع دو یا چند بند حداکثر ۳۰ میلیون و سقف کل هر خودرو ۷۰ میلیون ریال.</div>
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-m15">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkM15" onchange="toggleAddon('m15')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">اندازه‌گیری آب و حقابه (ماده ۱۵)</span>
+                </label>
+                <div class="addon-subinput" id="sub-m15">
+                    <label>دبی (لیتر/ثانیه):</label>
+                    <input type="number" id="flowM15" value="50" min="0" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-mwater">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkMWater" onchange="toggleAddon('mwater')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">سایر بندهای مقطوع رشته آب (مواد ۱۶، ۱۷، ۱۹، ۲۱)</span>
+                </label>
+                <div class="addon-subinput" id="sub-mwater">
+                    <select id="selMWater" onchange="calculate()">
+                        <option value="16">تعیین کیفیت شیمیایی و آلودگی آب (ماده ۱۶) - ۲۰م</option>
+                        <option value="17">بررسی فنی سفره‌های سطحی/زیرزمینی (ماده ۱۷) - ۳۰م</option>
+                        <option value="19">تعیین کیفیت حفاری چاه و قنوات (ماده ۱۹) - ۳۰م</option>
+                        <option value="21">رسیدگی به آب‌های پس از آلودگی (ماده ۲۱) - ۲۰م</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-mrange">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkMRange" onchange="toggleAddon('mrange')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">سایر رشته‌های تخصصی با بازه (مواد ۲۴، ۲۷، ۲۹، ۳۰)</span>
+                </label>
+                <div class="addon-subinput" id="sub-mrange" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                    <select id="selMRange" onchange="updateMRangeRange()">
+                        <option value="24">پزشکی، دارویی و سم‌شناسی (ماده ۲۴)</option>
+                        <option value="27">بازرگانی (ماده ۲۷)</option>
+                        <option value="29">بانک، بورس و بیمه (ماده ۲۹)</option>
+                        <option value="30">آمار (ماده ۳۰)</option>
+                    </select>
+                    <div>
+                        <div class="label-row" style="margin-bottom:2px;"><label style="font-size:0.72rem;">دستمزد پیشنهادی:</label><span class="unit-badge" id="rangeMRangeDisplay">۲۰,۰۰۰,۰۰۰ ریال</span></div>
+                        <input type="range" id="rangeMRange" min="20000000" max="90000000" step="1000000" value="20000000" oninput="document.getElementById('rangeMRangeDisplay').innerText = Number(this.value).toLocaleString('fa-IR') + ' ریال'; calculate();" style="width:100%;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="addon-item" id="item-m46">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkM46" onchange="toggleAddon('m46')">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text">بررسی اصالت خط، امضا و اثر انگشت - غیرمالی (ماده ۴۶)</span>
+                </label>
+                <div class="addon-subinput" id="sub-m46">
+                    <label>تعداد مستندات:</label>
+                    <input type="number" id="docsM46" value="1" min="1" oninput="calculate()">
+                </div>
+            </div>
+            </div></div>
+        </div>
+
+        <div class="section-box" id="sectionTax">
+            <div class="section-title collapsible" onclick="toggleSection('sectionTax')">
+                <span class="st-left">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>تنظیمات مالیات، کسورات و درخواست‌های قانونی</span>
+                </span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="section-content-wrap"><div class="section-content-inner">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                <label class="checkbox-label" style="font-size: 0.75rem;">
+                    <input type="checkbox" id="chkVat" onchange="calculate()">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span>۱۰٪ مالیات ارزش افزوده</span>
+                </label>
+                <label class="checkbox-label" style="font-size: 0.75rem;">
+                    <input type="checkbox" id="chkTax104" onchange="calculate()">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span>۵٪ مالیات تکلیفی</span>
+                </label>
+                <label class="checkbox-label" style="font-size: 0.75rem; grid-column: span 2;">
+                    <input type="checkbox" id="chkKanonShare" onchange="calculate()">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span>کسر ۵٪ سهم کانون/مرکز کارشناسان</span>
+                </label>
+            </div>
+
+            <!-- PETITION FOR FEE INCREASE SECTION -->
+            <div class="addon-item" id="item-petition" style="border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chkPetition" onchange="togglePetitionSection()">
+                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                    <span class="addon-text" style="color: var(--accent-cyan);">درج لایحه/درخواست افزایش دستمزد کارشناسی</span>
+                </label>
+                
+                <div id="petitionSubContainer" style="display: none; margin-top: 10px; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
+                            <input type="radio" name="petitionType" id="petTypeSingle" onchange="updatePetitionText()"> تک‌نفره (شخصی)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
+                            <input type="radio" name="petitionType" id="petTypeBoard" checked onchange="updatePetitionText()"> هیاتی
+                        </label>
+                    </div>
+
+                    <div class="input-group" style="margin: 0;">
+                        <div class="label-row">
+                            <label style="font-size: 0.75rem;">مبلغ درخواستی افزایش دستمزد:</label>
+                            <span class="unit-badge">ریال</span>
+                        </div>
+                        <input type="text" id="petitionAmount" placeholder="مثلا: ۵۰,۰۰۰,۰۰۰" oninput="handlePetitionAmount(this)">
+                        <div class="words-hint" id="petitionWordsHint"></div>
+                    </div>
+
+                    <div class="input-group" style="margin: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <label style="font-size: 0.75rem;">متن لایحه (قابل ویرایش):</label>
+                            <button class="btn-action" style="padding: 2px 8px; font-size: 0.68rem;" onclick="copyPetitionText()">کپی لایحه</button>
+                        </div>
+                        <textarea id="petitionText" oninput="saveCustomPetitionText()"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            </div></div>
+        </div>
+
+        <button class="calc-btn" onclick="calculate()">
+            <span>محاسبه دقیق تعرفه کارشناسی</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+        <div class="results-box" id="resultsBox">
+            <div class="res-row">
+                <span class="res-label">حق‌الزحمه ارزیابی پایه:</span>
+                <span class="res-val" id="baseFeeVal">۰ ریال</span>
+            </div>
+            <div class="res-row" id="perMemberRow" style="display: none;">
+                <span class="res-label">سهم هر کارشناس هیات (۷۰٪):</span>
+                <span class="res-val" id="perMemberVal">۰ ریال</span>
+            </div>
+            <div class="res-row" id="addonsRow" style="display: none;">
+                <span class="res-label">مجموع خدمات و هزینه‌های افزوده:</span>
+                <span class="res-val" id="addonsFeeVal">۰ ریال</span>
+            </div>
+            <div class="res-row" id="petitionRow" style="display: none;">
+                <span class="res-label">مبلغ درخواستی افزایش دستمزد (لایحه):</span>
+                <span class="res-val" id="petitionFeeVal" style="color: var(--accent-cyan);">۰ ریال</span>
+            </div>
+            <div class="res-row" id="vatRow" style="display: none;">
+                <span class="res-label">مالیات بر ارزش افزوده (۱۰٪):</span>
+                <span class="res-val" id="vatVal">۰ ریال</span>
+            </div>
+            <div class="res-row" id="tax104Row" style="display: none;">
+                <span class="res-label">کسر مالیات تکلیفی (۵٪):</span>
+                <span class="res-val" id="tax104Val" style="color: var(--accent-rose);">۰ ریال</span>
+            </div>
+            <div class="res-row" id="kanonRow" style="display: none;">
+                <span class="res-label">کسر سهم کانون/مرکز (۵٪):</span>
+                <span class="res-val" id="kanonVal" style="color: var(--accent-rose);">۰ ریال</span>
+            </div>
+            <div class="res-highlight">
+                <div class="res-row" style="padding:0; border:none;">
+                    <span class="res-label">مبلغ کل قابل پرداخت به کارشناس:</span>
+                    <span class="res-val" id="totalFeeVal">۰ ریال</span>
+                </div>
+                <div class="words-hint" id="tomanVal" style="text-align: left; margin-top: 4px;"></div>
+            </div>
+            <div id="diffBox" style="margin-top: 8px; font-size: 0.72rem; color: var(--text-muted); text-align: center;"></div>
+        </div>
+
+        <div class="action-grid" id="actionButtons" style="display: none;">
+            <button class="btn-action" onclick="openExpertModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span>صدور پیش فاکتور دستمزد</span>
+            </button>
+            <button class="btn-action" onclick="shareSummary()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span>اشتراک‌گذاری پیش‌فاکتور</span>
+            </button>
+        </div>
+
+        <a href="https://t.me/karshenasan_tehran" target="_blank" class="telegram-banner no-print">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="tg-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.98-1.73 6.64-2.87 7.97-3.43 3.8-1.58 4.59-1.86 5.1-1.87.11 0 .36.03.52.16.13.11.17.26.19.37-.01.07.01.21 0 .38z"/></svg>
+                </div>
+                <div>
+                    <div style="font-weight: 800; font-size: 0.85rem;">کانال کارشناسان رسمی</div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted);">عضویت در کانال تلگرام karshenasan_tehran</div>
+                </div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </a>
+
+    </div>
+
+    <!-- MODAL 1: EXPERT INFO INPUT BEFORE BILL -->
+    <div class="modal-overlay" id="expertModal" onclick="closeModalOnOverlay(event, 'expertModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">تکمیل مشخصات هیات کارشناسی و پرونده</div>
+                <button class="modal-close" onclick="closeModal('expertModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                        <label style="font-size: 0.78rem; font-weight: 800; color: var(--accent-cyan);">لیست مشخصات کارشناسان:</label>
+                        <div id="expertsAccordionContainer" style="margin-top: 8px;"></div>
+                        <button class="btn-action" style="width: 100%; margin-top: 6px; border-style: dashed;" onclick="addExpertAccordionField()">
+                            <span>+ افزودن کارشناس جدید به هیات</span>
+                        </button>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div class="input-group">
+                            <label>تاریخ تنظیم:</label>
+                            <input type="text" id="expDate" placeholder="۱۴۰۵/۰۱/۱۵">
+                        </div>
+                        <div class="input-group">
+                            <label>شماره پرونده / کلاسه:</label>
+                            <input type="text" id="caseNum" placeholder="۹۹۰۹۹۸XXX">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>نام متقاضی / خواهان / خوانده:</label>
+                        <input type="text" id="clientName" placeholder="مثال: شرکت عمران سازه / آقای حسینی">
+                    </div>
+                    <div class="input-group">
+                        <label>مرجع قضایی / شعبه:</label>
+                        <input type="text" id="courtBranch" placeholder="شعبه ۱۰ دادگاه عمومی حقوقی">
+                    </div>
+
+                    <div class="addon-item" id="item-bank" style="margin-bottom: 0;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chkBank" onchange="toggleBankInput()">
+                            <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                            <span class="addon-text">درج شماره کارت / شبا کارشناس (جهت واریز)</span>
+                        </label>
+                        <div class="addon-subinput" id="sub-bank" style="flex-direction: column; align-items: stretch;">
+                            <input type="text" id="bankAccount" placeholder="شماره کارت یا شبا (مثلا: IR600170000000000000000000)">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-top: 6px;">
+                        <label>توضیحات و شروط اختصاصی پیش‌فاکتور:</label>
+                        <textarea id="billNotes" placeholder="مثلا: هزینه ایاب و ذهاب و کارشناسی بر عهده متقاضی می‌باشد..."></textarea>
+                    </div>
+                    <button class="calc-btn" style="margin-top: 10px; margin-bottom: 0;" onclick="generateBill()">تایید و صدور پیش‌فاکتور</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: OFFICIAL BILL PREVIEW -->
+    <div class="modal-overlay" id="billModal" onclick="closeModalOnOverlay(event, 'billModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">پیش‌نمایش رسمی پیش‌فاکتور دستمزد</div>
+                <button class="modal-close" onclick="closeModal('billModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="bill-template" id="billPrintArea">
+                    <div class="bill-header">
+                        <h4 style="margin-bottom: 2px;">پیش‌فاکتور رسمی برآورد دستمزد کارشناسی</h4>
+                        <p style="color: #475569;">تنظیم‌شده بر اساس تعرفه مصوب سال ۱۴۰۵ قوه قضائیه</p>
+                    </div>
+                    
+                    <div class="bill-info-container">
+                        <div class="bill-info-grid">
+                            <div><strong>تاریخ تنظیم:</strong> <span id="billExpDate">-</span></div>
+                            <div><strong>کلاسه پرونده:</strong> <span id="billCaseNum">-</span></div>
+                            <div><strong>متقاضی:</strong> <span id="billClient">-</span></div>
+                            <div><strong>مرجع قضایی:</strong> <span id="billCourt">-</span></div>
+                        </div>
+                        <div class="bill-experts-list">
+                            <span style="color:#475569; font-weight:bold;">اسامی هیات کارشناسان رسمی:</span>
+                            <div id="billExpertsContainer"></div>
+                        </div>
+                    </div>
+
+                    <p style="margin-bottom: 4px;"><strong>ارزش برآوردی موضوع کارشناسی / اجاره‌بها:</strong> <span id="billVal"></span> ریال</p>
+                    <table class="bill-table">
+                        <thead>
+                            <tr><th>شرح دقیق خدمات / تکالیف</th><th>مبلغ (ریال)</th></tr>
+                        </thead>
+                        <tbody id="billTableBody"></tbody>
+                    </table>
+
+                    <div id="billPetitionBox" class="bill-petition-box" style="display: none;">
+                        <strong style="color:#000000 !important;">لایحه درخواستی افزایش دستمزد:</strong>
+                        <p id="billPetitionTextDisplay" style="margin-top: 3px; font-weight: bold; color:#000000 !important;"></p>
+                    </div>
+
+                    <div id="billBankBox" style="display:none; margin-top: 6px; font-size: 0.72rem; background: #f1f5f9; padding: 4px 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                        <strong>شماره حساب/شبا جهت واریز:</strong> <span id="billBankDisplay"></span>
+                    </div>
+
+                    <div id="billNotesArea" style="margin-top: 6px; font-size: 0.7rem; color: #475569; background: #f8fafc; padding: 4px; border-radius: 4px;"></div>
+                    
+                    <div style="margin-top: 8px; text-align: left; font-weight: 800; font-size: 0.88rem; border-top: 1.5px solid #0f172a; padding-top: 4px;">
+                        مبلغ کل قابل پرداخت: <span id="billTotal"></span> ریال
+                    </div>
+
+                    <div class="signatures-container" id="signaturesContainer"></div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button class="calc-btn" style="margin: 0; flex: 1;" onclick="window.print()">چاپ تک صفحه‌ای A4 / PDF</button>
+                    <button class="btn-action" style="flex: 1;" onclick="downloadBillAsHTML()">دانلود فایل HTML</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: HELP & RULES -->
+    <div class="modal-overlay" id="helpModal" onclick="closeModalOnOverlay(event, 'helpModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">راهنما و احکام تعرفه کارشناسی (۱۴۰۵)</div>
+                <button class="modal-close" onclick="closeModal('helpModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p><strong>ماده ۶ - فوق‌العاده مأموریت:</strong> داخل استان روزانه ۷,۵۰۰,۰۰۰ ریال و خارج استان روزانه ۱۵,۰۰۰,۰۰۰ ریال.</p><br>
+                <p><strong>ماده ۷ - تأمین دلیل:</strong> حداقل دستمزد ۲۰,۰۰۰,۰۰۰ ریال می‌باشد.</p><br>
+                <p><strong>ماده ۱۱ - سقف دستمزد:</strong> سقف هر کارشناسی ۱,۳۵۰,۰۰۰,۰۰۰ ریال و سقف کل موضوع ۳,۰۰۰,۰۰۰,۰۰۰ ریال است.</p><br>
+                <p><strong>ماده ۱۴ - تفسیر عکس هوایی:</strong> پایه ۲۰,۰۰۰,۰۰۰ ریال + ۱۰٪ به ازای هر سال قدمت.</p><br>
+                <p><strong>ماده ۵۶ - هیات کارشناسی:</strong> کسر ۳۰٪ از تعرفه پایه برای هر کارشناس هم‌رشته (معادل ۷۰٪ تعرفه).</p><br>
+                <p><strong>مواد ۱۵ تا ۴۶ - سایر بندهای تخصصی:</strong> بندهای مقطوع، تدریجی یا بازه‌ای مربوط به رشته‌های آب، نقشه‌برداری و امور ثبتی، راه و ساختمان، خودرو، اصالت خط و امضا و سایر رشته‌ها، هرکدام با نرخ و سقف مستقل خودشان که در بخش «سایر بندهای تخصصی تعرفه» قابل محاسبه است.</p><br>
+                <p><strong>مواد ۲۳، ۳۷، ۵۲ و تبصره۲ ماده۴۵:</strong> ضرایب افزایشی ۲۰٪ (لوازم خانگی/اداری، افراز املاک، افراز اراضی کشاورزی) و ۵۰٪ (کارشناسی نرم‌افزار) که از فهرست «رشته/گروه کارشناسی» قابل انتخاب است.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: MANUAL INSTALL INSTRUCTIONS (iOS / fallback) -->
+    <div class="modal-overlay" id="installModal" onclick="closeModalOnOverlay(event, 'installModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">افزودن به صفحه اصلی</div>
+                <button class="modal-close" onclick="closeModal('installModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="installInstructionsBody">
+                <!-- filled by JS based on device -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: ACCOUNT & CLOUD SYNC -->
+    <div class="modal-overlay" id="accountModal" onclick="closeModalOnOverlay(event, 'accountModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">حساب کاربری و پشتیبان ابری</div>
+                <button class="modal-close" onclick="closeModal('accountModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <div id="accountLoggedOutView">
+                    <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 12px;">
+                        با ورود از طریق حساب گوگل، اطلاعات و پرونده‌های شما به‌صورت خودکار و امن در فضای ابری ذخیره می‌شود؛
+                        دیگر لازم نیست هر بار دوباره وارد شوید و می‌توانید از هر گوشی دیگری هم به اطلاعات خود دسترسی داشته باشید.
+                    </p>
+                    <button class="google-signin-btn" onclick="signInWithGoogle()">
+                        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3c-7.5 0-14 4.2-17.7 10.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.6 36.6 27 37.5 24 37.5c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.9 40.7 16.4 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4 5.5l6.6 5.4C41.8 35.8 45 30.4 45 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+                        <span>ورود با حساب گوگل</span>
+                    </button>
+                    <p style="font-size: 0.68rem; color: var(--text-muted); margin-top: 10px; text-align: center;">
+                        بدون ورود هم برنامه کامل کار می‌کند؛ اطلاعات فقط روی همین گوشی ذخیره می‌مانند.
+                    </p>
+                </div>
+
+                <div id="accountLoggedInView" style="display:none;">
+                    <div class="account-panel-profile">
+                        <span class="account-avatar" id="accountPanelAvatar"></span>
+                        <div>
+                            <div class="account-panel-name" id="accountPanelName">-</div>
+                            <div class="account-panel-email" id="accountPanelEmail">-</div>
+                        </div>
+                    </div>
+                    <div class="account-sync-status">
+                        <span class="sync-dot" id="syncDotPanel"></span>
+                        <span id="syncStatusText">همگام‌سازی با فضای ابری فعال است</span>
+                    </div>
+                    <button class="btn-action" style="width:100%; margin-top: 16px; color: var(--accent-rose); border-color: var(--accent-rose);" onclick="signOutOfGoogle()">
+                        <span>خروج از حساب</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- CLOUD LOGIN REMINDER TOAST -->
+    <div class="cloud-toast no-print" id="cloudToast">
+        <div class="cloud-toast-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+        </div>
+        <div class="cloud-toast-text">
+            <div class="cloud-toast-title">اطلاعاتت رو از دست نده!</div>
+            <div class="cloud-toast-sub">با ورود سریع از طریق گوگل، پرونده‌ها و تنظیماتت همیشه ذخیره و همگام می‌مونن — حتی اگه گوشی رو عوض کنی.</div>
+            <div class="cloud-toast-actions">
+                <button class="cta-primary" onclick="signInWithGoogle(); dismissCloudToast();">ورود با گوگل</button>
+                <button class="cta-secondary" onclick="dismissCloudToast()">بعداً</button>
+            </div>
+        </div>
+        <button class="cloud-toast-close" onclick="dismissCloudToast()" title="بستن">&times;</button>
+    </div>
+
+    <script>
+        let currentTariff = '1405';
+        let currentMode = 'single';
+        let boardMembers = 3;
+        let expertCount = 0;
+        let isUserCustomPetition = false;
+
+        const defaultDisciplines = [
+            'امور ثبتی و نقشه‌برداری',
+            'امور ثبتی',
+            'نقشه‌برداری و اطلاعات مکانی',
+            'راه و ساختمان',
+            'حسابداری و حسابرسی',
+            'ارزیابی وسائط نقلیه و تصادفات',
+            'امور معادن و زمین‌شناسی',
+            'برق، ماشین‌آلات و تاسیسات کارخانجات',
+            'کشاورزی و منابع طبیعی',
+            'سایر رشته‌ها (تایپ دلخواه)'
+        ];
+
+        window.onload = function() {
+            let today = new Date().toLocaleDateString('fa-IR');
+            document.getElementById('expDate').value = today;
+            addExpertAccordionField();
+            updatePetitionText();
+        };
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+        }
+
+        function toggleSection(id) {
+            document.getElementById(id).classList.toggle('expanded');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function closeModalOnOverlay(e, id) { if (e.target.id === id) closeModal(id); }
+
+        function setTariff(year, btn) {
+            currentTariff = year;
+            document.querySelectorAll('.tab-group .tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            calculate();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('singleCard').classList.toggle('active', mode === 'single');
+            document.getElementById('boardCard').classList.toggle('active', mode === 'board');
+            document.getElementById('memberCounterGroup').style.display = mode === 'board' ? 'block' : 'none';
+            
+            if (mode === 'single') {
+                document.getElementById('petTypeSingle').checked = true;
+            } else {
+                document.getElementById('petTypeBoard').checked = true;
+            }
+            updatePetitionText();
+            calculate();
+        }
+
+        function changeMembers(delta) {
+            boardMembers = Math.max(3, Math.min(15, boardMembers + delta));
+            if(boardMembers % 2 === 0) boardMembers += (delta > 0 ? 1 : -1);
+            document.getElementById('memberCountText').innerText = boardMembers + ' نفر';
+            calculate();
+        }
+
+        function toggleBankInput() {
+            let isChecked = document.getElementById('chkBank').checked;
+            document.getElementById('sub-bank').style.display = isChecked ? 'flex' : 'none';
+        }
+
+        function toggleAddon(type) {
+            const map = {
+                'missionIn': { chk: 'chkMissionIn', item: 'item-missionIn', sub: 'sub-missionIn' },
+                'missionOut': { chk: 'chkMissionOut', item: 'item-missionOut', sub: 'sub-missionOut' },
+                'tamin': { chk: 'chkTamin', item: 'item-tamin', sub: null },
+                'aerial': { chk: 'chkAerial', item: 'item-aerial', sub: 'sub-aerial' },
+                'mapMatch': { chk: 'chkMapMatch', item: 'item-mapMatch', sub: 'sub-mapMatch' },
+                'strength': { chk: 'chkStrength', item: 'item-strength', sub: 'sub-strength' },
+                'poverty': { chk: 'chkPoverty', item: 'item-poverty', sub: null },
+                'm39': { chk: 'chkM39', item: 'item-m39', sub: 'sub-m39' },
+                'm40': { chk: 'chkM40', item: 'item-m40', sub: 'sub-m40' },
+                'm41': { chk: 'chkM41', item: 'item-m41', sub: 'sub-m41' },
+                'm43': { chk: 'chkM43', item: 'item-m43', sub: 'sub-m43' },
+                'm20': { chk: 'chkM20', item: 'item-m20', sub: 'sub-m20' },
+                'm31': { chk: 'chkM31', item: 'item-m31', sub: 'sub-m31' },
+                'm15': { chk: 'chkM15', item: 'item-m15', sub: 'sub-m15' },
+                'mwater': { chk: 'chkMWater', item: 'item-mwater', sub: 'sub-mwater' },
+                'mrange': { chk: 'chkMRange', item: 'item-mrange', sub: 'sub-mrange' },
+                'm46': { chk: 'chkM46', item: 'item-m46', sub: 'sub-m46' }
+            };
+            const cfg = map[type];
+            const isChecked = document.getElementById(cfg.chk).checked;
+            document.getElementById(cfg.item).classList.toggle('active', isChecked);
+            if (cfg.sub) document.getElementById(cfg.sub).style.display = isChecked ? 'flex' : 'none';
+
+            if (type === 'missionIn' && isChecked) {
+                document.getElementById('chkMissionOut').checked = false;
+                toggleAddon('missionOut');
+            } else if (type === 'missionOut' && isChecked) {
+                document.getElementById('chkMissionIn').checked = false;
+                toggleAddon('missionIn');
+            }
+            calculate();
+        }
+
+        function updateM20Range() {
+            let type = document.getElementById('widthM20').value;
+            let range = document.getElementById('rateM20');
+            let max = type === 'narrow' ? 80000000 : 120000000;
+            range.max = max;
+            range.value = 20000000;
+            document.getElementById('rateM20Display').innerText = '۲۰,۰۰۰,۰۰۰ ریال';
+            calculate();
+        }
+
+        function updateMRangeRange() {
+            let key = document.getElementById('selMRange').value;
+            let it = mRangeItems[key];
+            let range = document.getElementById('rangeMRange');
+            range.min = it.min;
+            range.max = it.max;
+            range.value = it.min;
+            document.getElementById('rangeMRangeDisplay').innerText = it.min.toLocaleString('fa-IR') + ' ریال';
+            calculate();
+        }
+
+        function togglePetitionSection() {
+            let isChecked = document.getElementById('chkPetition').checked;
+            document.getElementById('petitionSubContainer').style.display = isChecked ? 'flex' : 'none';
+            calculate();
+        }
+
+        function handlePetitionAmount(input) {
+            let val = input.value.replace(/[^0-9]/g, '');
+            if(!val) {
+                input.value = '';
+                document.getElementById('petitionWordsHint').innerText = '';
+                updatePetitionText();
+                calculate();
+                return;
+            }
+            let num = parseInt(val, 10);
+            input.value = num.toLocaleString('en-US');
+            let toman = Math.floor(num / 10);
+            document.getElementById('petitionWordsHint').innerText = 'معادل: ' + numberToWords(toman) + ' تومان';
+            updatePetitionText();
+            calculate();
+        }
+
+        function saveCustomPetitionText() {
+            isUserCustomPetition = true;
+        }
+
+        function updatePetitionText() {
+            if (isUserCustomPetition) return;
+
+            let isBoard = document.getElementById('petTypeBoard').checked;
+            let targetWord = isBoard ? "هیات" : "اینجانب کارشناس رسمی";
+            let rawVal = document.getElementById('petitionAmount').value.replace(/[^0-9]/g, '');
+            let rialStr = rawVal ? parseInt(rawVal, 10).toLocaleString('fa-IR') : "......";
+            let tomanNum = rawVal ? Math.floor(parseInt(rawVal, 10) / 10) : 0;
+            let tomanStr = tomanNum ? numberToWords(tomanNum) : "....";
+
+            let defaultText = `در خاتمه با توجه به اقدامات انجام شده و وسعت پلاک و قطعات مورد رسیدگی با لحاظ تعرفه مصوب 1405 ریاست محترم قوه قضائیه جهت کارشناسان رسمی دادگستری خواهشمند است علاوه بر مبالغ تودیع شده نسبت به افزایش دستمزد کارشناسی جهت ${targetWord} به مبلغ ${rialStr} ریال معادل ${tomanStr} تومان موافقت و در صورت تصویب مقرر فرمایید قبل از ابلاغ نظریه نسبت به تودیع آن اقدام نمایند.`;
+            
+            document.getElementById('petitionText').value = defaultText;
+        }
+
+        function copyPetitionText() {
+            let txt = document.getElementById('petitionText').value;
+            navigator.clipboard.writeText(txt);
+            alert('متن لایحه در حافظه کپی شد.');
+        }
+
+        function handleInput(input) {
+            let val = input.value.replace(/[^0-9]/g, '');
+            if(!val) {
+                input.value = '';
+                document.getElementById('wordsHint').innerText = '';
+                document.getElementById('resultsBox').style.display = 'none';
+                document.getElementById('actionButtons').style.display = 'none';
+                return;
+            }
+            let num = parseInt(val, 10);
+            input.value = num.toLocaleString('en-US');
+            let toman = Math.floor(num / 10);
+            document.getElementById('wordsHint').innerText = 'معادل: ' + numberToWords(toman) + ' تومان';
+            calculate();
+        }
+
+        function calculateBaseFee(val, tariff) {
+            if (val <= 0) return 0;
+            let total = 0;
+            if (tariff === '1405') {
+                const brackets = [
+                    { limit: 500e6, fixed: 20000000, rate: 0 },
+                    { limit: 1000e6, fixed: 0, rate: 0.0045 },
+                    { limit: 5000e6, fixed: 0, rate: 0.004 },
+                    { limit: 30000e6, fixed: 0, rate: 0.002 },
+                    { limit: 150000e6, fixed: 0, rate: 0.0012 },
+                    { limit: 500000e6, fixed: 0, rate: 0.0009 },
+                    { limit: 1000000e6, fixed: 0, rate: 0.00031 },
+                    { limit: 2000000e6, fixed: 0, rate: 0.00023 },
+                    { limit: 4000000e6, fixed: 0, rate: 0.000185 },
+                    { limit: Infinity, fixed: 0, rate: 0.00015 }
+                ];
+                let prev = 0;
+                for (let b of brackets) {
+                    if (val > prev) {
+                        let portion = Math.min(val, b.limit) - prev;
+                        if (b.fixed > 0) total += b.fixed;
+                        else total += portion * b.rate;
+                        prev = b.limit;
+                    } else break;
+                }
+            } else {
+                const brackets = [
+                    { limit: 250e6, fixed: 6000000, rate: 0 },
+                    { limit: 1000e6, fixed: 0, rate: 0.0045 },
+                    { limit: 5000e6, fixed: 0, rate: 0.003 },
+                    { limit: 30000e6, fixed: 0, rate: 0.0015 },
+                    { limit: 150000e6, fixed: 0, rate: 0.0009 },
+                    { limit: 500000e6, fixed: 0, rate: 0.0007 },
+                    { limit: 1000000e6, fixed: 0, rate: 0.0003 },
+                    { limit: 2000000e6, fixed: 0, rate: 0.00022 },
+                    { limit: 4000000e6, fixed: 0, rate: 0.00018 },
+                    { limit: Infinity, fixed: 0, rate: 0.00012 }
+                ];
+                let prev = 0;
+                for (let b of brackets) {
+                    if (val > prev) {
+                        let portion = Math.min(val, b.limit) - prev;
+                        if (b.fixed > 0) total += b.fixed;
+                        else total += portion * b.rate;
+                        prev = b.limit;
+                    } else break;
+                }
+            }
+            return total;
+        }
+
+        function calculateAddons() {
+            let sum = 0;
+            if (document.getElementById('chkMissionIn').checked) {
+                sum += (parseInt(document.getElementById('daysMissionIn').value, 10) || 1) * 7500000;
+            }
+            if (document.getElementById('chkMissionOut').checked) {
+                sum += (parseInt(document.getElementById('daysMissionOut').value, 10) || 1) * 15000000;
+            }
+            if (document.getElementById('chkTamin').checked) sum += 20000000;
+            if (document.getElementById('chkAerial').checked) {
+                let photos = parseInt(document.getElementById('photosAerial').value, 10) || 1;
+                let years = parseInt(document.getElementById('yearsAerial').value, 10) || 0;
+                let extra = parseInt(document.getElementById('extraAerial').value, 10) || 0;
+                let perPhoto = 20000000 * (1 + (years * 0.10) + (extra * 0.40));
+                sum += perPhoto * photos;
+            }
+            if (document.getElementById('chkMapMatch').checked) {
+                let fee = (parseFloat(document.getElementById('areaMapMatch').value) || 0) * 30000;
+                sum += Math.max(20000000, Math.min(100000000, fee));
+            }
+            if (document.getElementById('chkStrength').checked) {
+                sum += calculateMadde36();
+            }
+            if (document.getElementById('chkM39').checked) sum += calculateMadde39();
+            if (document.getElementById('chkM40').checked) sum += calculateMadde40();
+            if (document.getElementById('chkM41').checked) sum += calculateMadde41();
+            if (document.getElementById('chkM43').checked) sum += calculateMadde43();
+            if (document.getElementById('chkM20').checked) sum += calculateMadde20();
+            if (document.getElementById('chkM31').checked) sum += calculateMadde31();
+            if (document.getElementById('chkM15').checked) sum += calculateMadde15();
+            if (document.getElementById('chkMWater').checked) sum += calculateMWater();
+            if (document.getElementById('chkMRange').checked) sum += calculateMRange();
+            if (document.getElementById('chkM46').checked) sum += calculateMadde46();
+            return sum;
+        }
+
+        function calculateMadde36() {
+            let type = document.getElementById('typeStrength').value;
+            let area = parseFloat(document.getElementById('areaStrength').value) || 0;
+            const table = {
+                arch: { rate: 25000, min: 20000000, max: 150000000 },
+                structure: { rate: 30000, min: 20000000, max: 200000000 },
+                strength: { rate: 25000, min: 20000000, max: 150000000 }
+            };
+            if (type === 'approve') {
+                let t = table.strength;
+                let raw = area * t.rate;
+                let base = Math.max(t.min, Math.min(t.max, raw));
+                return base * 0.5;
+            }
+            let t = table[type];
+            let raw = area * t.rate;
+            return Math.max(t.min, Math.min(t.max, raw));
+        }
+
+        function calculateMadde39Core(area, hasGozar) {
+            let base = hasGozar ? 20000000 : 30000000;
+            let cap = hasGozar ? 200000000 : 250000000;
+            let fee;
+            if (area <= 1000) fee = base;
+            else if (area <= 100000) fee = base + (area - 1000) * 1200;
+            else fee = base + 99000 * 1200 + (area - 100000) * 800;
+            return Math.min(fee, cap);
+        }
+
+        function calculateMadde39() {
+            let area = parseFloat(document.getElementById('areaM39').value) || 0;
+            let hasGozar = document.getElementById('gozarM39').value === '1';
+            return calculateMadde39Core(area, hasGozar);
+        }
+
+        function calculateMadde40() {
+            let area = parseFloat(document.getElementById('areaM40').value) || 0;
+            return calculateMadde39Core(area, false);
+        }
+
+        function calculateMadde41() {
+            let area = parseFloat(document.getElementById('areaM41').value) || 0;
+            let fee;
+            if (area <= 1000) fee = 20000000;
+            else if (area <= 5000) fee = 20000000 + (area - 1000) * 4000;
+            else if (area <= 50000) fee = 20000000 + 4000 * 4000 + (area - 5000) * 2000;
+            else fee = 20000000 + 4000 * 4000 + 45000 * 2000 + (area - 50000) * 1000;
+            return Math.min(fee, 150000000);
+        }
+
+        function calculateMadde43() {
+            let hectares = parseFloat(document.getElementById('areaM43').value) || 0;
+            if (hectares <= 0) return 0;
+            if (hectares <= 1) return 20000000;
+            let raw = 20000000 * (1 + 0.2 * (hectares - 1));
+            return Math.min(raw, 60000000);
+        }
+
+        function calculateMadde20() {
+            let km = parseFloat(document.getElementById('kmM20').value) || 0;
+            let rate = parseFloat(document.getElementById('rateM20').value) || 0;
+            return km * rate;
+        }
+
+        function calculateMadde31() {
+            let checks = document.querySelectorAll('.m31-chip:checked');
+            let sum = checks.length * 20000000;
+            if (checks.length >= 2 && sum > 30000000) sum = 30000000;
+            if (sum > 70000000) sum = 70000000;
+            return sum;
+        }
+
+        function calculateMadde15() {
+            let flow = parseFloat(document.getElementById('flowM15').value) || 0;
+            let fee;
+            if (flow <= 50) fee = 20000000;
+            else if (flow <= 1000) fee = 20000000 + (flow - 50) * 6000;
+            else fee = 20000000 + 950 * 6000 + (flow - 1000) * 3000;
+            return Math.min(fee, 90000000);
+        }
+
+        const mWaterItems = {
+            '16': { label: 'تعیین کیفیت شیمیایی و آلودگی آب (ماده ۱۶)', fee: 20000000 },
+            '17': { label: 'بررسی فنی سفره‌های سطحی/زیرزمینی (ماده ۱۷)', fee: 30000000 },
+            '19': { label: 'تعیین کیفیت حفاری چاه و قنوات (ماده ۱۹)', fee: 30000000 },
+            '21': { label: 'رسیدگی به آب‌های پس از آلودگی (ماده ۲۱)', fee: 20000000 }
+        };
+        function calculateMWater() {
+            let key = document.getElementById('selMWater').value;
+            return mWaterItems[key].fee;
+        }
+
+        const mRangeItems = {
+            '24': { label: 'پزشکی، دارویی و سم‌شناسی (ماده ۲۴)', min: 20000000, max: 90000000 },
+            '27': { label: 'بازرگانی (ماده ۲۷)', min: 20000000, max: 100000000 },
+            '29': { label: 'بانک، بورس و بیمه (ماده ۲۹)', min: 20000000, max: 100000000 },
+            '30': { label: 'آمار (ماده ۳۰)', min: 20000000, max: 60000000 }
+        };
+        function calculateMRange() {
+            let val = parseFloat(document.getElementById('rangeMRange').value) || 0;
+            return val;
+        }
+
+        function calculateMadde46() {
+            let docs = parseFloat(document.getElementById('docsM46').value) || 0;
+            let base = 20000000;
+            let raw = docs <= 1 ? base : base * (1 + 0.2 * (docs - 1));
+            return Math.min(raw, 80000000);
+        }
+
+        function calculate() {
+            let category = document.getElementById('categorySelect').value;
+            let rawVal = document.getElementById('amountInput').value.replace(/[^0-9]/g, '');
+            let addonsFee = calculateAddons();
+
+            let petitionFee = 0;
+            if (document.getElementById('chkPetition').checked) {
+                let rawPet = document.getElementById('petitionAmount').value.replace(/[^0-9]/g, '');
+                petitionFee = parseInt(rawPet, 10) || 0;
+            }
+
+            if (category === 'rent') {
+                document.getElementById('valuationLabel').innerText = 'میزان اجاره‌بها (ماهیانه/سالانه):';
+            } else {
+                document.getElementById('valuationLabel').innerText = 'ارزش موضوع کارشناسی (برآورد):';
+            }
+
+            let value = parseInt(rawVal, 10) || 0;
+            let baseFee = calculateBaseFee(value, currentTariff);
+
+            if (category === 'contract') baseFee *= 2.0;
+            else if (category === 'delay' || category === 'brand' || category === 'audit' || category === 'software') baseFee *= 1.5;
+            else if (category === 'household' || category === 'landSplit' || category === 'agriSplit') baseFee *= 1.2;
+
+            let cap = currentTariff === '1405' ? 1350000000 : 1180000000;
+            let finalSingleFee = Math.min(baseFee, cap);
+            let evaluationTotal = 0;
+
+            if (currentMode === 'single') {
+                evaluationTotal = finalSingleFee;
+                document.getElementById('perMemberRow').style.display = 'none';
+            } else {
+                let perMember = Math.min(baseFee * 0.7, cap);
+                evaluationTotal = perMember * boardMembers;
+                document.getElementById('perMemberRow').style.display = 'flex';
+                document.getElementById('perMemberVal').innerText = Math.round(perMember).toLocaleString('fa-IR') + ' ریال';
+            }
+
+            let subTotal = evaluationTotal + addonsFee + petitionFee;
+
+            if (document.getElementById('chkPoverty').checked) {
+                subTotal *= 0.5;
+            }
+
+            let vat = document.getElementById('chkVat').checked ? subTotal * 0.10 : 0;
+            let tax104 = document.getElementById('chkTax104').checked ? subTotal * 0.05 : 0;
+            let kanonShare = document.getElementById('chkKanonShare').checked ? subTotal * 0.05 : 0;
+
+            let totalPayable = subTotal + vat - tax104 - kanonShare;
+
+            document.getElementById('baseFeeVal').innerText = Math.round(baseFee).toLocaleString('fa-IR') + ' ریال';
+            
+            if (addonsFee > 0) {
+                document.getElementById('addonsRow').style.display = 'flex';
+                document.getElementById('addonsFeeVal').innerText = Math.round(addonsFee).toLocaleString('fa-IR') + ' ریال';
+            } else {
+                document.getElementById('addonsRow').style.display = 'none';
+            }
+
+            if (petitionFee > 0) {
+                document.getElementById('petitionRow').style.display = 'flex';
+                document.getElementById('petitionFeeVal').innerText = Math.round(petitionFee).toLocaleString('fa-IR') + ' ریال';
+            } else {
+                document.getElementById('petitionRow').style.display = 'none';
+            }
+
+            if (vat > 0) {
+                document.getElementById('vatRow').style.display = 'flex';
+                document.getElementById('vatVal').innerText = Math.round(vat).toLocaleString('fa-IR') + ' ریال';
+            } else { document.getElementById('vatRow').style.display = 'none'; }
+
+            if (tax104 > 0) {
+                document.getElementById('tax104Row').style.display = 'flex';
+                document.getElementById('tax104Val').innerText = '(' + Math.round(tax104).toLocaleString('fa-IR') + ' ریال)';
+            } else { document.getElementById('tax104Row').style.display = 'none'; }
+
+            if (kanonShare > 0) {
+                document.getElementById('kanonRow').style.display = 'flex';
+                document.getElementById('kanonVal').innerText = '(' + Math.round(kanonShare).toLocaleString('fa-IR') + ' ریال)';
+            } else { document.getElementById('kanonRow').style.display = 'none'; }
+
+            document.getElementById('totalFeeVal').innerText = Math.round(totalPayable).toLocaleString('fa-IR') + ' ریال';
+            document.getElementById('tomanVal').innerText = 'معادل ' + numberToWords(Math.floor(totalPayable / 10)) + ' تومان';
+
+            let fee1402 = calculateBaseFee(value, '1402');
+            let diff = baseFee - fee1402;
+            if (value > 0) {
+                document.getElementById('diffBox').innerText = `تفاوت با تعرفه ۱۴۰۲: ${Math.round(diff).toLocaleString('fa-IR')} ریال افزایش`;
+            } else {
+                document.getElementById('diffBox').innerText = '';
+            }
+
+            document.getElementById('resultsBox').style.display = 'block';
+            document.getElementById('actionButtons').style.display = 'grid';
+        }
+
+        function addExpertAccordionField() {
+            expertCount++;
+            let id = expertCount;
+            let container = document.getElementById('expertsAccordionContainer');
+            let item = document.createElement('div');
+            item.className = 'accordion-item active';
+            item.id = `expItem_${id}`;
+
+            let optionsHtml = defaultDisciplines.map(d => `<option value="${d}">${d}</option>`).join('');
+
+            item.innerHTML = `
+                <div class="accordion-header" onclick="toggleAccordion(${id})">
+                    <span>مشخصات کارشناس شماره ${id}</span>
+                    <span style="color:var(--accent-rose); cursor:pointer;" onclick="removeExpertAccordion(${id}, event)">حذف</span>
+                </div>
+                <div class="accordion-body">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <input type="text" class="exp-name-field" placeholder="نام و نام خانوادگی کارشناس">
+                        <select class="exp-disc-select" onchange="handleDiscChange(${id}, this)">
+                            ${optionsHtml}
+                        </select>
+                        <input type="text" class="exp-custom-disc" id="customDisc_${id}" placeholder="عنوان رشته کارشناسی را تایپ کنید..." style="display:none;">
+                        <input type="text" class="exp-license-field" placeholder="شماره پروانه کارشناسی">
+                        <input type="text" class="exp-phone-field" placeholder="شماره تلفن همراه">
+                    </div>
+                </div>
+            `;
+            container.appendChild(item);
+        }
+
+        function handleDiscChange(id, select) {
+            let customInput = document.getElementById(`customDisc_${id}`);
+            if (select.value.includes('سایر')) {
+                customInput.style.display = 'block';
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+
+        function toggleAccordion(id) {
+            let item = document.getElementById(`expItem_${id}`);
+            item.classList.toggle('active');
+        }
+
+        function removeExpertAccordion(id, e) {
+            e.stopPropagation();
+            let item = document.getElementById(`expItem_${id}`);
+            if (document.querySelectorAll('.accordion-item').length > 1) {
+                item.remove();
+            } else {
+                alert('حداقل اطلاعات یک کارشناس باید درج شود.');
+            }
+        }
+
+        function openExpertModal() {
+            openModal('expertModal');
+        }
+
+        function generateBill() {
+            closeModal('expertModal');
+
+            document.getElementById('billExpDate').innerText = document.getElementById('expDate').value || 'درج نشده';
+            document.getElementById('billCaseNum').innerText = document.getElementById('caseNum').value || 'درج نشده';
+            document.getElementById('billClient').innerText = document.getElementById('clientName').value || 'درج نشده';
+            document.getElementById('billCourt').innerText = document.getElementById('courtBranch').value || 'درج نشده';
+
+            let expertsContainer = document.getElementById('billExpertsContainer');
+            let sigsContainer = document.getElementById('signaturesContainer');
+            expertsContainer.innerHTML = '';
+            sigsContainer.innerHTML = '';
+
+            document.querySelectorAll('.accordion-item').forEach((item, idx) => {
+                let name = item.querySelector('.exp-name-field').value || `کارشناس شماره ${idx+1}`;
+                let discSelect = item.querySelector('.exp-disc-select').value;
+                let customDisc = item.querySelector('.exp-custom-disc').value;
+                let discipline = discSelect.includes('سایر') ? (customDisc || 'کارشناس رسمی') : discSelect;
+                let lic = item.querySelector('.exp-license-field').value;
+                let phone = item.querySelector('.exp-phone-field').value;
+
+                let div = document.createElement('div');
+                div.className = 'expert-line-item';
+                div.innerHTML = `<strong>${idx + 1}. ${name}</strong> (${discipline}) ${lic ? `| پروانه: <strong>${lic}</strong>` : ''} ${phone ? `| همراه: <strong>${phone}</strong>` : ''}`;
+                expertsContainer.appendChild(div);
+
+                let sigCard = document.createElement('div');
+                sigCard.className = 'signature-card';
+                sigCard.innerHTML = `
+                    <div class="signature-card-name">${name}</div>
+                    <div class="signature-card-lic">کارشناس رشته ${discipline}</div>
+                    <div class="signature-space">محل امضاء و مهر</div>
+                `;
+                sigsContainer.appendChild(sigCard);
+            });
+
+            document.getElementById('billVal').innerText = document.getElementById('amountInput').value || '۰';
+            let tbody = document.getElementById('billTableBody');
+            tbody.innerHTML = '';
+
+            tbody.innerHTML += `<tr><td>حق‌الزحمه ارزیابی پایه (تعرفه سال ${currentTariff})</td><td>${document.getElementById('baseFeeVal').innerText}</td></tr>`;
+
+            if (document.getElementById('chkMissionIn').checked) {
+                let days = document.getElementById('daysMissionIn').value || 1;
+                let fee = days * 7500000;
+                tbody.innerHTML += `<tr><td>فوق‌العاده مأموریت داخل استان (${days} روز)</td><td>${fee.toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkMissionOut').checked) {
+                let days = document.getElementById('daysMissionOut').value || 1;
+                let fee = days * 15000000;
+                tbody.innerHTML += `<tr><td>فوق‌العاده مأموریت خارج استان (${days} روز)</td><td>${fee.toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkTamin').checked) {
+                tbody.innerHTML += `<tr><td>حق‌الزحمه قرار تأمین دلیل</td><td>۲۰,۰۰۰,۰۰۰ ریال</td></tr>`;
+            }
+            if (document.getElementById('chkAerial').checked) {
+                let photos = parseInt(document.getElementById('photosAerial').value, 10) || 1;
+                let years = parseInt(document.getElementById('yearsAerial').value, 10) || 0;
+                let extra = parseInt(document.getElementById('extraAerial').value, 10) || 0;
+                let perPhoto = 20000000 * (1 + (years * 0.10) + (extra * 0.40));
+                let fee = perPhoto * photos;
+                tbody.innerHTML += `<tr><td>تفسیر عکس‌های هوایی/ماهواره‌ای (${photos} مورد، ${years} سال قدمت)</td><td>${fee.toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkMapMatch').checked) {
+                let area = parseFloat(document.getElementById('areaMapMatch').value) || 0;
+                let fee = Math.max(20000000, Math.min(100000000, area * 30000));
+                tbody.innerHTML += `<tr><td>تطبیق نقشه با محل (${area} مترمربع)</td><td>${fee.toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkStrength').checked) {
+                let area = parseFloat(document.getElementById('areaStrength').value) || 0;
+                let fee = calculateMadde36();
+                let typeLabel = document.getElementById('typeStrength').selectedOptions[0].text;
+                tbody.innerHTML += `<tr><td>کنترل نقشه/سازه و استحکام بنا - ${typeLabel} (${area} مترمربع)</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkM39').checked) {
+                let area = parseFloat(document.getElementById('areaM39').value) || 0;
+                let fee = calculateMadde39();
+                tbody.innerHTML += `<tr><td>پیاده کردن محدوده پلاک ثبتی - ماده ۳۹ (${area} مترمربع)</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkM40').checked) {
+                let area = parseFloat(document.getElementById('areaM40').value) || 0;
+                let fee = calculateMadde40();
+                tbody.innerHTML += `<tr><td>نقشه‌برداری اراضی و تهیه پروفیل - ماده ۴۰ (${area} مترمربع)</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkM41').checked) {
+                let area = parseFloat(document.getElementById('areaM41').value) || 0;
+                let fee = calculateMadde41();
+                tbody.innerHTML += `<tr><td>مطالعه پرونده و تعیین محل پلاک - ماده ۴۱ (${area} مترمربع)</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkM43').checked) {
+                let hectares = parseFloat(document.getElementById('areaM43').value) || 0;
+                let fee = calculateMadde43();
+                tbody.innerHTML += `<tr><td>تشخیص حدود ثبتی - ماده ۴۳ (${hectares} هکتار)</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkM20').checked) {
+                let km = parseFloat(document.getElementById('kmM20').value) || 0;
+                let fee = calculateMadde20();
+                tbody.innerHTML += `<tr><td>تعیین حریم کانال/رودخانه - ماده ۲۰ (${km} کیلومتر)</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkM31').checked) {
+                let fee = calculateMadde31();
+                tbody.innerHTML += `<tr><td>کارشناسی وسایل نقلیه زمینی - ماده ۳۱</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkM15').checked) {
+                let flow = parseFloat(document.getElementById('flowM15').value) || 0;
+                let fee = calculateMadde15();
+                tbody.innerHTML += `<tr><td>اندازه‌گیری آب و حقابه - ماده ۱۵ (${flow} لیتر/ثانیه)</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkMWater').checked) {
+                let label = document.getElementById('selMWater').selectedOptions[0].text;
+                let fee = calculateMWater();
+                tbody.innerHTML += `<tr><td>${label}</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkMRange').checked) {
+                let label = document.getElementById('selMRange').selectedOptions[0].text;
+                let fee = calculateMRange();
+                tbody.innerHTML += `<tr><td>${label} (دستمزد پیشنهادی)</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+            if (document.getElementById('chkM46').checked) {
+                let docs = parseFloat(document.getElementById('docsM46').value) || 0;
+                let fee = calculateMadde46();
+                tbody.innerHTML += `<tr><td>بررسی اصالت خط/امضا/اثر انگشت - ماده ۴۶ (${docs} مستند)</td><td>${Math.round(fee).toLocaleString('fa-IR')} ریال</td></tr>`;
+            }
+
+            if (document.getElementById('chkPetition').checked) {
+                let rawPet = document.getElementById('petitionAmount').value.replace(/[^0-9]/g, '');
+                let petAmt = parseInt(rawPet, 10) || 0;
+                if (petAmt > 0) {
+                    tbody.innerHTML += `<tr><td>مبلغ درخواستی افزایش دستمزد (طبق لایحه)</td><td>${petAmt.toLocaleString('fa-IR')} ریال</td></tr>`;
+                }
+            }
+
+            if (document.getElementById('chkPoverty').checked) {
+                tbody.innerHTML += `<tr style="color:red;"><td>اعمال تخفیف عدم استطاعت مالی / اعسار (۵۰٪)</td><td>منظور شد</td></tr>`;
+            }
+
+            if (document.getElementById('chkVat').checked) {
+                tbody.innerHTML += `<tr><td>مالیات بر ارزش افزوده (۱۰٪)</td><td>${document.getElementById('vatVal').innerText}</td></tr>`;
+            }
+            if (document.getElementById('chkTax104').checked) {
+                tbody.innerHTML += `<tr style="color:red;"><td>کسر مالیات تکلیفی (۵٪ ماده ۱۰۴)</td><td>${document.getElementById('tax104Val').innerText}</td></tr>`;
+            }
+            if (document.getElementById('chkKanonShare').checked) {
+                tbody.innerHTML += `<tr style="color:red;"><td>کسر ۵٪ سهم کانون / مرکز کارشناسان</td><td>${document.getElementById('kanonVal').innerText}</td></tr>`;
+            }
+
+            if (document.getElementById('chkPetition').checked) {
+                document.getElementById('billPetitionBox').style.display = 'block';
+                document.getElementById('billPetitionTextDisplay').innerText = document.getElementById('petitionText').value;
+            } else {
+                document.getElementById('billPetitionBox').style.display = 'none';
+            }
+
+            if (document.getElementById('chkBank').checked) {
+                let bank = document.getElementById('bankAccount').value;
+                if (bank) {
+                    document.getElementById('billBankBox').style.display = 'block';
+                    document.getElementById('billBankDisplay').innerText = bank;
+                } else {
+                    document.getElementById('billBankBox').style.display = 'none';
+                }
+            } else {
+                document.getElementById('billBankBox').style.display = 'none';
+            }
+
+            let notes = document.getElementById('billNotes').value;
+            document.getElementById('billNotesArea').innerText = notes ? `توضیحات: ${notes}` : '';
+
+            document.getElementById('billTotal').innerText = document.getElementById('totalFeeVal').innerText;
+
+            saveCaseRecord({
+                expDate: document.getElementById('expDate').value || '',
+                caseNum: document.getElementById('caseNum').value || '',
+                clientName: document.getElementById('clientName').value || '',
+                courtBranch: document.getElementById('courtBranch').value || '',
+                tariffYear: currentTariff,
+                category: document.getElementById('categorySelect').value,
+                amount: document.getElementById('amountInput').value || '',
+                totalFee: document.getElementById('totalFeeVal').innerText || '',
+                createdAt: Date.now()
+            });
+
+            openModal('billModal');
+        }
+
+        function downloadBillAsHTML() {
+            let content = document.getElementById('billPrintArea').outerHTML;
+            let fullHTML = `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>پیش‌فاکتور</title><style>body{font-family:sans-serif;padding:20px;}.bill-template{border:1px solid #ccc;padding:20px;}.bill-table{width:100%;border-collapse:collapse;}.bill-table th, .bill-table td{border:1px solid #ccc;padding:8px;text-align:center;}</style></head><body>${content}</body></html>`;
+            let blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+            let link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `PreInvoice_${Date.now()}.html`;
+            link.click();
+        }
+
+        function shareSummary() {
+            let text = `پیش‌فاکتور دستمزد کارشناسی رسمی:\nمبلغ کل قابل پرداخت: ${document.getElementById('totalFeeVal').innerText}\n${document.getElementById('tomanVal').innerText}`;
+            if (navigator.share) {
+                navigator.share({ title: 'پیش فاکتور کارشناسی', text: text });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('متن پیش‌فاکتور با موفقیت کپی شد.');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('amountInput').value = '';
+            document.getElementById('wordsHint').innerText = '';
+            document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+            document.querySelectorAll('.addon-item').forEach(i => i.classList.remove('active'));
+            document.querySelectorAll('.addon-subinput').forEach(s => s.style.display = 'none');
+            document.getElementById('petitionSubContainer').style.display = 'none';
+            document.getElementById('resultsBox').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'none';
+        }
+
+        function numberToWords(num) {
+            if (num === 0) return 'صفر';
+            const yekan = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+            const dahtan = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هیجده', 'نوزده'];
+            const dahgan = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
+            const sadgan = ['', 'صد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'];
+            const basess = ['', ' هزار', ' میلیون', ' میلیارد', ' تریلیون'];
+
+            function convertSection(n) {
+                let res = [];
+                let c = Math.floor(n / 100), b = Math.floor((n % 100) / 10), a = n % 10;
+                if (c > 0) res.push(sadgan[c]);
+                if (b === 1) res.push(dahtan[a]);
+                else {
+                    if (b > 1) res.push(dahgan[b]);
+                    if (a > 0) res.push(yekan[a]);
+                }
+                return res.join(' و ');
+            }
+
+            let parts = [], i = 0;
+            while (num > 0) {
+                let section = num % 1000;
+                if (section > 0) parts.unshift(convertSection(section) + basess[i]);
+                num = Math.floor(num / 1000); i++;
+            }
+            return parts.join(' و ');
+        }
+
+        /* ---------------- PWA INSTALL HANDLING ---------------- */
+        let deferredInstallPrompt = null;
+
+        function isStandaloneMode() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        }
+
+        function isIOSDevice() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        function showInstallUI() {
+            if (isStandaloneMode()) return;
+            document.getElementById('installNavBtn').style.display = 'flex';
+            if (localStorage.getItem('installBannerDismissed') !== '1') {
+                document.getElementById('installBanner').style.display = 'flex';
+            }
+        }
+
+        function hideInstallUI() {
+            document.getElementById('installBanner').style.display = 'none';
+            document.getElementById('installNavBtn').style.display = 'none';
+        }
+
+        function dismissInstallBanner() {
+            document.getElementById('installBanner').style.display = 'none';
+            localStorage.setItem('installBannerDismissed', '1');
+        }
+
+        async function triggerInstall() {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                try { await deferredInstallPrompt.userChoice; } catch (e) {}
+                deferredInstallPrompt = null;
+            } else {
+                showManualInstallInstructions();
+            }
+        }
+
+        function showManualInstallInstructions() {
+            const body = document.getElementById('installInstructionsBody');
+            if (isIOSDevice()) {
+                body.innerHTML = `
+                    <p style="margin-bottom:10px;">برای نصب این ابزار روی آیفون به‌صورت اپلیکیشن مستقل:</p>
+                    <p>۱. در مرورگر <strong>Safari</strong>، دکمه <strong>Share</strong> (مربع با فلش رو به بالا، پایین یا بالای صفحه) را بزنید.</p><br>
+                    <p>۲. از لیست گزینه‌ها، <strong>«Add to Home Screen»</strong> را انتخاب کنید.</p><br>
+                    <p>۳. روی <strong>«Add»</strong> بزنید. آیکون برنامه به صفحه اصلی گوشی شما اضافه می‌شود و بدون نوار آدرس مرورگر باز می‌شود.</p>
+                `;
+            } else {
+                body.innerHTML = `
+                    <p style="margin-bottom:10px;">برای نصب این ابزار به‌صورت اپلیکیشن مستقل روی گوشی یا رایانه:</p>
+                    <p>از منوی سه‌نقطه بالای مرورگر (Chrome / Edge)، گزینه <strong>«Add to Home screen»</strong> یا <strong>«Install App»</strong> را بزنید. در برخی مرورگرها آیکون نصب کنار نوار آدرس هم نمایش داده می‌شود.</p>
+                `;
+            }
+            openModal('installModal');
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            showInstallUI();
+        });
+
+        window.addEventListener('appinstalled', () => {
+            hideInstallUI();
+            localStorage.setItem('installBannerDismissed', '1');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isStandaloneMode() && isIOSDevice()) {
+                showInstallUI();
+            }
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            }
+        });
+
+        /* ---------- Local case storage (always works, online or offline) ---------- */
+        const LOCAL_CASES_KEY = 'karshenas_plus_cases';
+        const CLOUD_TOAST_SHOWN_KEY = 'karshenas_cloud_toast_shown';
+
+        function getLocalCases() {
+            try { return JSON.parse(localStorage.getItem(LOCAL_CASES_KEY)) || []; }
+            catch (e) { return []; }
+        }
+        function setLocalCases(list) {
+            localStorage.setItem(LOCAL_CASES_KEY, JSON.stringify(list));
+        }
+
+        // Called every time a pre-invoice/case is generated. Always saves locally first,
+        // then hands off to the Firebase module (if it managed to load) for cloud sync.
+        function saveCaseRecord(record) {
+            const cases = getLocalCases();
+            const localRecord = Object.assign({}, record, {
+                id: 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+                _cloudSynced: false
+            });
+            cases.unshift(localRecord);
+            setLocalCases(cases);
+
+            if (typeof window.cloudSyncCase === 'function') {
+                window.cloudSyncCase(localRecord);
+            }
+        }
+
+        /* ---------- Friendly reminder to sign in, shown once after ~1 minute of use ---------- */
+        function dismissCloudToast() {
+            const toast = document.getElementById('cloudToast');
+            if (toast) toast.classList.remove('show');
+            sessionStorage.setItem(CLOUD_TOAST_SHOWN_KEY, '1');
+        }
+        window.dismissCloudToast = dismissCloudToast;
+
+        setTimeout(() => {
+            const alreadySignedIn = !!(window.karshenasCurrentUser);
+            const alreadyShown = sessionStorage.getItem(CLOUD_TOAST_SHOWN_KEY) === '1';
+            if (!alreadySignedIn && !alreadyShown) {
+                const toast = document.getElementById('cloudToast');
+                if (toast) toast.classList.add('show');
+            }
+        }, 60000);
+
+        // Offline-safe fallbacks: if the Firebase module below fails to load (e.g. no
+        // internet), these keep the buttons from throwing errors. The module overwrites
+        // them with the real, working versions once it loads successfully.
+        window.signInWithGoogle = function () {
+            alert('برای ورود با گوگل به اتصال اینترنت نیاز است. لطفاً اتصال خود را بررسی و دوباره تلاش کنید.');
+        };
+        window.signOutOfGoogle = function () {};
+    </script>
+
+    <!-- ================= FIREBASE: GOOGLE LOGIN + CLOUD SYNC ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+            getRedirectResult, signOut, onAuthStateChanged, setPersistence,
+            browserLocalPersistence
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import {
+            getFirestore, collection, addDoc, serverTimestamp, enableIndexedDbPersistence
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9g82CVZvjxh9GN_wpcaZLki_yL_K0IFE",
+            authDomain: "karshenas-plus.firebaseapp.com",
+            projectId: "karshenas-plus",
+            storageBucket: "karshenas-plus.firebasestorage.app",
+            messagingSenderId: "976092092272",
+            appId: "1:976092092272:web:09dc07dd01149e1c3ba1b5",
+            measurementId: "G-QH0D3L15F7"
+        };
+
+        const fbApp = initializeApp(firebaseConfig);
+        const auth = getAuth(fbApp);
+        const db = getFirestore(fbApp);
+        const provider = new GoogleAuthProvider();
+
+        // Keep the user signed in on this device/browser across visits & restarts.
+        setPersistence(auth, browserLocalPersistence).catch(() => {});
+        try { enableIndexedDbPersistence(db); } catch (e) { /* offline cache best-effort */ }
+
+        function setSyncDots(state) {
+            // state: 'idle' | 'syncing' | 'synced'
+            document.querySelectorAll('.sync-dot').forEach((dot) => {
+                dot.classList.remove('synced', 'syncing');
+                if (state === 'syncing') dot.classList.add('syncing');
+                if (state === 'synced') dot.classList.add('synced');
+            });
+            const statusText = document.getElementById('syncStatusText');
+            if (statusText) {
+                statusText.innerText = state === 'syncing'
+                    ? 'در حال همگام‌سازی با فضای ابری...'
+                    : 'همگام‌سازی با فضای ابری فعال است';
+            }
+        }
+
+        function updateAccountUI(user) {
+            const label = document.getElementById('accountLabel');
+            const avatar = document.getElementById('accountAvatar');
+            const loggedOutView = document.getElementById('accountLoggedOutView');
+            const loggedInView = document.getElementById('accountLoggedInView');
+            if (!label || !avatar || !loggedOutView || !loggedInView) return;
+
+            if (user) {
+                const initial = (user.displayName || user.email || '؟').charAt(0).toUpperCase();
+                label.innerText = user.displayName ? user.displayName.split(' ')[0] : 'حساب من';
+                avatar.innerHTML = user.photoURL
+                    ? `<img src="${user.photoURL}" referrerpolicy="no-referrer" alt="">`
+                    : initial;
+
+                loggedOutView.style.display = 'none';
+                loggedInView.style.display = 'block';
+                document.getElementById('accountPanelName').innerText = user.displayName || 'بدون نام';
+                document.getElementById('accountPanelEmail').innerText = user.email || '';
+                const panelAvatar = document.getElementById('accountPanelAvatar');
+                panelAvatar.innerHTML = user.photoURL
+                    ? `<img src="${user.photoURL}" referrerpolicy="no-referrer" alt="">`
+                    : initial;
+
+                setSyncDots('synced');
+                const toast = document.getElementById('cloudToast');
+                if (toast) toast.classList.remove('show');
+            } else {
+                label.innerText = 'ورود با گوگل';
+                avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+                loggedOutView.style.display = 'block';
+                loggedInView.style.display = 'none';
+                setSyncDots('idle');
+            }
+        }
+
+        // Push any not-yet-synced local cases to Firestore once a user signs in.
+        async function syncAllPendingLocalCases(user) {
+            let cases = [];
+            try { cases = JSON.parse(localStorage.getItem('karshenas_plus_cases')) || []; } catch (e) { cases = []; }
+            const pending = cases.filter((c) => !c._cloudSynced);
+            if (pending.length === 0) return;
+
+            setSyncDots('syncing');
+            const casesRef = collection(db, 'users', user.uid, 'cases');
+            for (const c of pending) {
+                try {
+                    const docRef = await addDoc(casesRef, Object.assign({}, c, {
+                        ownerUid: user.uid,
+                        syncedAt: serverTimestamp()
+                    }));
+                    c._cloudSynced = true;
+                    c._cloudId = docRef.id;
+                } catch (err) {
+                    console.error('Cloud sync failed for a case:', err);
+                }
+            }
+            localStorage.setItem('karshenas_plus_cases', JSON.stringify(cases));
+            setSyncDots('synced');
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            window.karshenasCurrentUser = user;
+            updateAccountUI(user);
+            if (user) syncAllPendingLocalCases(user);
+        });
+
+        // Handle the redirect fallback (used automatically if the popup gets blocked).
+        getRedirectResult(auth).catch(() => {});
+
+        window.signInWithGoogle = async function () {
+            try {
+                await signInWithPopup(auth, provider);
+                if (typeof closeModal === 'function') closeModal('accountModal');
+            } catch (err) {
+                const code = err && err.code;
+                if (code === 'auth/popup-blocked') {
+                    try { await signInWithRedirect(auth, provider); } catch (e2) { /* ignore */ }
+                } else if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
+                    alert('ورود با گوگل ناموفق بود. اتصال اینترنت خود را بررسی و دوباره تلاش کنید.');
+                }
+            }
+        };
+
+        window.signOutOfGoogle = async function () {
+            try {
+                await signOut(auth);
+                if (typeof closeModal === 'function') closeModal('accountModal');
+            } catch (err) { /* ignore */ }
+        };
+
+        // Called by saveCaseRecord() (defined in the main script) right after a case is
+        // saved locally, so it also lands in Firestore when the user is signed in.
+        window.cloudSyncCase = async function (localRecord) {
+            const user = window.karshenasCurrentUser;
+            if (!user) return;
+            try {
+                setSyncDots('syncing');
+                const casesRef = collection(db, 'users', user.uid, 'cases');
+                const docRef = await addDoc(casesRef, Object.assign({}, localRecord, {
+                    ownerUid: user.uid,
+                    syncedAt: serverTimestamp()
+                }));
+                let cases = [];
+                try { cases = JSON.parse(localStorage.getItem('karshenas_plus_cases')) || []; } catch (e) { cases = []; }
+                const match = cases.find((c) => c.id === localRecord.id);
+                if (match) { match._cloudSynced = true; match._cloudId = docRef.id; }
+                localStorage.setItem('karshenas_plus_cases', JSON.stringify(cases));
+                setSyncDots('synced');
+            } catch (err) {
+                console.error('Save to cloud failed:', err);
+                setSyncDots('idle');
+            }
+        };
+    </script>
+</body>
+</html>
