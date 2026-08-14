@@ -225,6 +225,95 @@
         .cloud-toast-actions .cta-secondary { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color) !important; }
         .cloud-toast-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; line-height: 1; padding: 2px; }
 
+        /* --- Multi-view navigation --- */
+        .app-view { display: none; }
+        .app-view.active { display: block; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 560px; z-index: 500;
+            background: var(--card-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px));
+        }
+        .bn-item {
+            background: none; border: none; color: var(--text-muted);
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            font-size: 0.62rem; font-weight: 700; cursor: pointer; padding: 4px 6px;
+            border-radius: 10px; transition: color 0.2s;
+        }
+        .bn-item.active { color: var(--accent-cyan); }
+
+        .more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .more-grid-item {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 14px;
+            padding: 14px 6px; cursor: pointer; font-size: 0.75rem; font-weight: 800; color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+        .more-grid-item:hover { border-color: var(--accent-glow); }
+        .more-grid-item svg { color: var(--accent-cyan); }
+
+        .view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .view-title { font-size: 1.02rem; font-weight: 800; }
+        .fab-add {
+            width: 38px; height: 38px; border-radius: 12px; border: none; cursor: pointer;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4); color: #fff;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(79,70,229,0.3);
+        }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .stat-card {
+            background: var(--section-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 12px;
+        }
+        .stat-card .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--accent-cyan); }
+        .stat-card .stat-label { font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; }
+
+        .list-item {
+            background: var(--section-bg); border: 1px solid var(--border-color); border-radius: 14px;
+            padding: 12px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.2s;
+        }
+        .list-item:hover { border-color: var(--accent-glow); }
+        .list-item-title { font-weight: 800; font-size: 0.85rem; margin-bottom: 3px; }
+        .list-item-sub { font-size: 0.71rem; color: var(--text-muted); }
+        .list-item-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .list-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .list-item-actions button {
+            width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-color);
+            background: var(--input-bg); color: var(--text-muted); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .list-item-actions button.danger:hover { color: var(--accent-rose); border-color: var(--accent-rose); }
+        .list-item-actions button:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+        .empty-state { text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 0.78rem; }
+
+        .settings-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 12px 4px; border-bottom: 1px solid var(--border-color);
+        }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-row-label { font-size: 0.8rem; font-weight: 700; }
+        .settings-row-sub { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+        .switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch-slider {
+            position: absolute; inset: 0; background: var(--input-bg); border: 1px solid var(--border-color);
+            border-radius: 24px; cursor: pointer; transition: 0.2s;
+        }
+        .switch-slider::before {
+            content: ""; position: absolute; height: 18px; width: 18px; right: 2px; top: 2px;
+            background: var(--text-muted); border-radius: 50%; transition: 0.2s;
+        }
+        .switch input:checked + .switch-slider { background: linear-gradient(135deg, #4f46e5, #06b6d4); border-color: transparent; }
+        .switch input:checked + .switch-slider::before { transform: translateX(-18px); background: #fff; }
+
+        .mini-form-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px; }
+        .bar-chart-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .bar-chart-label { font-size: 0.68rem; color: var(--text-muted); width: 64px; flex-shrink: 0; }
+        .bar-chart-track { flex: 1; height: 16px; background: var(--input-bg); border-radius: 8px; overflow: hidden; }
+        .bar-chart-fill { height: 100%; background: linear-gradient(90deg, #4f46e5, #06b6d4); border-radius: 8px; }
+        .bar-chart-val { font-size: 0.68rem; font-weight: 800; width: 70px; text-align: left; flex-shrink: 0; }
+
         .header { text-align: center; margin-bottom: 20px; }
         .header-icon {
             width: 56px; height: 56px;
@@ -585,6 +674,7 @@
             <button class="install-banner-close" onclick="dismissInstallBanner()" title="بستن">&times;</button>
         </div>
 
+        <div class="app-view active" id="view-calc">
         <div class="header">
             <div class="header-icon">
                 <svg viewBox="0 0 24 24"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM7 7H9V9H7V7ZM11 7H13V9H11V7ZM15 7H17V9H15V7ZM7 11H9V13H7V11ZM11 11H13V13H11V11ZM15 11H17V13H15V11ZM7 15H9V17H7V15ZM11 15H13V17H11V15ZM15 15H17V17H15V15Z"/></svg>
@@ -1054,8 +1144,41 @@
             </div>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
         </a>
+        </div>
+        <!-- /view-calc -->
+
+        <div class="app-view" id="view-dashboard"><div id="dashboardContent"></div></div>
+        <div class="app-view" id="view-cases"><div id="casesContent"></div></div>
+        <div class="app-view" id="view-applicants"><div id="applicantsContent"></div></div>
+        <div class="app-view" id="view-experts"><div id="expertsContent"></div></div>
+        <div class="app-view" id="view-tariffs"><div id="tariffsContent"></div></div>
+        <div class="app-view" id="view-reports"><div id="reportsContent"></div></div>
+        <div class="app-view" id="view-reminders"><div id="remindersContent"></div></div>
+        <div class="app-view" id="view-backup"><div id="backupContent"></div></div>
+        <div class="app-view" id="view-settings"><div id="settingsContent"></div></div>
+
+        <div class="bottom-nav no-print" id="bottomNav">
+            <button class="bn-item active" data-view="calc" onclick="switchView('calc')">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="12" x2="8" y2="12"/><line x1="12" y1="12" x2="12" y2="12"/><line x1="16" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="12" y1="16" x2="12" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+                <span>محاسبه</span>
+            </button>
+            <button class="bn-item" data-view="dashboard" onclick="switchView('dashboard')">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+                <span>داشبورد</span>
+            </button>
+            <button class="bn-item" data-view="cases" onclick="switchView('cases')">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <span>پرونده‌ها</span>
+            </button>
+            <button class="bn-item" data-view="more" onclick="openModal('moreModal')">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+                <span>بیشتر</span>
+            </button>
+        </div>
+        <div style="height: 70px;"></div>
 
     </div>
+
 
     <!-- MODAL 1: EXPERT INFO INPUT BEFORE BILL -->
     <div class="modal-overlay" id="expertModal" onclick="closeModalOnOverlay(event, 'expertModal')">
@@ -1266,6 +1389,52 @@
             </div>
         </div>
         <button class="cloud-toast-close" onclick="dismissCloudToast()" title="بستن">&times;</button>
+    </div>
+
+    <!-- MODAL 6: MORE NAVIGATION -->
+    <div class="modal-overlay" id="moreModal" onclick="closeModalOnOverlay(event, 'moreModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">بخش‌های بیشتر</div>
+                <button class="modal-close" onclick="closeModal('moreModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="more-grid">
+                    <div class="more-grid-item" onclick="switchView('applicants'); closeModal('moreModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span>متقاضیان</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('experts'); closeModal('moreModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
+                        <span>کارشناسان</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('tariffs'); closeModal('moreModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <span>تعرفه‌ها</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('reports'); closeModal('moreModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        <span>گزارش‌ها</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('reminders'); closeModal('moreModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span>یادآوری‌ها</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('backup'); closeModal('moreModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                        <span>پشتیبان‌گیری</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('settings'); closeModal('moreModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        <span>تنظیمات</span>
+                    </div>
+                    <div class="more-grid-item" onclick="closeModal('moreModal'); openModal('helpModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01M12 8a3 3 0 0 0-3 3h1a2 2 0 1 1 2 2c-.8 0-1.5.7-1.5 1.5V15h1v-.5c0-.8.8-1.5 1.5-1.5a3 3 0 0 0 1-5.83z"/></svg>
+                        <span>راهنما</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -2138,28 +2307,11 @@
         const LOCAL_CASES_KEY = 'karshenas_plus_cases';
         const CLOUD_TOAST_SHOWN_KEY = 'karshenas_cloud_toast_shown';
 
-        function getLocalCases() {
-            try { return JSON.parse(localStorage.getItem(LOCAL_CASES_KEY)) || []; }
-            catch (e) { return []; }
-        }
-        function setLocalCases(list) {
-            localStorage.setItem(LOCAL_CASES_KEY, JSON.stringify(list));
-        }
-
-        // Called every time a pre-invoice/case is generated. Always saves locally first,
-        // then hands off to the Firebase module (if it managed to load) for cloud sync.
+        // Called every time a pre-invoice/case is generated. Always saves locally first
+        // (via crudSave, defined further below), then hands off to the Firebase module
+        // (if it managed to load and the user is signed in) for cloud sync.
         function saveCaseRecord(record) {
-            const cases = getLocalCases();
-            const localRecord = Object.assign({}, record, {
-                id: 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-                _cloudSynced: false
-            });
-            cases.unshift(localRecord);
-            setLocalCases(cases);
-
-            if (typeof window.cloudSyncCase === 'function') {
-                window.cloudSyncCase(localRecord);
-            }
+            crudSave(LOCAL_CASES_KEY, record);
         }
 
         /* ---------- Friendly reminder to sign in, shown once after ~1 minute of use ---------- */
@@ -2179,7 +2331,528 @@
             }
         }, 60000);
 
-        // Offline-safe fallbacks: if the Firebase module below fails to load (e.g. no
+        /* =========================================================================
+           STAGE 2 — Full app screens: Dashboard, Cases, Applicants, Experts,
+           Tariffs, Reports, Reminders, Backup, Settings.
+           Everything here reads/writes the SAME localStorage keys that
+           cloudSyncItem()/pullAndMergeAll() (Firebase module below) already sync.
+           ========================================================================= */
+
+        const K = {
+            cases: 'karshenas_plus_cases',
+            experts: 'karshenas_plus_experts',
+            applicants: 'karshenas_plus_applicants',
+            reminders: 'karshenas_plus_reminders',
+            settings: 'karshenas_plus_settings'
+        };
+        const CLOUD_NAME = { cases: 'cases', experts: 'experts', applicants: 'applicants', reminders: 'reminders' };
+
+        function dbRead(key) { try { return JSON.parse(localStorage.getItem(key)) || []; } catch (e) { return []; } }
+        function dbWrite(key, list) { localStorage.setItem(key, JSON.stringify(list)); }
+        function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
+        function fmtMoney(n) { n = Math.round(Number(n) || 0); return n.toLocaleString('fa-IR'); }
+        function escapeHtml(s) { return (s || '').toString().replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+        // Generic save: upserts into a collection, marks it unsynced, then hands off
+        // to the Firebase module (if signed in) to push it to Firestore by id.
+        function crudSave(storeKey, item) {
+            const list = dbRead(storeKey);
+            if (!item.id) {
+                item.id = genId();
+                item.createdAt = item.createdAt || new Date().toISOString();
+                list.unshift(item);
+            } else {
+                const idx = list.findIndex((x) => x.id === item.id);
+                item.updatedAt = new Date().toISOString();
+                if (idx > -1) list[idx] = Object.assign({}, list[idx], item);
+                else list.unshift(item);
+            }
+            item._cloudSynced = false;
+            dbWrite(storeKey, list);
+            const cloudName = { [K.cases]: 'cases', [K.experts]: 'experts', [K.applicants]: 'applicants', [K.reminders]: 'reminders' }[storeKey];
+            if (cloudName && typeof window.cloudSyncItem === 'function') window.cloudSyncItem(cloudName, item);
+            return list;
+        }
+        function crudDelete(storeKey, id) {
+            let list = dbRead(storeKey);
+            list = list.filter((x) => x.id !== id);
+            dbWrite(storeKey, list);
+            const cloudName = { [K.cases]: 'cases', [K.experts]: 'experts', [K.applicants]: 'applicants', [K.reminders]: 'reminders' }[storeKey];
+            if (cloudName && typeof window.cloudDeleteItem === 'function') window.cloudDeleteItem(cloudName, id);
+            return list;
+        }
+
+        /* ---------------- Navigation ---------------- */
+        function switchView(name) {
+            document.querySelectorAll('.app-view').forEach((v) => v.classList.remove('active'));
+            const target = document.getElementById('view-' + name);
+            if (target) target.classList.add('active');
+            document.querySelectorAll('.bn-item').forEach((b) => b.classList.toggle('active', b.dataset.view === name));
+            const renderers = {
+                dashboard: renderDashboard, cases: renderCases, applicants: renderApplicants,
+                experts: renderExperts, tariffs: renderTariffs, reports: renderReports,
+                reminders: renderReminders, backup: renderBackup, settings: renderSettings
+            };
+            if (renderers[name]) renderers[name]();
+            window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+        }
+        window.switchView = switchView;
+        window.refreshAllViews = function () {
+            const active = document.querySelector('.app-view.active');
+            if (active) switchView(active.id.replace('view-', ''));
+        };
+
+        /* ---------------- Dashboard ---------------- */
+        const CATEGORY_LABELS = {
+            general: 'ارزیابی عمومی', contract: 'پیمانکاری', delay: 'تخلف/تأخیر', brand: 'برند',
+            audit: 'حسابرسی', household: 'لوازم خانگی', landSplit: 'افراز املاک', agriSplit: 'افراز کشاورزی',
+            software: 'نرم‌افزار', rent: 'اجاره‌بها'
+        };
+
+        function renderDashboard() {
+            const cases = dbRead(K.cases);
+            const reminders = dbRead(K.reminders).filter((r) => !r.completed);
+            const totalFee = cases.reduce((sum, c) => sum + (parseInt((c.totalFee || '0').toString().replace(/[^0-9]/g, ''), 10) || 0), 0);
+            const thisMonth = cases.length; // simple count, no Jalali month parsing needed for a useful glance
+
+            let html = `
+                <div class="view-header"><span class="view-title">داشبورد</span></div>
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="stat-val">${cases.length.toLocaleString('fa-IR')}</div><div class="stat-label">تعداد پرونده‌های ثبت‌شده</div></div>
+                    <div class="stat-card"><div class="stat-val">${fmtMoney(totalFee)}</div><div class="stat-label">جمع کل دستمزد (ریال)</div></div>
+                    <div class="stat-card"><div class="stat-val">${dbRead(K.experts).length.toLocaleString('fa-IR')}</div><div class="stat-label">کارشناسان ثبت‌شده</div></div>
+                    <div class="stat-card"><div class="stat-val">${reminders.length.toLocaleString('fa-IR')}</div><div class="stat-label">یادآوری‌های باز</div></div>
+                </div>
+                <div class="section-box">
+                    <div class="section-title"><span>آخرین پرونده‌ها</span></div>
+                    ${cases.slice(0, 5).map((c) => `
+                        <div class="list-item" onclick="switchView('cases')">
+                            <div class="list-item-row">
+                                <div>
+                                    <div class="list-item-title">${escapeHtml(c.clientName || 'بدون نام متقاضی')}</div>
+                                    <div class="list-item-sub">${CATEGORY_LABELS[c.category] || c.category || ''} · ${escapeHtml(c.caseNum || 'بدون کلاسه')}</div>
+                                </div>
+                                <div class="list-item-sub" style="font-weight:800; color:var(--accent-cyan);">${escapeHtml(c.totalFee || '')}</div>
+                            </div>
+                        </div>`).join('') || '<div class="empty-state">هنوز هیچ پرونده‌ای ثبت نشده. از تب «محاسبه» شروع کن.</div>'}
+                </div>`;
+            document.getElementById('dashboardContent').innerHTML = html;
+        }
+
+        /* ---------------- Cases History ---------------- */
+        function renderCases() {
+            const cases = dbRead(K.cases);
+            let html = `
+                <div class="view-header"><span class="view-title">تاریخچه پرونده‌ها (${cases.length.toLocaleString('fa-IR')})</span></div>
+                ${cases.map((c) => `
+                    <div class="list-item">
+                        <div class="list-item-row">
+                            <div>
+                                <div class="list-item-title">${escapeHtml(c.clientName || 'بدون نام متقاضی')}</div>
+                                <div class="list-item-sub">${CATEGORY_LABELS[c.category] || c.category || ''} · کلاسه: ${escapeHtml(c.caseNum || '-')} · شعبه: ${escapeHtml(c.courtBranch || '-')}</div>
+                                <div class="list-item-sub" style="margin-top:4px; font-weight:800; color:var(--accent-cyan);">${escapeHtml(c.totalFee || '')} ریال</div>
+                            </div>
+                            <div class="list-item-actions">
+                                <button class="danger" title="حذف" onclick="event.stopPropagation(); deleteCase('${c.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`).join('') || '<div class="empty-state">هنوز پرونده‌ای ثبت نشده. هر بار که پیش‌فاکتور صادر کنی، اینجا اضافه می‌شود.</div>'}`;
+            document.getElementById('casesContent').innerHTML = html;
+        }
+        window.deleteCase = function (id) {
+            if (!confirm('این پرونده حذف شود؟')) return;
+            crudDelete(K.cases, id);
+            renderCases();
+        };
+
+        /* ---------------- Applicants ---------------- */
+        function renderApplicants() {
+            const list = dbRead(K.applicants);
+            let html = `
+                <div class="view-header">
+                    <span class="view-title">متقاضیان (${list.length.toLocaleString('fa-IR')})</span>
+                    <button class="fab-add" onclick="openApplicantForm()" title="افزودن متقاضی">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                </div>
+                <div id="applicantFormBox"></div>
+                ${list.map((a) => `
+                    <div class="list-item">
+                        <div class="list-item-row">
+                            <div>
+                                <div class="list-item-title">${escapeHtml(a.fullName)}</div>
+                                <div class="list-item-sub">${escapeHtml(a.phone || '')} ${a.nationalId ? '· کدملی: ' + escapeHtml(a.nationalId) : ''}</div>
+                                ${a.address ? `<div class="list-item-sub" style="margin-top:2px;">${escapeHtml(a.address)}</div>` : ''}
+                            </div>
+                            <div class="list-item-actions">
+                                <button title="ویرایش" onclick="openApplicantForm('${a.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                </button>
+                                <button class="danger" title="حذف" onclick="deleteApplicant('${a.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`).join('') || '<div class="empty-state">هنوز متقاضی‌ای ثبت نشده.</div>'}`;
+            document.getElementById('applicantsContent').innerHTML = html;
+        }
+        window.openApplicantForm = function (id) {
+            const list = dbRead(K.applicants);
+            const item = id ? list.find((x) => x.id === id) : null;
+            document.getElementById('applicantFormBox').innerHTML = `
+                <div class="section-box">
+                    <div class="mini-form-grid">
+                        <input type="text" id="apFullName" placeholder="نام و نام خانوادگی" value="${escapeHtml(item ? item.fullName : '')}">
+                        <input type="text" id="apPhone" placeholder="شماره تماس" value="${escapeHtml(item ? item.phone : '')}">
+                        <input type="text" id="apNationalId" placeholder="کد ملی" value="${escapeHtml(item ? item.nationalId : '')}">
+                        <input type="text" id="apAddress" placeholder="آدرس" value="${escapeHtml(item ? item.address : '')}">
+                        <textarea id="apNotes" placeholder="توضیحات">${escapeHtml(item ? item.notes : '')}</textarea>
+                    </div>
+                    <button class="calc-btn" style="margin:0;" onclick="saveApplicantForm('${item ? item.id : ''}')">ذخیره متقاضی</button>
+                </div>`;
+        };
+        window.saveApplicantForm = function (id) {
+            const fullName = document.getElementById('apFullName').value.trim();
+            if (!fullName) { alert('نام متقاضی را وارد کنید.'); return; }
+            crudSave(K.applicants, {
+                id: id || undefined,
+                fullName,
+                phone: document.getElementById('apPhone').value.trim(),
+                nationalId: document.getElementById('apNationalId').value.trim(),
+                address: document.getElementById('apAddress').value.trim(),
+                notes: document.getElementById('apNotes').value.trim()
+            });
+            renderApplicants();
+        };
+        window.deleteApplicant = function (id) {
+            if (!confirm('این متقاضی حذف شود؟')) return;
+            crudDelete(K.applicants, id);
+            renderApplicants();
+        };
+
+        /* ---------------- Experts ---------------- */
+        function renderExperts() {
+            const list = dbRead(K.experts);
+            let html = `
+                <div class="view-header">
+                    <span class="view-title">کارشناسان (${list.length.toLocaleString('fa-IR')})</span>
+                    <button class="fab-add" onclick="openExpertForm()" title="افزودن کارشناس">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                </div>
+                <div id="expertFormBox"></div>
+                ${list.map((e) => `
+                    <div class="list-item">
+                        <div class="list-item-row">
+                            <div>
+                                <div class="list-item-title">${escapeHtml(e.fullName)}</div>
+                                <div class="list-item-sub">${escapeHtml(e.discipline || '')} ${e.licenseNumber ? '· پروانه: ' + escapeHtml(e.licenseNumber) : ''}</div>
+                                <div class="list-item-sub">${escapeHtml(e.phone || '')}</div>
+                            </div>
+                            <div class="list-item-actions">
+                                <button title="ویرایش" onclick="openExpertForm('${e.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                </button>
+                                <button class="danger" title="حذف" onclick="deleteExpert('${e.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`).join('') || '<div class="empty-state">هنوز کارشناسی ثبت نشده.</div>'}`;
+            document.getElementById('expertsContent').innerHTML = html;
+        }
+        window.openExpertForm = function (id) {
+            const list = dbRead(K.experts);
+            const item = id ? list.find((x) => x.id === id) : null;
+            document.getElementById('expertFormBox').innerHTML = `
+                <div class="section-box">
+                    <div class="mini-form-grid">
+                        <input type="text" id="exFullName" placeholder="نام و نام خانوادگی" value="${escapeHtml(item ? item.fullName : '')}">
+                        <input type="text" id="exDiscipline" placeholder="رشته کارشناسی" value="${escapeHtml(item ? item.discipline : '')}">
+                        <input type="text" id="exLicense" placeholder="شماره پروانه" value="${escapeHtml(item ? item.licenseNumber : '')}">
+                        <input type="text" id="exPhone" placeholder="شماره تماس" value="${escapeHtml(item ? item.phone : '')}">
+                        <input type="text" id="exBank" placeholder="شماره کارت / شبا" value="${escapeHtml(item ? item.bankAccountOrSheba : '')}">
+                        <textarea id="exNotes" placeholder="توضیحات">${escapeHtml(item ? item.notes : '')}</textarea>
+                    </div>
+                    <button class="calc-btn" style="margin:0;" onclick="saveExpertForm('${item ? item.id : ''}')">ذخیره کارشناس</button>
+                </div>`;
+        };
+        window.saveExpertForm = function (id) {
+            const fullName = document.getElementById('exFullName').value.trim();
+            if (!fullName) { alert('نام کارشناس را وارد کنید.'); return; }
+            crudSave(K.experts, {
+                id: id || undefined,
+                fullName,
+                discipline: document.getElementById('exDiscipline').value.trim(),
+                licenseNumber: document.getElementById('exLicense').value.trim(),
+                phone: document.getElementById('exPhone').value.trim(),
+                bankAccountOrSheba: document.getElementById('exBank').value.trim(),
+                notes: document.getElementById('exNotes').value.trim()
+            });
+            renderExperts();
+        };
+        window.deleteExpert = function (id) {
+            if (!confirm('این کارشناس حذف شود؟')) return;
+            crudDelete(K.experts, id);
+            renderExperts();
+        };
+
+        /* ---------------- Tariffs (reference view) ---------------- */
+        function renderTariffs() {
+            document.getElementById('tariffsContent').innerHTML = `
+                <div class="view-header"><span class="view-title">تعرفه‌های موجود</span></div>
+                <div class="section-box">
+                    <div class="section-title"><span>تعرفه ۱۴۰۵ (ابلاغی)</span></div>
+                    <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.9;">
+                        سقف هر کارشناسی: ۱,۳۵۰,۰۰۰,۰۰۰ ریال — سقف کل موضوع: ۳,۰۰۰,۰۰۰,۰۰۰ ریال. محاسبه بر اساس نرخ‌های پلکانی ماده ۱۱.
+                        این تعرفه، تعرفه پیش‌فرض و فعال محاسبه‌گر است.
+                    </p>
+                    <button class="btn-action" style="width:100%;" onclick="closeModal('moreModal'); switchView('calc'); setTariff('1405', document.querySelector('.tab-btn'));">
+                        <span>استفاده در محاسبه جدید</span>
+                    </button>
+                </div>
+                <div class="section-box">
+                    <div class="section-title"><span>تعرفه ۱۴۰۲</span></div>
+                    <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.9;">
+                        تعرفه سال قبل، برای مقایسه یا پرونده‌های مربوط به آن دوره در دسترس است.
+                    </p>
+                    <button class="btn-action" style="width:100%;" onclick="closeModal('moreModal'); switchView('calc'); setTariff('1402', document.querySelectorAll('.tab-btn')[1]);">
+                        <span>استفاده در محاسبه جدید</span>
+                    </button>
+                </div>
+                <p style="font-size:0.68rem; color:var(--text-muted); text-align:center;">افزودن تعرفه سفارشی در نسخه‌های بعدی اضافه می‌شود.</p>`;
+        }
+
+        /* ---------------- Reports ---------------- */
+        function renderReports() {
+            const cases = dbRead(K.cases);
+            const byCategory = {};
+            let totalFee = 0;
+            cases.forEach((c) => {
+                const fee = parseInt((c.totalFee || '0').toString().replace(/[^0-9]/g, ''), 10) || 0;
+                totalFee += fee;
+                const key = CATEGORY_LABELS[c.category] || c.category || 'سایر';
+                byCategory[key] = (byCategory[key] || 0) + fee;
+            });
+            const maxVal = Math.max(1, ...Object.values(byCategory));
+            const rows = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
+
+            document.getElementById('reportsContent').innerHTML = `
+                <div class="view-header"><span class="view-title">گزارش‌ها</span></div>
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="stat-val">${cases.length.toLocaleString('fa-IR')}</div><div class="stat-label">تعداد کل پرونده‌ها</div></div>
+                    <div class="stat-card"><div class="stat-val">${fmtMoney(totalFee)}</div><div class="stat-label">جمع کل دستمزد (ریال)</div></div>
+                </div>
+                <div class="section-box">
+                    <div class="section-title"><span>جمع دستمزد بر اساس نوع کارشناسی</span></div>
+                    ${rows.map(([label, val]) => `
+                        <div class="bar-chart-row">
+                            <div class="bar-chart-label">${escapeHtml(label)}</div>
+                            <div class="bar-chart-track"><div class="bar-chart-fill" style="width:${Math.max(4, (val / maxVal) * 100)}%"></div></div>
+                            <div class="bar-chart-val">${fmtMoney(val)}</div>
+                        </div>`).join('') || '<div class="empty-state">هنوز داده‌ای برای گزارش وجود ندارد.</div>'}
+                </div>`;
+        }
+
+        /* ---------------- Reminders ---------------- */
+        function renderReminders() {
+            const list = dbRead(K.reminders).sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
+            let html = `
+                <div class="view-header">
+                    <span class="view-title">یادآوری‌ها (${list.filter((r) => !r.completed).length.toLocaleString('fa-IR')} باز)</span>
+                    <button class="fab-add" onclick="openReminderForm()" title="افزودن یادآوری">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                </div>
+                <div id="reminderFormBox"></div>
+                ${list.map((r) => `
+                    <div class="list-item" style="${r.completed ? 'opacity:0.5;' : ''}">
+                        <div class="list-item-row">
+                            <div>
+                                <div class="list-item-title">${escapeHtml(r.title)}</div>
+                                <div class="list-item-sub">موعد: ${escapeHtml(r.dueDate || '-')} ${r.dueTime ? escapeHtml(r.dueTime) : ''}</div>
+                                ${r.notes ? `<div class="list-item-sub" style="margin-top:2px;">${escapeHtml(r.notes)}</div>` : ''}
+                            </div>
+                            <div class="list-item-actions">
+                                <button title="${r.completed ? 'برگردان به باز' : 'انجام شد'}" onclick="toggleReminder('${r.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                </button>
+                                <button class="danger" title="حذف" onclick="deleteReminder('${r.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`).join('') || '<div class="empty-state">یادآوری‌ای ثبت نشده.</div>'}`;
+            document.getElementById('remindersContent').innerHTML = html;
+        }
+        window.openReminderForm = function () {
+            document.getElementById('reminderFormBox').innerHTML = `
+                <div class="section-box">
+                    <div class="mini-form-grid">
+                        <input type="text" id="rmTitle" placeholder="عنوان یادآوری (مثلاً: پیگیری پرونده ۹۹۰۹۹۸)">
+                        <input type="text" id="rmDueDate" placeholder="تاریخ سررسید (۱۴۰۵/۰۲/۱۰)">
+                        <input type="text" id="rmDueTime" placeholder="ساعت (اختیاری)">
+                        <textarea id="rmNotes" placeholder="توضیحات"></textarea>
+                    </div>
+                    <button class="calc-btn" style="margin:0;" onclick="saveReminderForm()">ذخیره یادآوری</button>
+                </div>`;
+        };
+        window.saveReminderForm = function () {
+            const title = document.getElementById('rmTitle').value.trim();
+            if (!title) { alert('عنوان یادآوری را وارد کنید.'); return; }
+            crudSave(K.reminders, {
+                title,
+                dueDate: document.getElementById('rmDueDate').value.trim(),
+                dueTime: document.getElementById('rmDueTime').value.trim(),
+                notes: document.getElementById('rmNotes').value.trim(),
+                completed: false
+            });
+            renderReminders();
+        };
+        window.toggleReminder = function (id) {
+            const list = dbRead(K.reminders);
+            const item = list.find((x) => x.id === id);
+            if (item) crudSave(K.reminders, Object.assign({}, item, { completed: !item.completed }));
+            renderReminders();
+        };
+        window.deleteReminder = function (id) {
+            if (!confirm('این یادآوری حذف شود؟')) return;
+            crudDelete(K.reminders, id);
+            renderReminders();
+        };
+
+        /* ---------------- Backup / Restore (fully offline, no login needed) ---------------- */
+        function renderBackup() {
+            document.getElementById('backupContent').innerHTML = `
+                <div class="view-header"><span class="view-title">پشتیبان‌گیری آفلاین</span></div>
+                <div class="section-box">
+                    <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.9; margin-bottom:12px;">
+                        یک فایل پشتیبان از تمام پرونده‌ها، کارشناسان، متقاضیان، یادآوری‌ها و تنظیمات روی همین گوشی می‌سازد —
+                        بدون نیاز به اینترنت یا ورود با گوگل. این فایل را جایی امن نگه دار.
+                    </p>
+                    <button class="calc-btn" style="margin:0 0 10px;" onclick="downloadBackup()">دانلود فایل پشتیبان (JSON)</button>
+                    <label class="btn-action" style="width:100%; display:flex; cursor:pointer;">
+                        <span>بازیابی از فایل پشتیبان</span>
+                        <input type="file" accept="application/json" style="display:none;" onchange="restoreBackup(event)">
+                    </label>
+                </div>`;
+        }
+        window.downloadBackup = function () {
+            const payload = {
+                version: '1.0', exportedAt: new Date().toISOString(),
+                cases: dbRead(K.cases), experts: dbRead(K.experts),
+                applicants: dbRead(K.applicants), reminders: dbRead(K.reminders),
+                settings: dbRead(K.settings)
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `karshenas-plus-backup-${Date.now()}.json`;
+            link.click();
+        };
+        window.restoreBackup = function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const data = JSON.parse(reader.result);
+                    if (!confirm('این کار اطلاعات فعلی روی گوشی را با اطلاعات فایل پشتیبان جایگزین می‌کند. ادامه می‌دهید؟')) return;
+                    if (data.cases) dbWrite(K.cases, data.cases);
+                    if (data.experts) dbWrite(K.experts, data.experts);
+                    if (data.applicants) dbWrite(K.applicants, data.applicants);
+                    if (data.reminders) dbWrite(K.reminders, data.reminders);
+                    if (data.settings) dbWrite(K.settings, data.settings);
+                    alert('بازیابی با موفقیت انجام شد.');
+                    window.refreshAllViews();
+                } catch (e) {
+                    alert('فایل پشتیبان معتبر نیست.');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        /* ---------------- Settings ---------------- */
+        function getSettings() {
+            return Object.assign({ currencyUnit: 'rial', theme: document.body.classList.contains('light-mode') ? 'light' : 'dark' }, dbRead(K.settings)[0] || {});
+        }
+        function saveSettings(patch) {
+            const current = getSettings();
+            const merged = Object.assign({}, current, patch);
+            dbWrite(K.settings, [merged]);
+        }
+        function renderSettings() {
+            const s = getSettings();
+            document.getElementById('settingsContent').innerHTML = `
+                <div class="view-header"><span class="view-title">تنظیمات</span></div>
+                <div class="section-box">
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">حالت تاریک</div><div class="settings-row-sub">تغییر ظاهر برنامه</div></div>
+                        <label class="switch"><input type="checkbox" id="stThemeSwitch" ${document.body.classList.contains('light-mode') ? '' : 'checked'} onchange="settingsToggleTheme(this)"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">واحد پول در نمایش سریع</div><div class="settings-row-sub">ریال یا تومان (فعلاً محاسبات بر پایه ریال است)</div></div>
+                        <select id="stCurrency" style="width:auto; padding:6px 10px;" onchange="saveSettings({currencyUnit:this.value})">
+                            <option value="rial" ${s.currencyUnit === 'rial' ? 'selected' : ''}>ریال</option>
+                            <option value="toman" ${s.currencyUnit === 'toman' ? 'selected' : ''}>تومان</option>
+                        </select>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">حساب کاربری گوگل</div><div class="settings-row-sub" id="stAccountSub">مدیریت ورود و همگام‌سازی ابری</div></div>
+                        <button class="nav-btn" onclick="openModal('accountModal')" style="height:34px; padding:0 10px;">مدیریت</button>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">حریم خصوصی و نگهداری داده</div><div class="settings-row-sub">توضیح اینکه داده‌هایتان کجا ذخیره می‌شود</div></div>
+                        <button class="nav-btn" onclick="openModal('privacyModal')" style="height:34px; padding:0 10px;">مشاهده</button>
+                    </div>
+                </div>
+                <div class="section-box">
+                    <div class="settings-row">
+                        <div><div class="settings-row-label" style="color:var(--accent-rose);">پاک‌سازی کامل اطلاعات این گوشی</div><div class="settings-row-sub">پرونده‌ها، کارشناسان، متقاضیان و یادآوری‌های محلی حذف می‌شوند</div></div>
+                    </div>
+                    <button class="btn-action" style="width:100%; margin-top:10px; color:var(--accent-rose); border-color:var(--accent-rose);" onclick="wipeLocalData()">پاک‌سازی اطلاعات محلی</button>
+                </div>`;
+        }
+        window.settingsToggleTheme = function () {
+            toggleTheme();
+            saveSettings({ theme: document.body.classList.contains('light-mode') ? 'light' : 'dark' });
+        };
+        window.wipeLocalData = function () {
+            if (!confirm('همه پرونده‌ها، کارشناسان، متقاضیان و یادآوری‌های ذخیره‌شده روی این گوشی حذف می‌شوند (اطلاعات ابری شما دست‌نخورده باقی می‌ماند). ادامه می‌دهید؟')) return;
+            [K.cases, K.experts, K.applicants, K.reminders].forEach((k) => dbWrite(k, []));
+            window.refreshAllViews();
+            alert('اطلاعات محلی پاک شد.');
+        };
+
+        /* ---------------- Privacy policy modal content (referenced from Settings) ---------------- */
+        document.addEventListener('DOMContentLoaded', () => {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'privacyModal';
+            overlay.setAttribute('onclick', "closeModalOnOverlay(event, 'privacyModal')");
+            overlay.innerHTML = `
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <div class="modal-title">حریم خصوصی و نگهداری داده</div>
+                        <button class="modal-close" onclick="closeModal('privacyModal')">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="font-size:0.8rem; line-height:2;">
+                            بدون ورود با گوگل، تمام اطلاعات شما (پرونده‌ها، کارشناسان، متقاضیان، یادآوری‌ها) فقط روی همین گوشی و در حافظه مرورگر ذخیره می‌شود
+                            و به هیچ سروری ارسال نمی‌گردد.<br><br>
+                            در صورت ورود با حساب گوگل، همین اطلاعات علاوه‌بر گوشی شما، در پایگاه‌داده Firestore (سرویس گوگل) هم ذخیره می‌شود تا در صورت تعویض گوشی یا نصب مجدد از بین نروند
+                            و بتوانید از چند دستگاه به آن‌ها دسترسی داشته باشید. این اطلاعات فقط برای خود شما (بر اساس حساب گوگلتان) قابل مشاهده است و در اختیار شخص یا سرویس دیگری قرار نمی‌گیرد.
+                        </p>
+                    </div>
+                </div>`;
+            document.body.appendChild(overlay);
+
+            // Render the initial screen for whichever view is active on load (default: calc, no render needed).
+        });
+
+
         // internet), these keep the buttons from throwing errors. The module overwrites
         // them with the real, working versions once it loads successfully.
         window.signInWithGoogle = function () {
@@ -2197,7 +2870,7 @@
             browserLocalPersistence
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import {
-            getFirestore, collection, addDoc, serverTimestamp, enableIndexedDbPersistence
+            getFirestore, collection, doc, setDoc, getDocs, deleteDoc, serverTimestamp, enableIndexedDbPersistence
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -2269,35 +2942,55 @@
             }
         }
 
-        // Push any not-yet-synced local cases to Firestore once a user signs in.
-        async function syncAllPendingLocalCases(user) {
-            let cases = [];
-            try { cases = JSON.parse(localStorage.getItem('karshenas_plus_cases')) || []; } catch (e) { cases = []; }
-            const pending = cases.filter((c) => !c._cloudSynced);
-            if (pending.length === 0) return;
+        /* ---------- Generic multi-collection cloud sync ---------- */
+        const SYNC_COLLECTIONS = {
+            karshenas_plus_cases: 'cases',
+            karshenas_plus_experts: 'experts',
+            karshenas_plus_applicants: 'applicants',
+            karshenas_plus_reminders: 'reminders'
+        };
+        function readLocalList(key) { try { return JSON.parse(localStorage.getItem(key)) || []; } catch (e) { return []; } }
+        function writeLocalList(key, arr) { localStorage.setItem(key, JSON.stringify(arr)); }
 
+        // On sign-in: pull down anything from the cloud not yet on this device, then push
+        // up anything on this device not yet in the cloud. Runs for every collection.
+        async function pullAndMergeAll(user) {
             setSyncDots('syncing');
-            const casesRef = collection(db, 'users', user.uid, 'cases');
-            for (const c of pending) {
+            for (const [localKey, cloudName] of Object.entries(SYNC_COLLECTIONS)) {
                 try {
-                    const docRef = await addDoc(casesRef, Object.assign({}, c, {
-                        ownerUid: user.uid,
-                        syncedAt: serverTimestamp()
-                    }));
-                    c._cloudSynced = true;
-                    c._cloudId = docRef.id;
+                    const snap = await getDocs(collection(db, 'users', user.uid, cloudName));
+                    const local = readLocalList(localKey);
+                    const localIds = new Set(local.map((x) => x.id));
+                    snap.forEach((docSnap) => {
+                        if (!localIds.has(docSnap.id)) {
+                            const data = docSnap.data();
+                            data.id = docSnap.id;
+                            data._cloudSynced = true;
+                            local.push(data);
+                        }
+                    });
+                    writeLocalList(localKey, local);
+
+                    const pending = local.filter((x) => !x._cloudSynced);
+                    for (const item of pending) {
+                        await setDoc(doc(db, 'users', user.uid, cloudName, item.id), Object.assign({}, item, {
+                            ownerUid: user.uid, syncedAt: serverTimestamp()
+                        }));
+                        item._cloudSynced = true;
+                    }
+                    writeLocalList(localKey, local);
                 } catch (err) {
-                    console.error('Cloud sync failed for a case:', err);
+                    console.error('Sync error for', cloudName, err);
                 }
             }
-            localStorage.setItem('karshenas_plus_cases', JSON.stringify(cases));
             setSyncDots('synced');
+            if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
         }
 
         onAuthStateChanged(auth, (user) => {
             window.karshenasCurrentUser = user;
             updateAccountUI(user);
-            if (user) syncAllPendingLocalCases(user);
+            if (user) pullAndMergeAll(user);
         });
 
         // Handle the redirect fallback (used automatically if the popup gets blocked).
@@ -2324,28 +3017,38 @@
             } catch (err) { /* ignore */ }
         };
 
-        // Called by saveCaseRecord() (defined in the main script) right after a case is
-        // saved locally, so it also lands in Firestore when the user is signed in.
-        window.cloudSyncCase = async function (localRecord) {
+        // Called by crudSave() (main script) right after ANY item (case, expert,
+        // applicant, reminder) is saved locally, so it also lands in Firestore when
+        // the user is signed in. Uses the item's own id as the Firestore doc id, so
+        // repeated saves overwrite in place instead of creating duplicates.
+        window.cloudSyncItem = async function (cloudName, item) {
             const user = window.karshenasCurrentUser;
-            if (!user) return;
+            if (!user || !item || !item.id) return;
             try {
                 setSyncDots('syncing');
-                const casesRef = collection(db, 'users', user.uid, 'cases');
-                const docRef = await addDoc(casesRef, Object.assign({}, localRecord, {
-                    ownerUid: user.uid,
-                    syncedAt: serverTimestamp()
+                await setDoc(doc(db, 'users', user.uid, cloudName, item.id), Object.assign({}, item, {
+                    ownerUid: user.uid, syncedAt: serverTimestamp()
                 }));
-                let cases = [];
-                try { cases = JSON.parse(localStorage.getItem('karshenas_plus_cases')) || []; } catch (e) { cases = []; }
-                const match = cases.find((c) => c.id === localRecord.id);
-                if (match) { match._cloudSynced = true; match._cloudId = docRef.id; }
-                localStorage.setItem('karshenas_plus_cases', JSON.stringify(cases));
+                const localKey = Object.keys(SYNC_COLLECTIONS).find((k) => SYNC_COLLECTIONS[k] === cloudName);
+                if (localKey) {
+                    const list = readLocalList(localKey);
+                    const match = list.find((x) => x.id === item.id);
+                    if (match) { match._cloudSynced = true; writeLocalList(localKey, list); }
+                }
                 setSyncDots('synced');
             } catch (err) {
                 console.error('Save to cloud failed:', err);
                 setSyncDots('idle');
             }
+        };
+
+        // Called by crudDelete() (main script) when an item is removed locally, so it's
+        // also removed from Firestore for the signed-in user.
+        window.cloudDeleteItem = async function (cloudName, id) {
+            const user = window.karshenasCurrentUser;
+            if (!user || !id) return;
+            try { await deleteDoc(doc(db, 'users', user.uid, cloudName, id)); }
+            catch (err) { console.error('Cloud delete failed:', err); }
         };
     </script>
 </body>
