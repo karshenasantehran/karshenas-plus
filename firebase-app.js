@@ -129,6 +129,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
                 alert('همگام‌سازی با یک خطا مواجه شد. اتصال اینترنت را بررسی کن و دوباره امتحان کن. (جزئیات خطا در کنسول مرورگر قابل مشاهده است)');
             } else if (!hadError && opts.manual) {
                 alert('همگام‌سازی با موفقیت انجام شد.');
+            } else if (hadError && !opts.manual) {
+                // Automatic sync-on-login also failed silently before — surface it so it's
+                // not mistaken for "nothing to sync". Most common cause: the Firestore
+                // security rules in firestore.rules haven't been published in the Firebase
+                // Console yet (Firestore Database → Rules → Publish).
+                if (typeof window.showToast === 'function') {
+                    window.showToast('همگام‌سازی ابری ناموفق بود — اتصال اینترنت یا انتشار قوانین Firestore را بررسی کنید.', 'error');
+                }
             }
             return !hadError;
         }

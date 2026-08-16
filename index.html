@@ -7,7 +7,7 @@
 
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0b0f19">
+    <meta name="theme-color" content="#0a0c11">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,556 +21,21 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <a class="skip-link" href="#view-calc">پرش به محتوای اصلی</a>
 
-    <div class="ambient-bg">
-        <div class="glow-sphere glow-1"></div>
-        <div class="glow-sphere glow-2"></div>
-    </div>
+    <a class="skip-link no-print" href="#mainContent">رفتن به محتوای اصلی</a>
 
-    <div class="app-container">
-        
-        <div class="top-nav-bar">
-            <div class="app-top-brand">
-                <div class="app-top-mark">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3v6m0 12v-6m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M8 8h8"/></svg>
-                </div>
-                <div>
-                    <strong>کارشناس پلاس</strong>
-                    <span>سامانه تخصصی کارشناسان رسمی</span>
-                </div>
-            </div>
-            <button class="nav-btn" id="hamburgerBtn" onclick="openModal('sideMenu')" title="فهرست بخش‌ها">
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-            </button>
-            <button class="account-btn" id="accountBtn" onclick="openModal('accountModal')" title="حساب کاربری و همگام‌سازی ابری">
-                <span class="account-avatar" id="accountAvatar">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </span>
-                <span class="acc-label" id="accountLabel">ورود با گوگل</span>
-                <span class="sync-dot" id="syncDot"></span>
-            </button>
-            <button class="nav-btn" onclick="toggleTheme()" title="تغییر تم (تاریک/روشن)">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-            </button>
-            <div style="display: flex; gap: 8px;">
-                <button class="nav-btn" id="installNavBtn" onclick="triggerInstall()" title="نصب برنامه" style="display:none; color: var(--accent-cyan); border-color: var(--accent-cyan);">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-                </button>
-                <button class="nav-btn" onclick="resetForm()" title="پاکسازی فرم">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                </button>
-                <button class="nav-btn" onclick="openModal('helpModal')" title="راهنما و متن تعرفه ۱۴۰۵">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01M12 8a3 3 0 0 0-3 3h1a2 2 0 1 1 2 2c-.8 0-1.5.7-1.5 1.5V15h1v-.5c0-.8.8-1.5 1.5-1.5a3 3 0 0 0 1-5.83z"/></svg>
-                </button>
-            </div>
-        </div>
+    <div class="app-shell" id="appShell">
 
-        <div class="install-banner no-print" id="installBanner" style="display:none;">
-            <div class="install-banner-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-            </div>
-            <div class="install-banner-text">
-                <div class="install-banner-title">کارشناس پلاس رو نصب کن</div>
-                <div class="install-banner-sub">بدون اینترنت هم باز می‌شود، سریع‌تر لود می‌شود و مثل یک اپ واقعی روی صفحه اصلی می‌شینه — بدون نوار آدرس مرورگر</div>
-            </div>
-            <button class="install-banner-btn" onclick="triggerInstall()">نصب کن</button>
-            <button class="install-banner-close" onclick="dismissInstallBanner()" title="بستن">&times;</button>
-        </div>
-
-        <div class="app-view active" id="view-calc">
-        <div class="header">
-            <div class="header-icon">
-                <svg viewBox="0 0 24 24"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM7 7H9V9H7V7ZM11 7H13V9H11V7ZM15 7H17V9H15V7ZM7 11H9V13H7V11ZM11 11H13V13H11V11ZM15 11H17V13H15V11ZM7 15H9V17H7V15ZM11 15H13V17H11V15ZM15 15H17V17H15V15Z"/></svg>
-            </div>
-            <h1>سامانه جامع کارشناسان رسمی</h1>
-            <p>محاسبه هوشمند تعرفه دستمزد مصوب سال ۱۴۰۵</p>
-        </div>
-
-        <div class="tab-group">
-            <button class="tab-btn active" onclick="setTariff('1405', this)">تعرفه ۱۴۰۵ (ابلاغی)</button>
-            <button class="tab-btn" onclick="setTariff('1402', this)">تعرفه ۱۴۰۲</button>
-        </div>
-
-        <div class="section-box">
-            <div class="section-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                <span>موضوع ارزیابی و صلاحیت</span>
-            </div>
-
-            <div class="input-group">
-                <div class="label-row">
-                    <label for="categorySelect">رشته / گروه کارشناسی:</label>
-                </div>
-                <select id="categorySelect" onchange="calculate()">
-                    <option value="general">ارزیابی عمومی (ماده ۱۱)</option>
-                    <option value="contract">پیمانکاری و صورت‌وضعیت (+۱۰۰٪)</option>
-                    <option value="delay">تخلف یا تأخیر قرارداد (+۵۰٪)</option>
-                    <option value="brand">برند و دارایی نامشهود (+۵۰٪)</option>
-                    <option value="audit">حسابداری و حسابرسی (+۵۰٪)</option>
-                    <option value="household">لوازم خانگی و اداری - ماده ۲۳ (+۲۰٪)</option>
-                    <option value="landSplit">افراز/تفکیک املاک و تقسیم ترکه - ماده ۳۷ (+۲۰٪)</option>
-                    <option value="agriSplit">افراز املاک کشاورزی - ماده ۵۲ (+۲۰٪)</option>
-                    <option value="software">کارشناسی نرم‌افزار کامپیوتر - تبصره۲ ماده۴۵ (+۵۰٪)</option>
-                    <option value="rent">تعیین اجاره‌بها (ماده ۱۳)</option>
-                </select>
-            </div>
-
-            <div class="input-group" id="valuationGroup">
-                <div class="label-row">
-                    <label for="amountInput" id="valuationLabel">ارزش موضوع کارشناسی / اجاره‌بها:</label>
-                    <span class="unit-badge">ریال</span>
-                </div>
-                <input type="text" id="amountInput" placeholder="۰" oninput="handleInput(this)">
-                <div class="words-hint" id="wordsHint"></div>
-                <button type="button" class="btn-action" id="rentAssessBtn" style="width:100%; margin-top:8px; display:none;" onclick="openModal('rentModal')">
-                    <span>🏠 محاسبه‌گر اختصاصی ارزیابی اجاره‌بها (ماده ۱۳)</span>
-                </button>
-            </div>
-
-            <div class="options-grid">
-                <div class="select-card active" id="singleCard" onclick="setMode('single')">
-                    <div class="select-card-title">نوع بررسی</div>
-                    <div class="select-card-val">یک‌نفره</div>
-                </div>
-                <div class="select-card" id="boardCard" onclick="setMode('board')">
-                    <div class="select-card-title">نوع بررسی</div>
-                    <div class="select-card-val">هیاتی (هم‌رشته)</div>
-                </div>
-            </div>
-
-            <div class="input-group" id="memberCounterGroup" style="display: none;">
-                <div class="label-row"><label>تعداد اعضای هیات:</label></div>
-                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color);">
-                    <button class="nav-btn" onclick="changeMembers(-1)">-</button>
-                    <span id="memberCountText" style="font-weight: 800;">۳ نفر</span>
-                    <button class="nav-btn" onclick="changeMembers(1)">+</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="section-box" id="sectionServices">
-            <div class="section-title collapsible" onclick="toggleSection('sectionServices')">
-                <span class="st-left">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-                    <span>خدمات و هزینه‌های افزوده قانونی</span>
-                </span>
-                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-            </div>
-            <div class="section-content-wrap"><div class="section-content-inner">
-
-            <div class="addon-item" id="item-missionIn">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkMissionIn" onchange="toggleAddon('missionIn')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">مأموریت داخل استان (۷.۵ میلیون ریال/روز)</span>
-                </label>
-                <div class="addon-subinput" id="sub-missionIn">
-                    <label>تعداد روز:</label>
-                    <input type="number" id="daysMissionIn" value="1" min="1" oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-missionOut">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkMissionOut" onchange="toggleAddon('missionOut')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">مأموریت خارج استان (۱۵ میلیون ریال/روز)</span>
-                </label>
-                <div class="addon-subinput" id="sub-missionOut">
-                    <label>تعداد روز:</label>
-                    <input type="number" id="daysMissionOut" value="1" min="1" oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-tamin">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkTamin" onchange="toggleAddon('tamin')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">تأمین دلیل (حداقل ۲۰ میلیون ریال)</span>
-                </label>
-            </div>
-
-            <div class="addon-item" id="item-aerial">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkAerial" onchange="toggleAddon('aerial')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">تفسیر عکس هوایی / ماهواره‌ای (ماده ۱۴)</span>
-                </label>
-                <div class="addon-subinput" id="sub-aerial" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <label style="flex-shrink:0;">تعداد عکس/تصویر مستقل:</label>
-                        <input type="number" id="photosAerial" value="1" min="1" oninput="calculate()">
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <label style="flex-shrink:0;">قدمت (سال پیش):</label>
-                        <input type="number" id="yearsAerial" value="0" min="0" oninput="calculate()">
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <label style="flex-shrink:0; font-size: 0.68rem;">موارد متعدد متصل اضافی (٪۴۰ هرکدام):</label>
-                        <input type="number" id="extraAerial" value="0" min="0" oninput="calculate()">
-                    </div>
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-mapMatch">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkMapMatch" onchange="toggleAddon('mapMatch')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">تطبیق نقشه با محل (مترمربع)</span>
-                </label>
-                <div class="addon-subinput" id="sub-mapMatch">
-                    <label>متراژ (m²):</label>
-                    <input type="number" id="areaMapMatch" value="100" min="1" oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-strength">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkStrength" onchange="toggleAddon('strength')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">کنترل نقشه معماری/سازه و گزارش استحکام بنا (ماده ۳۶)</span>
-                </label>
-                <div class="addon-subinput" id="sub-strength" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                    <select id="typeStrength" onchange="calculate()">
-                        <option value="strength">گزارش فنی استحکام بنا (۲۵,۰۰۰ ریال/متر - سقف ۱۵۰م)</option>
-                        <option value="arch">طرح معماری کلی (۲۵,۰۰۰ ریال/متر - سقف ۱۵۰م)</option>
-                        <option value="structure">طراحی/کنترل محاسبات سازه (۳۰,۰۰۰ ریال/متر - سقف ۲۰۰م)</option>
-                        <option value="approve">تأیید/عدم‌تأیید استحکام برای سایر رشته‌ها (٪۵۰ بند استحکام)</option>
-                    </select>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <label style="flex-shrink:0;">متراژ (m²):</label>
-                        <input type="number" id="areaStrength" value="100" min="1" oninput="calculate()">
-                    </div>
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-poverty">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkPoverty" onchange="toggleAddon('poverty')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">تخفیف عدم استطاعت مالی / اعسار (۵۰٪)</span>
-                </label>
-            </div>
-            </div></div>
-        </div>
-
-        <div class="section-box" id="sectionArticles">
-            <div class="section-title collapsible" onclick="toggleSection('sectionArticles')">
-                <span class="st-left">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 15l4-6 4 3 5-8"/></svg>
-                    <span>سایر بندهای تخصصی تعرفه (مواد ۱۴ الی ۴۶)</span>
-                </span>
-                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-            </div>
-            <div class="section-content-wrap"><div class="section-content-inner">
-
-            <div class="addon-item" id="item-m39">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkM39" onchange="toggleAddon('m39')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">پیاده کردن محدوده پلاک ثبتی (ماده ۳۹)</span>
-                </label>
-                <div class="addon-subinput" id="sub-m39" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <label style="flex-shrink:0;">مساحت پلاک (m²):</label>
-                        <input type="number" id="areaM39" value="1000" min="1" oninput="calculate()">
-                    </div>
-                    <select id="gozarM39" onchange="calculate()">
-                        <option value="1">گذر مشخص باشد</option>
-                        <option value="0">گذر مشخص نباشد</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-m40">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkM40" onchange="toggleAddon('m40')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">نقشه‌برداری اراضی و تهیه پروفیل (ماده ۴۰)</span>
-                </label>
-                <div class="addon-subinput" id="sub-m40">
-                    <label>مساحت اراضی (m²):</label>
-                    <input type="number" id="areaM40" value="1000" min="1" oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-m41">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkM41" onchange="toggleAddon('m41')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">مطالعه پرونده و تعیین محل پلاک ثبتی (ماده ۴۱)</span>
-                </label>
-                <div class="addon-subinput" id="sub-m41">
-                    <label>مساحت ملک (m²):</label>
-                    <input type="number" id="areaM41" value="1000" min="1" oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-m43">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkM43" onchange="toggleAddon('m43')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">تشخیص حدود ثبتی و اختلاف حدود (ماده ۴۳)</span>
-                </label>
-                <div class="addon-subinput" id="sub-m43">
-                    <label>مساحت (هکتار):</label>
-                    <input type="number" id="areaM43" value="1" min="0" step="0.1" oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-m20">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkM20" onchange="toggleAddon('m20')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">تعیین حریم کانال، انهار و رودخانه (ماده ۲۰)</span>
-                </label>
-                <div class="addon-subinput" id="sub-m20" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                    <select id="widthM20" onchange="updateM20Range()">
-                        <option value="narrow">عرض بستر کمتر از ۱۲ متر (نرخ ۲۰ تا ۸۰ میلیون ریال/کیلومتر)</option>
-                        <option value="wide">عرض بستر ۱۲ متر و بیشتر (نرخ ۲۰ تا ۱۲۰ میلیون ریال/کیلومتر)</option>
-                    </select>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <label style="flex-shrink:0;">طول مسیر (کیلومتر):</label>
-                        <input type="number" id="kmM20" value="1" min="0" oninput="calculate()">
-                    </div>
-                    <div>
-                        <div class="label-row" style="margin-bottom:2px;"><label style="font-size:0.72rem;">نرخ هر کیلومتر:</label><span class="unit-badge" id="rateM20Display">۲۰,۰۰۰,۰۰۰ ریال</span></div>
-                        <input type="range" id="rateM20" min="20000000" max="80000000" step="1000000" value="20000000" oninput="document.getElementById('rateM20Display').innerText = Number(this.value).toLocaleString('fa-IR') + ' ریال'; calculate();" style="width:100%;">
-                    </div>
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-m31">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkM31" onchange="toggleAddon('m31')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">کارشناسی وسایل نقلیه زمینی (ماده ۳۱)</span>
-                </label>
-                <div class="addon-subinput" id="sub-m31" style="flex-direction: column; align-items: stretch; gap: 6px;">
-                    <label class="checkbox-label" style="font-size:0.75rem;"><input type="checkbox" class="m31-chip" onchange="calculate()"><span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span><span>اصالت خودرو</span></label>
-                    <label class="checkbox-label" style="font-size:0.75rem;"><input type="checkbox" class="m31-chip" onchange="calculate()"><span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span><span>علت تصادف و تعیین مقصر</span></label>
-                    <label class="checkbox-label" style="font-size:0.75rem;"><input type="checkbox" class="m31-chip" onchange="calculate()"><span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span><span>مدل و تناژ</span></label>
-                    <div class="words-hint" style="color: var(--text-muted);">هرکدام ۲۰ میلیون ریال؛ مجموع دو یا چند بند حداکثر ۳۰ میلیون و سقف کل هر خودرو ۷۰ میلیون ریال.</div>
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-m15">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkM15" onchange="toggleAddon('m15')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">اندازه‌گیری آب و حقابه (ماده ۱۵)</span>
-                </label>
-                <div class="addon-subinput" id="sub-m15">
-                    <label>دبی (لیتر/ثانیه):</label>
-                    <input type="number" id="flowM15" value="50" min="0" oninput="calculate()">
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-mwater">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkMWater" onchange="toggleAddon('mwater')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">سایر بندهای مقطوع رشته آب (مواد ۱۶، ۱۷، ۱۹، ۲۱)</span>
-                </label>
-                <div class="addon-subinput" id="sub-mwater">
-                    <select id="selMWater" onchange="calculate()">
-                        <option value="16">تعیین کیفیت شیمیایی و آلودگی آب (ماده ۱۶) - ۲۰م</option>
-                        <option value="17">بررسی فنی سفره‌های سطحی/زیرزمینی (ماده ۱۷) - ۳۰م</option>
-                        <option value="19">تعیین کیفیت حفاری چاه و قنوات (ماده ۱۹) - ۳۰م</option>
-                        <option value="21">رسیدگی به آب‌های پس از آلودگی (ماده ۲۱) - ۲۰م</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-mrange">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkMRange" onchange="toggleAddon('mrange')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">سایر رشته‌های تخصصی با بازه (مواد ۲۴، ۲۷، ۲۹، ۳۰)</span>
-                </label>
-                <div class="addon-subinput" id="sub-mrange" style="flex-direction: column; align-items: stretch; gap: 8px;">
-                    <select id="selMRange" onchange="updateMRangeRange()">
-                        <option value="24">پزشکی، دارویی و سم‌شناسی (ماده ۲۴)</option>
-                        <option value="27">بازرگانی (ماده ۲۷)</option>
-                        <option value="29">بانک، بورس و بیمه (ماده ۲۹)</option>
-                        <option value="30">آمار (ماده ۳۰)</option>
-                    </select>
-                    <div>
-                        <div class="label-row" style="margin-bottom:2px;"><label style="font-size:0.72rem;">دستمزد پیشنهادی:</label><span class="unit-badge" id="rangeMRangeDisplay">۲۰,۰۰۰,۰۰۰ ریال</span></div>
-                        <input type="range" id="rangeMRange" min="20000000" max="90000000" step="1000000" value="20000000" oninput="document.getElementById('rangeMRangeDisplay').innerText = Number(this.value).toLocaleString('fa-IR') + ' ریال'; calculate();" style="width:100%;">
-                    </div>
-                </div>
-            </div>
-
-            <div class="addon-item" id="item-m46">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkM46" onchange="toggleAddon('m46')">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text">بررسی اصالت خط، امضا و اثر انگشت - غیرمالی (ماده ۴۶)</span>
-                </label>
-                <div class="addon-subinput" id="sub-m46">
-                    <label>تعداد مستندات:</label>
-                    <input type="number" id="docsM46" value="1" min="1" oninput="calculate()">
-                </div>
-            </div>
-            </div></div>
-        </div>
-
-        <div class="section-box" id="sectionTax">
-            <div class="section-title collapsible" onclick="toggleSection('sectionTax')">
-                <span class="st-left">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>تنظیمات مالیات، کسورات و درخواست‌های قانونی</span>
-                </span>
-                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-            </div>
-            <div class="section-content-wrap"><div class="section-content-inner">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
-                <label class="checkbox-label" style="font-size: 0.75rem;">
-                    <input type="checkbox" id="chkVat" onchange="calculate()">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span>۱۰٪ مالیات ارزش افزوده</span>
-                </label>
-                <label class="checkbox-label" style="font-size: 0.75rem;">
-                    <input type="checkbox" id="chkTax104" onchange="calculate()">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span>۵٪ مالیات تکلیفی</span>
-                </label>
-                <label class="checkbox-label" style="font-size: 0.75rem; grid-column: span 2;">
-                    <input type="checkbox" id="chkKanonShare" onchange="calculate()">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span>کسر ۵٪ سهم کانون/مرکز کارشناسان</span>
-                </label>
-            </div>
-
-            <!-- PETITION FOR FEE INCREASE SECTION -->
-            <div class="addon-item" id="item-petition" style="border-top: 1px dashed var(--border-color); padding-top: 10px;">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="chkPetition" onchange="togglePetitionSection()">
-                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                    <span class="addon-text" style="color: var(--accent-cyan);">درج لایحه/درخواست افزایش دستمزد کارشناسی</span>
-                </label>
-                
-                <div id="petitionSubContainer" style="display: none; margin-top: 10px; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; gap: 10px;">
-                        <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
-                            <input type="radio" name="petitionType" id="petTypeSingle" onchange="updatePetitionText()"> تک‌نفره (شخصی)
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
-                            <input type="radio" name="petitionType" id="petTypeBoard" checked onchange="updatePetitionText()"> هیاتی
-                        </label>
-                    </div>
-
-                    <div class="input-group" style="margin: 0;">
-                        <div class="label-row">
-                            <label style="font-size: 0.75rem;">مبلغ درخواستی افزایش دستمزد:</label>
-                            <span class="unit-badge">ریال</span>
-                        </div>
-                        <input type="text" id="petitionAmount" placeholder="مثلا: ۵۰,۰۰۰,۰۰۰" oninput="handlePetitionAmount(this)">
-                        <div class="words-hint" id="petitionWordsHint"></div>
-                    </div>
-
-                    <div class="input-group" style="margin: 0;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                            <label style="font-size: 0.75rem;">متن لایحه (قابل ویرایش):</label>
-                            <button class="btn-action" style="padding: 2px 8px; font-size: 0.68rem;" onclick="copyPetitionText()">کپی لایحه</button>
-                        </div>
-                        <textarea id="petitionText" oninput="saveCustomPetitionText()"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            </div></div>
-        </div>
-
-        <button class="calc-btn" onclick="calculate()">
-            <span>محاسبه دقیق تعرفه کارشناسی</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-
-        <div class="results-box" id="resultsBox">
-            <div class="res-row">
-                <span class="res-label">حق‌الزحمه ارزیابی پایه:</span>
-                <span class="res-val" id="baseFeeVal">۰ ریال</span>
-            </div>
-            <div class="res-row" id="perMemberRow" style="display: none;">
-                <span class="res-label">سهم هر کارشناس هیات (۷۰٪):</span>
-                <span class="res-val" id="perMemberVal">۰ ریال</span>
-            </div>
-            <div class="res-row" id="addonsRow" style="display: none;">
-                <span class="res-label">مجموع خدمات و هزینه‌های افزوده:</span>
-                <span class="res-val" id="addonsFeeVal">۰ ریال</span>
-            </div>
-            <div class="res-row" id="petitionRow" style="display: none;">
-                <span class="res-label">مبلغ درخواستی افزایش دستمزد (لایحه):</span>
-                <span class="res-val" id="petitionFeeVal" style="color: var(--accent-cyan);">۰ ریال</span>
-            </div>
-            <div class="res-row" id="vatRow" style="display: none;">
-                <span class="res-label">مالیات بر ارزش افزوده (۱۰٪):</span>
-                <span class="res-val" id="vatVal">۰ ریال</span>
-            </div>
-            <div class="res-row" id="tax104Row" style="display: none;">
-                <span class="res-label">کسر مالیات تکلیفی (۵٪):</span>
-                <span class="res-val" id="tax104Val" style="color: var(--accent-rose);">۰ ریال</span>
-            </div>
-            <div class="res-row" id="kanonRow" style="display: none;">
-                <span class="res-label">کسر سهم کانون/مرکز (۵٪):</span>
-                <span class="res-val" id="kanonVal" style="color: var(--accent-rose);">۰ ریال</span>
-            </div>
-            <div class="res-highlight">
-                <div class="res-row" style="padding:0; border:none;">
-                    <span class="res-label">مبلغ کل قابل پرداخت به کارشناس:</span>
-                    <span class="res-val" id="totalFeeVal">۰ ریال</span>
-                </div>
-                <div class="words-hint" id="tomanVal" style="text-align: left; margin-top: 4px;"></div>
-            </div>
-            <div id="diffBox" style="margin-top: 8px; font-size: 0.72rem; color: var(--text-muted); text-align: center;"></div>
-        </div>
-
-        <div class="action-grid" id="actionButtons" style="display: none;">
-            <button class="btn-action" onclick="openExpertModal()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                <span>صدور پیش فاکتور دستمزد</span>
-            </button>
-            <button class="btn-action" onclick="shareSummary()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                <span>اشتراک‌گذاری پیش‌فاکتور</span>
-            </button>
-        </div>
-
-        <a href="https://t.me/karshenasan_tehran" target="_blank" class="telegram-banner no-print">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="tg-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.98-1.73 6.64-2.87 7.97-3.43 3.8-1.58 4.59-1.86 5.1-1.87.11 0 .36.03.52.16.13.11.17.26.19.37-.01.07.01.21 0 .38z"/></svg>
-                </div>
-                <div>
-                    <div style="font-weight: 800; font-size: 0.85rem;">کانال کارشناسان رسمی</div>
-                    <div style="font-size: 0.72rem; color: var(--text-muted);">عضویت در کانال تلگرام karshenasan_tehran</div>
-                </div>
-            </div>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-        </a>
-        </div>
-        <!-- /view-calc -->
-
-        <div class="app-view" id="view-dashboard"><div id="dashboardContent"></div></div>
-        <div class="app-view" id="view-cases"><div id="casesContent"></div></div>
-        <div class="app-view" id="view-applicants"><div id="applicantsContent"></div></div>
-        <div class="app-view" id="view-experts"><div id="expertsContent"></div></div>
-        <div class="app-view" id="view-tariffs"><div id="tariffsContent"></div></div>
-        <div class="app-view" id="view-reports"><div id="reportsContent"></div></div>
-        <div class="app-view" id="view-reminders"><div id="remindersContent"></div></div>
-        <div class="app-view" id="view-backup"><div id="backupContent"></div></div>
-        <div class="app-view" id="view-settings"><div id="settingsContent"></div></div>
-
-        <div class="bottom-nav no-print" id="bottomNav">
+        <!-- ============ Sidebar (desktop) / Bottom nav (mobile) ============ -->
+        <nav class="bottom-nav no-print" id="bottomNav">
             <div class="sidebar-brand">
                 <div class="sidebar-brand-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 3v6m0 12v-6m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 3v6m0 12v-6m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
                 </div>
-                <span class="sidebar-brand-text">کارشناس<br>پلاس</span>
+                <span class="sidebar-brand-text">کارشناس پلاس</span>
             </div>
+
+            <span class="nav-section-label">اصلی</span>
             <button class="bn-item active" data-view="calc" onclick="switchView('calc')">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="12" x2="8" y2="12"/><line x1="12" y1="12" x2="12" y2="12"/><line x1="16" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="12" y1="16" x2="12" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
                 <span>محاسبه</span>
@@ -583,6 +48,8 @@
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 <span>پرونده‌ها</span>
             </button>
+
+            <span class="nav-section-label">طرف‌های پرونده</span>
             <button class="bn-item desktop-only-nav" data-view="applicants" onclick="switchView('applicants')">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <span>متقاضیان</span>
@@ -591,6 +58,8 @@
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
                 <span>کارشناسان</span>
             </button>
+
+            <span class="nav-section-label">مالی و گزارش</span>
             <button class="bn-item desktop-only-nav" data-view="tariffs" onclick="switchView('tariffs')">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 <span>تعرفه‌ها</span>
@@ -599,6 +68,8 @@
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 <span>گزارش‌ها</span>
             </button>
+
+            <span class="nav-section-label">سیستم</span>
             <button class="bn-item desktop-only-nav" data-view="reminders" onclick="switchView('reminders')">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 <span>یادآوری‌ها</span>
@@ -615,10 +86,606 @@
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
                 <span>بیشتر</span>
             </button>
-        </div>
-        <div id="bottomNavSpacer" style="height: 70px;"></div>
 
-    </div>
+            <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="toggleSidebarCollapse()" title="جمع کردن منو">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                <span>جمع کردن منو</span>
+            </button>
+        </nav>
+        <div id="bottomNavSpacer" class="no-print"></div>
+
+        <!-- ============ Main column ============ -->
+        <div class="main-col">
+        <div class="app-container" id="mainContent">
+
+        <div class="top-nav-bar no-print">
+            <button class="nav-btn" id="hamburgerBtn" onclick="openModal('sideMenu')" title="فهرست بخش‌ها">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+            </button>
+            <div class="top-nav-actions">
+                <button class="account-btn" id="accountBtn" onclick="openModal('accountModal')" title="حساب کاربری و همگام‌سازی ابری">
+                    <span class="account-avatar" id="accountAvatar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </span>
+                    <span class="acc-label" id="accountLabel">ورود با گوگل</span>
+                    <span class="sync-dot" id="syncDot"></span>
+                </button>
+                <button class="nav-btn" onclick="toggleTheme()" title="تغییر تم (تاریک/روشن)">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                </button>
+                <button class="nav-btn" id="installNavBtn" onclick="triggerInstall()" title="نصب برنامه" style="display:none; color: var(--accent-cyan); border-color: var(--accent-cyan);">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                </button>
+                <button class="nav-btn" onclick="resetForm()" title="پاکسازی فرم">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                </button>
+                <button class="nav-btn" onclick="openModal('helpModal')" title="راهنما و متن تعرفه ۱۴۰۵">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01M12 8a3 3 0 0 0-3 3h1a2 2 0 1 1 2 2c-.8 0-1.5.7-1.5 1.5V15h1v-.5c0-.8.8-1.5 1.5-1.5a3 3 0 0 0 1-5.83z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="install-banner no-print" id="installBanner" style="display:none;">
+            <div class="install-banner-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+            </div>
+            <div class="install-banner-text">
+                <div class="install-banner-title">کارشناس پلاس رو نصب کن</div>
+                <div class="install-banner-sub">بدون اینترنت هم باز می‌شود، سریع‌تر لود می‌شود و مثل یک اپ واقعی روی صفحه اصلی می‌شینه — بدون نوار آدرس مرورگر</div>
+            </div>
+            <button class="install-banner-btn" onclick="triggerInstall()">نصب کن</button>
+            <button class="install-banner-close" onclick="dismissInstallBanner()" title="بستن">&times;</button>
+        </div>
+
+        <!-- =================== CALCULATOR VIEW =================== -->
+        <div class="app-view active" id="view-calc">
+
+            <div class="page-header">
+                <div class="page-eyebrow">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    محاسبه‌گر تعرفه
+                </div>
+                <div class="page-header-row">
+                    <div>
+                        <div class="page-title">محاسبه دستمزد کارشناسی</div>
+                        <div class="page-subtitle">بر اساس تعرفه مصوب دستمزد کارشناسان رسمی دادگستری</div>
+                    </div>
+                    <div class="tab-group" style="margin:0; width:auto; min-width:230px;">
+                        <button class="tab-btn active" onclick="setTariff('1405', this)">تعرفه ۱۴۰۵ (ابلاغی)</button>
+                        <button class="tab-btn" onclick="setTariff('1402', this)">تعرفه ۱۴۰۲</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calc-layout">
+            <div class="calc-main">
+
+                <!-- Step 1 -->
+                <div class="step reveal">
+                    <div class="step-badge">۱</div>
+                    <div class="step-body">
+                        <div class="step-heading">موضوع ارزیابی و صلاحیت</div>
+                        <div class="step-desc">رشته کارشناسی و ارزش موضوع مورد بررسی را مشخص کنید</div>
+
+                        <div class="section-box">
+                            <div class="input-group">
+                                <div class="label-row">
+                                    <label for="categorySelect">رشته / گروه کارشناسی:</label>
+                                </div>
+                                <select id="categorySelect" onchange="calculate()">
+                                    <option value="general">ارزیابی عمومی (ماده ۱۱)</option>
+                                    <option value="contract">پیمانکاری و صورت‌وضعیت (+۱۰۰٪)</option>
+                                    <option value="delay">تخلف یا تأخیر قرارداد (+۵۰٪)</option>
+                                    <option value="brand">برند و دارایی نامشهود (+۵۰٪)</option>
+                                    <option value="audit">حسابداری و حسابرسی (+۵۰٪)</option>
+                                    <option value="household">لوازم خانگی و اداری - ماده ۲۳ (+۲۰٪)</option>
+                                    <option value="landSplit">افراز/تفکیک املاک و تقسیم ترکه - ماده ۳۷ (+۲۰٪)</option>
+                                    <option value="agriSplit">افراز املاک کشاورزی - ماده ۵۲ (+۲۰٪)</option>
+                                    <option value="software">کارشناسی نرم‌افزار کامپیوتر - تبصره۲ ماده۴۵ (+۵۰٪)</option>
+                                    <option value="rent">تعیین اجاره‌بها (ماده ۱۳)</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" id="valuationGroup">
+                                <div class="label-row">
+                                    <label for="amountInput" id="valuationLabel">ارزش موضوع کارشناسی / اجاره‌بها:</label>
+                                    <span class="unit-badge">ریال</span>
+                                </div>
+                                <input type="text" id="amountInput" placeholder="۰" inputmode="numeric" oninput="handleInput(this)">
+                                <div class="words-hint" id="wordsHint"></div>
+                                <button type="button" class="btn-action" id="rentAssessBtn" style="width:100%; margin-top:10px; display:none;" onclick="openModal('rentModal')">
+                                    <span>🏠 محاسبه‌گر اختصاصی ارزیابی اجاره‌بها (ماده ۱۳)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="step reveal">
+                    <div class="step-badge">۲</div>
+                    <div class="step-body">
+                        <div class="step-heading">نوع بررسی و هیئت کارشناسی</div>
+                        <div class="step-desc">بررسی یک‌نفره یا هیئت هم‌رشته را انتخاب کنید</div>
+
+                        <div class="section-box">
+                            <div class="options-grid" style="margin-bottom:0;">
+                                <div class="select-card active" id="singleCard" onclick="setMode('single')">
+                                    <div class="select-card-title">نوع بررسی</div>
+                                    <div class="select-card-val">یک‌نفره</div>
+                                </div>
+                                <div class="select-card" id="boardCard" onclick="setMode('board')">
+                                    <div class="select-card-title">نوع بررسی</div>
+                                    <div class="select-card-val">هیاتی (هم‌رشته)</div>
+                                </div>
+                            </div>
+
+                            <div class="input-group" id="memberCounterGroup" style="display: none; margin-top:14px; margin-bottom:0;">
+                                <div class="label-row"><label>تعداد اعضای هیات:</label></div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color);">
+                                    <button class="nav-btn" onclick="changeMembers(-1)">-</button>
+                                    <span id="memberCountText" style="font-weight: 800;">۳ نفر</span>
+                                    <button class="nav-btn" onclick="changeMembers(1)">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="step reveal">
+                    <div class="step-badge">۳</div>
+                    <div class="step-body">
+                        <div class="step-heading">خدمات و هزینه‌های افزوده قانونی</div>
+                        <div class="step-desc">مأموریت، تأمین دلیل و سایر خدمات جانبی را در صورت نیاز فعال کنید</div>
+
+                        <div class="section-box" id="sectionServices">
+                            <div class="section-title collapsible" onclick="toggleSection('sectionServices')">
+                                <span class="st-left">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                                    <span>مأموریت، تأمین دلیل و خدمات جانبی</span>
+                                </span>
+                                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                            </div>
+                            <div class="section-content-wrap"><div class="section-content-inner">
+
+                            <div class="addon-item" id="item-missionIn">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkMissionIn" onchange="toggleAddon('missionIn')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">مأموریت داخل استان (۷.۵ میلیون ریال/روز)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-missionIn">
+                                    <label>تعداد روز:</label>
+                                    <input type="number" id="daysMissionIn" value="1" min="1" oninput="calculate()">
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-missionOut">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkMissionOut" onchange="toggleAddon('missionOut')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">مأموریت خارج استان (۱۵ میلیون ریال/روز)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-missionOut">
+                                    <label>تعداد روز:</label>
+                                    <input type="number" id="daysMissionOut" value="1" min="1" oninput="calculate()">
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-tamin">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkTamin" onchange="toggleAddon('tamin')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">تأمین دلیل (حداقل ۲۰ میلیون ریال)</span>
+                                </label>
+                            </div>
+
+                            <div class="addon-item" id="item-aerial">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkAerial" onchange="toggleAddon('aerial')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">تفسیر عکس هوایی / ماهواره‌ای (ماده ۱۴)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-aerial" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <label style="flex-shrink:0;">تعداد عکس/تصویر مستقل:</label>
+                                        <input type="number" id="photosAerial" value="1" min="1" oninput="calculate()">
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <label style="flex-shrink:0;">قدمت (سال پیش):</label>
+                                        <input type="number" id="yearsAerial" value="0" min="0" oninput="calculate()">
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <label style="flex-shrink:0; font-size: 0.68rem;">موارد متعدد متصل اضافی (٪۴۰ هرکدام):</label>
+                                        <input type="number" id="extraAerial" value="0" min="0" oninput="calculate()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-mapMatch">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkMapMatch" onchange="toggleAddon('mapMatch')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">تطبیق نقشه با محل (مترمربع)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-mapMatch">
+                                    <label>متراژ (m²):</label>
+                                    <input type="number" id="areaMapMatch" value="100" min="1" oninput="calculate()">
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-strength">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkStrength" onchange="toggleAddon('strength')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">کنترل نقشه معماری/سازه و گزارش استحکام بنا (ماده ۳۶)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-strength" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                    <select id="typeStrength" onchange="calculate()">
+                                        <option value="strength">گزارش فنی استحکام بنا (۲۵,۰۰۰ ریال/متر - سقف ۱۵۰م)</option>
+                                        <option value="arch">طرح معماری کلی (۲۵,۰۰۰ ریال/متر - سقف ۱۵۰م)</option>
+                                        <option value="structure">طراحی/کنترل محاسبات سازه (۳۰,۰۰۰ ریال/متر - سقف ۲۰۰م)</option>
+                                        <option value="approve">تأیید/عدم‌تأیید استحکام برای سایر رشته‌ها (٪۵۰ بند استحکام)</option>
+                                    </select>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <label style="flex-shrink:0;">متراژ (m²):</label>
+                                        <input type="number" id="areaStrength" value="100" min="1" oninput="calculate()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-poverty">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkPoverty" onchange="toggleAddon('poverty')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">تخفیف عدم استطاعت مالی / اعسار (۵۰٪)</span>
+                                </label>
+                            </div>
+                            </div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="step reveal">
+                    <div class="step-badge">۴</div>
+                    <div class="step-body">
+                        <div class="step-heading">سایر بندهای تخصصی تعرفه</div>
+                        <div class="step-desc">مواد ۱۴ الی ۴۶ — امور ثبتی، آب، خودرو و سایر رشته‌ها</div>
+
+                        <div class="section-box" id="sectionArticles">
+                            <div class="section-title collapsible" onclick="toggleSection('sectionArticles')">
+                                <span class="st-left">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 15l4-6 4 3 5-8"/></svg>
+                                    <span>سایر بندهای تخصصی (مواد ۱۴ الی ۴۶)</span>
+                                </span>
+                                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                            </div>
+                            <div class="section-content-wrap"><div class="section-content-inner">
+
+                            <div class="addon-item" id="item-m39">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkM39" onchange="toggleAddon('m39')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">پیاده کردن محدوده پلاک ثبتی (ماده ۳۹)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-m39" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <label style="flex-shrink:0;">مساحت پلاک (m²):</label>
+                                        <input type="number" id="areaM39" value="1000" min="1" oninput="calculate()">
+                                    </div>
+                                    <select id="gozarM39" onchange="calculate()">
+                                        <option value="1">گذر مشخص باشد</option>
+                                        <option value="0">گذر مشخص نباشد</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-m40">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkM40" onchange="toggleAddon('m40')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">نقشه‌برداری اراضی و تهیه پروفیل (ماده ۴۰)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-m40">
+                                    <label>مساحت اراضی (m²):</label>
+                                    <input type="number" id="areaM40" value="1000" min="1" oninput="calculate()">
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-m41">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkM41" onchange="toggleAddon('m41')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">مطالعه پرونده و تعیین محل پلاک ثبتی (ماده ۴۱)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-m41">
+                                    <label>مساحت ملک (m²):</label>
+                                    <input type="number" id="areaM41" value="1000" min="1" oninput="calculate()">
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-m43">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkM43" onchange="toggleAddon('m43')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">تشخیص حدود ثبتی و اختلاف حدود (ماده ۴۳)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-m43">
+                                    <label>مساحت (هکتار):</label>
+                                    <input type="number" id="areaM43" value="1" min="0" step="0.1" oninput="calculate()">
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-m20">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkM20" onchange="toggleAddon('m20')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">تعیین حریم کانال، انهار و رودخانه (ماده ۲۰)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-m20" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                    <select id="widthM20" onchange="updateM20Range()">
+                                        <option value="narrow">عرض بستر کمتر از ۱۲ متر (نرخ ۲۰ تا ۸۰ میلیون ریال/کیلومتر)</option>
+                                        <option value="wide">عرض بستر ۱۲ متر و بیشتر (نرخ ۲۰ تا ۱۲۰ میلیون ریال/کیلومتر)</option>
+                                    </select>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <label style="flex-shrink:0;">طول مسیر (کیلومتر):</label>
+                                        <input type="number" id="kmM20" value="1" min="0" oninput="calculate()">
+                                    </div>
+                                    <div>
+                                        <div class="label-row" style="margin-bottom:2px;"><label style="font-size:0.72rem;">نرخ هر کیلومتر:</label><span class="unit-badge" id="rateM20Display">۲۰,۰۰۰,۰۰۰ ریال</span></div>
+                                        <input type="range" id="rateM20" min="20000000" max="80000000" step="1000000" value="20000000" oninput="document.getElementById('rateM20Display').innerText = Number(this.value).toLocaleString('fa-IR') + ' ریال'; calculate();" style="width:100%;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-m31">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkM31" onchange="toggleAddon('m31')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">کارشناسی وسایل نقلیه زمینی (ماده ۳۱)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-m31" style="flex-direction: column; align-items: stretch; gap: 6px;">
+                                    <label class="checkbox-label" style="font-size:0.75rem;"><input type="checkbox" class="m31-chip" onchange="calculate()"><span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span><span>اصالت خودرو</span></label>
+                                    <label class="checkbox-label" style="font-size:0.75rem;"><input type="checkbox" class="m31-chip" onchange="calculate()"><span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span><span>علت تصادف و تعیین مقصر</span></label>
+                                    <label class="checkbox-label" style="font-size:0.75rem;"><input type="checkbox" class="m31-chip" onchange="calculate()"><span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span><span>مدل و تناژ</span></label>
+                                    <div class="words-hint" style="color: var(--text-muted);">هرکدام ۲۰ میلیون ریال؛ مجموع دو یا چند بند حداکثر ۳۰ میلیون و سقف کل هر خودرو ۷۰ میلیون ریال.</div>
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-m15">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkM15" onchange="toggleAddon('m15')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">اندازه‌گیری آب و حقابه (ماده ۱۵)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-m15">
+                                    <label>دبی (لیتر/ثانیه):</label>
+                                    <input type="number" id="flowM15" value="50" min="0" oninput="calculate()">
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-mwater">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkMWater" onchange="toggleAddon('mwater')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">سایر بندهای مقطوع رشته آب (مواد ۱۶، ۱۷، ۱۹، ۲۱)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-mwater">
+                                    <select id="selMWater" onchange="calculate()">
+                                        <option value="16">تعیین کیفیت شیمیایی و آلودگی آب (ماده ۱۶) - ۲۰م</option>
+                                        <option value="17">بررسی فنی سفره‌های سطحی/زیرزمینی (ماده ۱۷) - ۳۰م</option>
+                                        <option value="19">تعیین کیفیت حفاری چاه و قنوات (ماده ۱۹) - ۳۰م</option>
+                                        <option value="21">رسیدگی به آب‌های پس از آلودگی (ماده ۲۱) - ۲۰م</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-mrange">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkMRange" onchange="toggleAddon('mrange')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">سایر رشته‌های تخصصی با بازه (مواد ۲۴، ۲۷، ۲۹، ۳۰)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-mrange" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                    <select id="selMRange" onchange="updateMRangeRange()">
+                                        <option value="24">پزشکی، دارویی و سم‌شناسی (ماده ۲۴)</option>
+                                        <option value="27">بازرگانی (ماده ۲۷)</option>
+                                        <option value="29">بانک، بورس و بیمه (ماده ۲۹)</option>
+                                        <option value="30">آمار (ماده ۳۰)</option>
+                                    </select>
+                                    <div>
+                                        <div class="label-row" style="margin-bottom:2px;"><label style="font-size:0.72rem;">دستمزد پیشنهادی:</label><span class="unit-badge" id="rangeMRangeDisplay">۲۰,۰۰۰,۰۰۰ ریال</span></div>
+                                        <input type="range" id="rangeMRange" min="20000000" max="90000000" step="1000000" value="20000000" oninput="document.getElementById('rangeMRangeDisplay').innerText = Number(this.value).toLocaleString('fa-IR') + ' ریال'; calculate();" style="width:100%;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="addon-item" id="item-m46">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkM46" onchange="toggleAddon('m46')">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">بررسی اصالت خط، امضا و اثر انگشت - غیرمالی (ماده ۴۶)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-m46">
+                                    <label>تعداد مستندات:</label>
+                                    <input type="number" id="docsM46" value="1" min="1" oninput="calculate()">
+                                </div>
+                            </div>
+                            </div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="step reveal">
+                    <div class="step-badge">۵</div>
+                    <div class="step-body">
+                        <div class="step-heading">مالیات، کسورات و درخواست‌های قانونی</div>
+                        <div class="step-desc">ارزش افزوده، مالیات تکلیفی، سهم کانون و لایحه افزایش دستمزد</div>
+
+                        <div class="section-box" id="sectionTax">
+                            <div class="section-title collapsible" onclick="toggleSection('sectionTax')">
+                                <span class="st-left">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span>مالیات، کسورات و درخواست‌های قانونی</span>
+                                </span>
+                                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                            </div>
+                            <div class="section-content-wrap"><div class="section-content-inner">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                                <label class="checkbox-label" style="font-size: 0.75rem;">
+                                    <input type="checkbox" id="chkVat" onchange="calculate()">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span>۱۰٪ مالیات ارزش افزوده</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.75rem;">
+                                    <input type="checkbox" id="chkTax104" onchange="calculate()">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span>۵٪ مالیات تکلیفی</span>
+                                </label>
+                                <label class="checkbox-label" style="font-size: 0.75rem; grid-column: span 2;">
+                                    <input type="checkbox" id="chkKanonShare" onchange="calculate()">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span>کسر ۵٪ سهم کانون/مرکز کارشناسان</span>
+                                </label>
+                            </div>
+
+                            <div class="addon-item" id="item-petition" style="border-top: 1px dashed var(--border-color); padding-top: 12px;">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkPetition" onchange="togglePetitionSection()">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text" style="color: var(--accent-cyan);">درج لایحه/درخواست افزایش دستمزد کارشناسی</span>
+                                </label>
+
+                                <div id="petitionSubContainer" style="display: none; margin-top: 10px; flex-direction: column; gap: 10px;">
+                                    <div style="display: flex; gap: 10px;">
+                                        <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
+                                            <input type="radio" name="petitionType" id="petTypeSingle" onchange="updatePetitionText()"> تک‌نفره (شخصی)
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
+                                            <input type="radio" name="petitionType" id="petTypeBoard" checked onchange="updatePetitionText()"> هیاتی
+                                        </label>
+                                    </div>
+
+                                    <div class="input-group" style="margin: 0;">
+                                        <div class="label-row">
+                                            <label style="font-size: 0.75rem;">مبلغ درخواستی افزایش دستمزد:</label>
+                                            <span class="unit-badge">ریال</span>
+                                        </div>
+                                        <input type="text" id="petitionAmount" placeholder="مثلا: ۵۰,۰۰۰,۰۰۰" oninput="handlePetitionAmount(this)">
+                                        <div class="words-hint" id="petitionWordsHint"></div>
+                                    </div>
+
+                                    <div class="input-group" style="margin: 0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                            <label style="font-size: 0.75rem;">متن لایحه (قابل ویرایش):</label>
+                                            <button class="btn-action" style="padding: 2px 8px; font-size: 0.68rem;" onclick="copyPetitionText()">کپی لایحه</button>
+                                        </div>
+                                        <textarea id="petitionText" oninput="saveCustomPetitionText()"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            </div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="calc-btn" onclick="calculate()">
+                    <span>محاسبه دقیق تعرفه کارشناسی</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+
+            </div><!-- /calc-main -->
+
+            <div class="calc-aside">
+
+                <div class="results-box" id="resultsBox">
+                    <div class="result-total-block">
+                        <button class="result-copy-btn no-print" id="copyTotalBtn" title="کپی مبلغ نهایی" onclick="copyTotalAmount()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                        <div class="result-total-label">مبلغ کل قابل پرداخت به کارشناس</div>
+                        <div class="result-total-value" id="totalFeeVal">۰ ریال</div>
+                        <div class="result-total-words" id="tomanVal"></div>
+                    </div>
+                    <div class="result-breakdown">
+                        <div class="res-row">
+                            <span class="res-label">حق‌الزحمه ارزیابی پایه:</span>
+                            <span class="res-val" id="baseFeeVal">۰ ریال</span>
+                        </div>
+                        <div class="res-row" id="perMemberRow" style="display: none;">
+                            <span class="res-label">سهم هر کارشناس هیات (۷۰٪):</span>
+                            <span class="res-val" id="perMemberVal">۰ ریال</span>
+                        </div>
+                        <div class="res-row" id="addonsRow" style="display: none;">
+                            <span class="res-label">مجموع خدمات و هزینه‌های افزوده:</span>
+                            <span class="res-val" id="addonsFeeVal">۰ ریال</span>
+                        </div>
+                        <div class="res-row" id="petitionRow" style="display: none;">
+                            <span class="res-label">مبلغ درخواستی افزایش دستمزد (لایحه):</span>
+                            <span class="res-val" id="petitionFeeVal" style="color: var(--accent-cyan);">۰ ریال</span>
+                        </div>
+                        <div class="res-row" id="vatRow" style="display: none;">
+                            <span class="res-label">مالیات بر ارزش افزوده (۱۰٪):</span>
+                            <span class="res-val" id="vatVal">۰ ریال</span>
+                        </div>
+                        <div class="res-row" id="tax104Row" style="display: none;">
+                            <span class="res-label">کسر مالیات تکلیفی (۵٪):</span>
+                            <span class="res-val" id="tax104Val" style="color: var(--accent-rose);">۰ ریال</span>
+                        </div>
+                        <div class="res-row" id="kanonRow" style="display: none;">
+                            <span class="res-label">کسر سهم کانون/مرکز (۵٪):</span>
+                            <span class="res-val" id="kanonVal" style="color: var(--accent-rose);">۰ ریال</span>
+                        </div>
+                    </div>
+                    <div id="diffBox" class="result-diff"></div>
+                </div>
+
+                <div class="action-grid" id="actionButtons" style="display: none;">
+                    <button class="btn-action" onclick="openExpertModal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>صدور پیش فاکتور دستمزد</span>
+                    </button>
+                    <button class="btn-action" onclick="shareSummary()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                        <span>اشتراک‌گذاری پیش‌فاکتور</span>
+                    </button>
+                </div>
+
+                <a href="https://t.me/karshenasan_tehran" target="_blank" class="telegram-banner no-print">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="tg-icon">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.37-.49 1.02-.75 3.98-1.73 6.64-2.87 7.97-3.43 3.8-1.58 4.59-1.86 5.1-1.87.11 0 .36.03.52.16.13.11.17.26.19.37-.01.07.01.21 0 .38z"/></svg>
+                        </div>
+                        <div>
+                            <div style="font-weight: 800; font-size: 0.85rem;">کانال کارشناسان رسمی</div>
+                            <div style="font-size: 0.72rem; color: var(--text-muted);">عضویت در کانال تلگرام karshenasan_tehran</div>
+                        </div>
+                    </div>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+                </a>
+
+            </div><!-- /calc-aside -->
+            </div><!-- /calc-layout -->
+        </div>
+        <!-- /view-calc -->
+
+        <div class="app-view" id="view-dashboard"><div id="dashboardContent"></div></div>
+        <div class="app-view" id="view-cases"><div id="casesContent"></div></div>
+        <div class="app-view" id="view-applicants"><div id="applicantsContent"></div></div>
+        <div class="app-view" id="view-experts"><div id="expertsContent"></div></div>
+        <div class="app-view" id="view-tariffs"><div id="tariffsContent"></div></div>
+        <div class="app-view" id="view-reports"><div id="reportsContent"></div></div>
+        <div class="app-view" id="view-reminders"><div id="remindersContent"></div></div>
+        <div class="app-view" id="view-backup"><div id="backupContent"></div></div>
+        <div class="app-view" id="view-settings"><div id="settingsContent"></div></div>
+
+        </div><!-- /app-container -->
+        </div><!-- /main-col -->
+    </div><!-- /app-shell -->
 
 
     <!-- MODAL 1: EXPERT INFO INPUT BEFORE BILL -->
@@ -630,7 +697,7 @@
             </div>
             <div class="modal-body">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    
+
                     <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
                         <label style="font-size: 0.78rem; font-weight: 800; color: var(--accent-cyan);">لیست مشخصات کارشناسان:</label>
                         <div id="expertsAccordionContainer" style="margin-top: 8px;"></div>
@@ -698,7 +765,7 @@
                         <h4 style="margin-bottom: 2px;">پیش‌فاکتور رسمی برآورد دستمزد کارشناسی</h4>
                         <p style="color: #475569;">تنظیم‌شده بر اساس تعرفه مصوب سال ۱۴۰۵ قوه قضائیه</p>
                     </div>
-                    
+
                     <div class="bill-info-container">
                         <div class="bill-info-grid">
                             <div><strong>تاریخ تنظیم:</strong> <span id="billExpDate">-</span></div>
@@ -730,7 +797,7 @@
                     </div>
 
                     <div id="billNotesArea" style="margin-top: 6px; font-size: 0.7rem; color: #475569; background: #f8fafc; padding: 4px; border-radius: 4px;"></div>
-                    
+
                     <div style="margin-top: 8px; text-align: left; font-weight: 800; font-size: 0.88rem; border-top: 1.5px solid #0f172a; padding-top: 4px;">
                         مبلغ کل قابل پرداخت: <span id="billTotal"></span> ریال
                     </div>
@@ -738,7 +805,7 @@
                     <div class="signatures-container" id="signaturesContainer"></div>
                 </div>
 
-                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <div style="display: flex; gap: 8px; margin-top: 14px;">
                     <button class="calc-btn" style="margin: 0; flex: 1;" onclick="window.print()">چاپ تک صفحه‌ای A4 / PDF</button>
                     <button class="btn-action" style="flex: 1;" onclick="downloadBillAsHTML()">دانلود فایل HTML</button>
                 </div>
@@ -907,31 +974,31 @@
     <!-- PIN LOCK SCREEN OVERLAY -->
     <div id="pinLockScreen" style="display:none; position:fixed; inset:0; z-index:2000; background: var(--bg-color); align-items:center; justify-content:center; flex-direction:column; padding:20px;">
         <div style="width:100%; max-width:320px; text-align:center;">
-            <div style="width:64px; height:64px; border-radius:20px; background: linear-gradient(135deg,#4f46e5,#06b6d4); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div style="width:60px; height:60px; border-radius:18px; background: linear-gradient(135deg,var(--accent-glow-2),var(--accent-cyan)); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
             <div style="font-weight:800; font-size:1rem; color:var(--text-main); margin-bottom:4px;">برنامه قفل است</div>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:20px;">رمز ۴ رقمی خود را وارد کنید</div>
             <div id="pinDots" style="display:flex; justify-content:center; gap:12px; margin-bottom:14px;"></div>
             <div id="pinError" style="color:var(--accent-rose); font-size:0.75rem; font-weight:700; min-height:18px; margin-bottom:8px;"></div>
             <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:260px; margin:0 auto;">
-                <button class="btn-action" onclick="pinKeyPress('1')" style="height:52px; font-size:1.1rem; font-weight:800;">1</button>
-                <button class="btn-action" onclick="pinKeyPress('2')" style="height:52px; font-size:1.1rem; font-weight:800;">2</button>
-                <button class="btn-action" onclick="pinKeyPress('3')" style="height:52px; font-size:1.1rem; font-weight:800;">3</button>
-                <button class="btn-action" onclick="pinKeyPress('4')" style="height:52px; font-size:1.1rem; font-weight:800;">4</button>
-                <button class="btn-action" onclick="pinKeyPress('5')" style="height:52px; font-size:1.1rem; font-weight:800;">5</button>
-                <button class="btn-action" onclick="pinKeyPress('6')" style="height:52px; font-size:1.1rem; font-weight:800;">6</button>
-                <button class="btn-action" onclick="pinKeyPress('7')" style="height:52px; font-size:1.1rem; font-weight:800;">7</button>
-                <button class="btn-action" onclick="pinKeyPress('8')" style="height:52px; font-size:1.1rem; font-weight:800;">8</button>
-                <button class="btn-action" onclick="pinKeyPress('9')" style="height:52px; font-size:1.1rem; font-weight:800;">9</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('1')">1</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('2')">2</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('3')">3</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('4')">4</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('5')">5</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('6')">6</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('7')">7</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('8')">8</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('9')">9</button>
                 <div></div>
-                <button class="btn-action" onclick="pinKeyPress('0')" style="height:52px; font-size:1.1rem; font-weight:800;">0</button>
-                <button class="btn-action" onclick="pinKeyBackspace()" style="height:52px; font-size:0.7rem; font-weight:800;">حذف</button>
+                <button class="pin-keypad-btn" onclick="pinKeyPress('0')">0</button>
+                <button class="pin-keypad-btn" style="font-size:0.7rem;" onclick="pinKeyBackspace()">حذف</button>
             </div>
         </div>
     </div>
 
-    <!-- SIDE MENU DRAWER (primary mobile navigation, matches reference design) -->
+    <!-- SIDE MENU DRAWER (primary mobile navigation) -->
     <div class="modal-overlay side-menu-overlay" id="sideMenu" onclick="closeModalOnOverlay(event, 'sideMenu')">
         <div class="side-menu-panel">
             <div class="side-menu-header">
@@ -1073,7 +1140,14 @@
         </div>
     </div>
 
+    <div id="toastStack" class="no-print" aria-live="polite"></div>
+
+    <button class="back-to-top no-print" id="backToTopBtn" title="بازگشت به بالا" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
+
     <script src="app.js"></script>
+    <script src="ui-enhance.js"></script>
 
     <!-- ================= FIREBASE: GOOGLE LOGIN + CLOUD SYNC ================= -->
     <script type="module" src="firebase-app.js"></script>

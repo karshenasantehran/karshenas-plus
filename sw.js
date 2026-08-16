@@ -1,9 +1,10 @@
-const CACHE_NAME = 'tarefe-karshenasan-1405-v6';
+const CACHE_NAME = 'tarefe-karshenasan-1405-v7-redesign';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './ui-enhance.js',
   './firebase-app.js',
   './manifest.json',
   './icons/icon-192.png',
