@@ -2,6 +2,9 @@ const CACHE_NAME = 'tarefe-karshenasan-1405-v6';
 const APP_SHELL = [
   './',
   './index.html',
+  './styles.css',
+  './app.js',
+  './firebase-app.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -26,22 +29,29 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Network-first for same-origin app files, so a new deploy is visible on the very
+// next reload instead of needing two reloads (the old cache-first strategy served
+// stale HTML/JS while quietly updating the cache in the background for NEXT time).
+// Falls back to cache only when actually offline.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const isSameOrigin = new URL(event.request.url).origin === self.location.origin;
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const networkFetch = fetch(event.request)
+  if (isSameOrigin) {
+    event.respondWith(
+      fetch(event.request)
         .then((response) => {
-          if (response && response.status === 200 && response.type === 'basic') {
+          if (response && response.status === 200) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           }
           return response;
         })
-        .catch(() => cached);
-
-      return cached || networkFetch;
-    })
-  );
+        .catch(() => caches.match(event.request))
+    );
+  } else {
+    // Cross-origin (Firebase/Google Fonts/etc.) — let the browser/network handle it
+    // directly; don't try to cache or intercept auth/API calls.
+    return;
+  }
 });
