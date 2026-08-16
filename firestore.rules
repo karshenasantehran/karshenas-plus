@@ -4,5 +4,13 @@ service cloud.firestore {
     match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Hidden visitor counter — low-stakes (just a number), open write so it counts
+    // visitors who never sign in, read is open too since it holds nothing personal;
+    // the admin panel itself is hidden behind a secret tap+code in the app.
+    match /siteMeta/{docId} {
+      allow get, create, update: if true;
+      allow delete: if false;
+    }
   }
 }

@@ -314,6 +314,63 @@
         .bar-chart-fill { height: 100%; background: linear-gradient(90deg, #4f46e5, #06b6d4); border-radius: 8px; }
         .bar-chart-val { font-size: 0.68rem; font-weight: 800; width: 70px; text-align: left; flex-shrink: 0; }
 
+        /* --- Modal open/close animation polish --- */
+        .modal-card {
+            transform: scale(0.94) translateY(10px);
+            opacity: 0;
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
+        }
+        .modal-overlay.active .modal-card {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        .fab-add, .more-grid-item, .list-item, .bn-item, .account-btn, .calc-btn, .btn-action, .select-card {
+            transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, background 0.2s ease;
+        }
+        .fab-add:active, .more-grid-item:active, .bn-item:active { transform: scale(0.93); }
+        .list-item:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.12); transform: translateY(-1px); }
+        .bn-item.active { text-shadow: 0 0 12px rgba(6,182,212,0.5); }
+
+        /* --- Desktop layout --- */
+        @media (min-width: 900px) {
+            body { padding: 28px 28px 28px 112px; align-items: center; }
+            .app-container { max-width: 980px; padding: 30px 38px; }
+            .stat-grid { grid-template-columns: repeat(4, 1fr); }
+            .more-grid { grid-template-columns: repeat(4, 1fr); }
+            .modal-card { max-width: 480px; }
+            #billModal .modal-card, #accountModal .modal-card { max-width: 480px; }
+            .mini-form-grid { grid-template-columns: 1fr 1fr; }
+            .mini-form-grid textarea { grid-column: 1 / -1; }
+
+            .bottom-nav {
+                position: fixed; top: 0; bottom: 0; left: 0; transform: none;
+                width: 88px; height: 100vh; max-width: none;
+                flex-direction: column; justify-content: flex-start; gap: 10px;
+                padding: 28px 6px; border-top: none; border-left: 1px solid var(--border-color);
+                border-radius: 0;
+            }
+            .bn-item { width: 100%; padding: 12px 4px; border-radius: 14px; }
+            .bn-item.active { background: var(--input-bg); }
+            .bn-item svg { width: 21px; height: 21px; }
+            #bottomNavSpacer { display: none; }
+        }
+        @media (min-width: 900px) and (max-width: 1099px) {
+            .app-container { max-width: 800px; }
+        }
+
+        body[data-theme="emerald"] {
+            --accent-glow: #059669;
+            --accent-cyan: #10b981;
+        }
+        body[data-theme="rosegold"] {
+            --accent-glow: #e11d48;
+            --accent-cyan: #d97706;
+        }
+        body[data-theme="slate"] {
+            --accent-glow: #475569;
+            --accent-cyan: #64748b;
+        }
+
         .header { text-align: center; margin-bottom: 20px; }
         .header-icon {
             width: 56px; height: 56px;
@@ -558,6 +615,28 @@
         .signature-card-lic { font-size: 0.62rem; color: #475569; }
         .signature-space { height: 35px; margin-top: 4px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 0.6rem; }
 
+        /* Invoice template variants */
+        .bill-template.tpl-modern .bill-header { border-bottom: 3px solid; border-image: linear-gradient(90deg,#4f46e5,#06b6d4) 1; }
+        .bill-template.tpl-modern .bill-info-container { background: #eef2ff; border-color: #c7d2fe; }
+        .bill-template.tpl-modern .expert-line-item { border-color: #c7d2fe; }
+
+        .bill-template.tpl-formal { border: 3px double #0f172a; padding: 18px 16px; }
+        .bill-template.tpl-formal .bill-header { border-bottom: 1px solid #0f172a; }
+        .bill-template.tpl-formal .bill-header h4 { letter-spacing: 0.5px; text-transform: none; }
+        .bill-template.tpl-formal .bismillah-line { text-align: center; font-weight: 800; font-size: 0.78rem; margin-bottom: 6px; color: #0f172a; }
+        .bill-template.tpl-formal .bill-info-container { background: #fff; border: 1px solid #0f172a; border-radius: 0; }
+        .bill-template.tpl-formal .bill-table th { background: #0f172a !important; color: #fff !important; -webkit-print-color-adjust: exact; }
+        .bill-template.tpl-formal .bill-table, .bill-template.tpl-formal .bill-table th, .bill-template.tpl-formal .bill-table td { border-color: #0f172a; }
+        .bill-template.tpl-formal .signature-card { border: 1px solid #0f172a; border-radius: 0; background: #fff; }
+
+        .bill-template.tpl-classic { border: 1px solid #333; font-family: 'Vazirmatn', serif; }
+        .bill-template.tpl-classic .bill-header { border-bottom: 1px solid #333; }
+        .bill-template.tpl-classic .bill-info-container { background: #fff; border: 1px solid #999; border-radius: 0; }
+        .bill-template.tpl-classic .bill-table th { background: #f4f4f4 !important; -webkit-print-color-adjust: exact; }
+        .bill-template.tpl-classic .bill-table, .bill-template.tpl-classic .bill-table th, .bill-template.tpl-classic .bill-table td { border-color: #999; }
+        .bill-template.tpl-classic .expert-line-item { border-radius: 0; background: #fafafa; border-color: #ccc; }
+        .bill-template.tpl-classic .signature-card { border-radius: 0; border: 1px dashed #666; }
+
         /* STRICT EXACT 1-PAGE A4 PRINT CSS (Zero Multi-page/Duplicates) */
         @media print {
             @page {
@@ -719,6 +798,9 @@
                 </div>
                 <input type="text" id="amountInput" placeholder="۰" oninput="handleInput(this)">
                 <div class="words-hint" id="wordsHint"></div>
+                <button type="button" class="btn-action" id="rentAssessBtn" style="width:100%; margin-top:8px; display:none;" onclick="openModal('rentModal')">
+                    <span>🏠 محاسبه‌گر اختصاصی ارزیابی اجاره‌بها (ماده ۱۳)</span>
+                </button>
             </div>
 
             <div class="options-grid">
@@ -1175,7 +1257,7 @@
                 <span>بیشتر</span>
             </button>
         </div>
-        <div style="height: 70px;"></div>
+        <div id="bottomNavSpacer" style="height: 70px;"></div>
 
     </div>
 
@@ -1193,6 +1275,9 @@
                     <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
                         <label style="font-size: 0.78rem; font-weight: 800; color: var(--accent-cyan);">لیست مشخصات کارشناسان:</label>
                         <div id="expertsAccordionContainer" style="margin-top: 8px;"></div>
+                        <select id="expertQuickPick" style="margin-top: 6px;" onchange="quickAddExpert(this.value); this.value='';">
+                            <option value="">+ انتخاب سریع از کارشناسان ذخیره‌شده...</option>
+                        </select>
                         <button class="btn-action" style="width: 100%; margin-top: 6px; border-style: dashed;" onclick="addExpertAccordionField()">
                             <span>+ افزودن کارشناس جدید به هیات</span>
                         </button>
@@ -1211,6 +1296,9 @@
                     <div class="input-group">
                         <label>نام متقاضی / خواهان / خوانده:</label>
                         <input type="text" id="clientName" placeholder="مثال: شرکت عمران سازه / آقای حسینی">
+                        <select id="applicantQuickPick" style="margin-top: 6px;" onchange="quickPickApplicant(this.value)">
+                            <option value="">+ انتخاب سریع از متقاضیان ذخیره‌شده...</option>
+                        </select>
                     </div>
                     <div class="input-group">
                         <label>مرجع قضایی / شعبه:</label>
@@ -1366,6 +1454,9 @@
                         <span class="sync-dot" id="syncDotPanel"></span>
                         <span id="syncStatusText">همگام‌سازی با فضای ابری فعال است</span>
                     </div>
+                    <button class="btn-action" style="width:100%; margin-top: 10px;" onclick="manualCloudSync()">
+                        <span>همگام‌سازی دستی الان</span>
+                    </button>
                     <button class="btn-action" style="width:100%; margin-top: 16px; color: var(--accent-rose); border-color: var(--accent-rose);" onclick="signOutOfGoogle()">
                         <span>خروج از حساب</span>
                     </button>
@@ -1389,6 +1480,121 @@
             </div>
         </div>
         <button class="cloud-toast-close" onclick="dismissCloudToast()" title="بستن">&times;</button>
+    </div>
+
+    <!-- MODAL 7: RENT ASSESSMENT CALCULATOR (Article 13) -->
+    <div class="modal-overlay" id="rentModal" onclick="closeModalOnOverlay(event, 'rentModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">محاسبه‌گر اختصاصی ارزیابی اجاره‌بها</div>
+                <button class="modal-close" onclick="closeModal('rentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="section-box" style="background: var(--input-bg); font-size: 0.72rem; line-height: 1.9; color: var(--text-muted);">
+                    <strong style="color: var(--accent-cyan);">نص تعرفه (ماده ۱۳):</strong>
+                    دستمزد ارزیابی اجاره‌بها بر اساس مجموع ارزش اجاره‌بهاء مدت قرارداد به همراه ۳۶٪ ارزش رهن/ودیعه محاسبه و به‌عنوان ارزش پایه ارزیابی اعمال می‌گردد.
+                </div>
+                <div class="input-group">
+                    <label>میزان اجاره‌بهاء ماهانه (ریال):</label>
+                    <input type="text" id="rentMonthly" placeholder="مثلا: ۵۰,۰۰۰,۰۰۰" oninput="rentAssessCalc()">
+                </div>
+                <div class="input-group">
+                    <label>مبلغ ودیعه / رهن اولیه (ریال):</label>
+                    <input type="text" id="rentMortgage" placeholder="مثلا: ۱,۰۰۰,۰۰۰,۰۰۰" oninput="rentAssessCalc()">
+                </div>
+                <div class="input-group">
+                    <label>مدت زمان قرارداد اجاره:</label>
+                    <select id="rentDuration" onchange="rentAssessCalc()">
+                        <option value="12">۱۲ ماه (۱ ساله - استاندارد)</option>
+                        <option value="24">۲۴ ماه (۲ ساله)</option>
+                        <option value="36">۳۶ ماه (۳ ساله)</option>
+                        <option value="6">۶ ماه (شش ماهه)</option>
+                        <option value="1">۱ ماه</option>
+                    </select>
+                </div>
+                <div class="section-box" id="rentResultBox" style="border-color: var(--accent-cyan);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:800; font-size:0.78rem;">ارزش کل مبنای ارزیابی:</span>
+                        <span id="rentResultVal" style="font-weight:800; color: var(--accent-cyan);">۰ ریال</span>
+                    </div>
+                    <div class="words-hint" id="rentResultWords" style="margin-top:6px;"></div>
+                </div>
+                <button class="calc-btn" style="margin: 6px 0 0;" onclick="applyRentAssessment()">انتقال و ثبت در محاسبه اصلی</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 8: PIN SETUP -->
+    <div class="modal-overlay" id="pinSetupModal" onclick="closeModalOnOverlay(event, 'pinSetupModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">تنظیم رمز عبور ۴ رقمی</div>
+                <button class="modal-close" onclick="closeModal('pinSetupModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>رمز جدید (۴ رقم):</label>
+                    <input type="password" inputmode="numeric" maxlength="4" id="pinNewInput" placeholder="••••">
+                </div>
+                <div class="input-group">
+                    <label>تکرار رمز:</label>
+                    <input type="password" inputmode="numeric" maxlength="4" id="pinConfirmInput" placeholder="••••">
+                </div>
+                <button class="calc-btn" style="margin:6px 0 0;" onclick="savePinCode()">ذخیره رمز و فعال‌سازی قفل</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN LOCK SCREEN OVERLAY -->
+    <div id="pinLockScreen" style="display:none; position:fixed; inset:0; z-index:2000; background: var(--bg-color); align-items:center; justify-content:center; flex-direction:column; padding:20px;">
+        <div style="width:100%; max-width:320px; text-align:center;">
+            <div style="width:64px; height:64px; border-radius:20px; background: linear-gradient(135deg,#4f46e5,#06b6d4); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div style="font-weight:800; font-size:1rem; color:var(--text-main); margin-bottom:4px;">برنامه قفل است</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:20px;">رمز ۴ رقمی خود را وارد کنید</div>
+            <div id="pinDots" style="display:flex; justify-content:center; gap:12px; margin-bottom:14px;"></div>
+            <div id="pinError" style="color:var(--accent-rose); font-size:0.75rem; font-weight:700; min-height:18px; margin-bottom:8px;"></div>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:260px; margin:0 auto;">
+                <button class="btn-action" onclick="pinKeyPress('1')" style="height:52px; font-size:1.1rem; font-weight:800;">1</button>
+                <button class="btn-action" onclick="pinKeyPress('2')" style="height:52px; font-size:1.1rem; font-weight:800;">2</button>
+                <button class="btn-action" onclick="pinKeyPress('3')" style="height:52px; font-size:1.1rem; font-weight:800;">3</button>
+                <button class="btn-action" onclick="pinKeyPress('4')" style="height:52px; font-size:1.1rem; font-weight:800;">4</button>
+                <button class="btn-action" onclick="pinKeyPress('5')" style="height:52px; font-size:1.1rem; font-weight:800;">5</button>
+                <button class="btn-action" onclick="pinKeyPress('6')" style="height:52px; font-size:1.1rem; font-weight:800;">6</button>
+                <button class="btn-action" onclick="pinKeyPress('7')" style="height:52px; font-size:1.1rem; font-weight:800;">7</button>
+                <button class="btn-action" onclick="pinKeyPress('8')" style="height:52px; font-size:1.1rem; font-weight:800;">8</button>
+                <button class="btn-action" onclick="pinKeyPress('9')" style="height:52px; font-size:1.1rem; font-weight:800;">9</button>
+                <div></div>
+                <button class="btn-action" onclick="pinKeyPress('0')" style="height:52px; font-size:1.1rem; font-weight:800;">0</button>
+                <button class="btn-action" onclick="pinKeyBackspace()" style="height:52px; font-size:0.7rem; font-weight:800;">حذف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 9: HIDDEN ADMIN STATS (owner-only) -->
+    <div class="modal-overlay" id="adminCodeModal" onclick="closeModalOnOverlay(event, 'adminCodeModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">ورود کد مدیریت</div>
+                <button class="modal-close" onclick="closeModal('adminCodeModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="password" id="adminCodeInput" placeholder="کد مدیریت را وارد کن">
+                </div>
+                <button class="calc-btn" style="margin:6px 0 0;" onclick="checkAdminCode()">ورود</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="adminStatsModal" onclick="closeModalOnOverlay(event, 'adminStatsModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">آمار بازدید سایت</div>
+                <button class="modal-close" onclick="closeModal('adminStatsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="adminStatsBody">در حال بارگذاری...</div>
+        </div>
     </div>
 
     <!-- MODAL 6: MORE NAVIGATION -->
@@ -1462,7 +1668,16 @@
             document.getElementById('expDate').value = today;
             addExpertAccordionField();
             updatePetitionText();
+            applySavedAppearance();
+            checkPinLockOnLoad();
+            trackVisit();
         };
+
+        function applySavedAppearance() {
+            const s = getSettings();
+            if (s.theme === 'light') document.body.classList.add('light-mode');
+            if (s.colorTheme && s.colorTheme !== 'default') document.body.setAttribute('data-theme', s.colorTheme);
+        }
 
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
@@ -1840,8 +2055,10 @@
 
             if (category === 'rent') {
                 document.getElementById('valuationLabel').innerText = 'میزان اجاره‌بها (ماهیانه/سالانه):';
+                document.getElementById('rentAssessBtn').style.display = 'block';
             } else {
                 document.getElementById('valuationLabel').innerText = 'ارزش موضوع کارشناسی (برآورد):';
+                document.getElementById('rentAssessBtn').style.display = 'none';
             }
 
             let value = parseInt(rawVal, 10) || 0;
@@ -1979,15 +2196,133 @@
 
         function openExpertModal() {
             openModal('expertModal');
+            populateQuickPicks();
         }
+
+        function populateQuickPicks() {
+            const experts = dbRead(K.experts);
+            const expSelect = document.getElementById('expertQuickPick');
+            if (expSelect) {
+                expSelect.innerHTML = '<option value="">+ انتخاب سریع از کارشناسان ذخیره‌شده...</option>' +
+                    experts.map((e) => `<option value="${e.id}">${escapeHtml(e.fullName)}${e.discipline ? ' — ' + escapeHtml(e.discipline) : ''}</option>`).join('');
+            }
+            const applicants = dbRead(K.applicants);
+            const apSelect = document.getElementById('applicantQuickPick');
+            if (apSelect) {
+                apSelect.innerHTML = '<option value="">+ انتخاب سریع از متقاضیان ذخیره‌شده...</option>' +
+                    applicants.map((a) => `<option value="${a.id}">${escapeHtml(a.fullName)}${a.phone ? ' — ' + escapeHtml(a.phone) : ''}</option>`).join('');
+            }
+        }
+
+        window.quickPickApplicant = function (id) {
+            if (!id) return;
+            const item = dbRead(K.applicants).find((a) => a.id === id);
+            if (item) document.getElementById('clientName').value = item.fullName;
+        };
+
+        /* ---------------- Rent Assessment Calculator (Article 13) ---------------- */
+        function rentAssessCalc() {
+            const monthly = parseInt((document.getElementById('rentMonthly').value || '0').replace(/[^0-9]/g, ''), 10) || 0;
+            const mortgage = parseInt((document.getElementById('rentMortgage').value || '0').replace(/[^0-9]/g, ''), 10) || 0;
+            const duration = parseInt(document.getElementById('rentDuration').value, 10) || 12;
+            const total = (monthly * duration) + Math.round(mortgage * 0.36);
+            document.getElementById('rentResultVal').innerText = fmtMoney(total) + ' ریال';
+            document.getElementById('rentResultWords').innerText = total > 0 ? (numberToWords(total) + ' ریال') : '';
+            return total;
+        }
+        window.applyRentAssessment = function () {
+            const total = rentAssessCalc();
+            if (total <= 0) { alert('لطفا حداقل یکی از مقادیر اجاره‌بها یا ودیعه/رهن را وارد نمایید.'); return; }
+            document.getElementById('categorySelect').value = 'rent';
+            document.getElementById('amountInput').value = total.toString();
+            handleInput(document.getElementById('amountInput'));
+            calculate();
+            closeModal('rentModal');
+        };
+
+        // Saves a name typed directly into the pre-invoice form as a reusable record,
+        // without creating a duplicate if a matching name already exists.
+        function autoUpsertApplicant(fullName) {
+            fullName = (fullName || '').trim();
+            if (!fullName) return;
+            const list = dbRead(K.applicants);
+            const existing = list.find((a) => a.fullName.trim() === fullName);
+            if (!existing) crudSave(K.applicants, { fullName });
+        }
+        function autoUpsertExpert(fullName, discipline, licenseNumber, phone) {
+            fullName = (fullName || '').trim();
+            if (!fullName) return;
+            const list = dbRead(K.experts);
+            const existing = list.find((e) => e.fullName.trim() === fullName);
+            if (existing) {
+                const changed = (discipline && existing.discipline !== discipline) ||
+                    (licenseNumber && existing.licenseNumber !== licenseNumber) ||
+                    (phone && existing.phone !== phone);
+                if (changed) {
+                    crudSave(K.experts, Object.assign({}, existing, {
+                        discipline: discipline || existing.discipline,
+                        licenseNumber: licenseNumber || existing.licenseNumber,
+                        phone: phone || existing.phone
+                    }));
+                }
+            } else {
+                crudSave(K.experts, { fullName, discipline: discipline || '', licenseNumber: licenseNumber || '', phone: phone || '' });
+            }
+        }
+
+        window.quickAddExpert = function (id) {
+            if (!id) return;
+            const item = dbRead(K.experts).find((e) => e.id === id);
+            if (!item) return;
+            addExpertAccordionField();
+            const container = document.getElementById('expertsAccordionContainer');
+            const lastItem = container.lastElementChild;
+            if (!lastItem) return;
+            const nameField = lastItem.querySelector('.exp-name-field');
+            const licenseField = lastItem.querySelector('.exp-license-field');
+            const phoneField = lastItem.querySelector('.exp-phone-field');
+            const discSelect = lastItem.querySelector('.exp-disc-select');
+            const customDisc = lastItem.querySelector('.exp-custom-disc');
+            if (nameField) nameField.value = item.fullName || '';
+            if (licenseField) licenseField.value = item.licenseNumber || '';
+            if (phoneField) phoneField.value = item.phone || '';
+            if (discSelect && item.discipline) {
+                const match = [...discSelect.options].find((o) => o.value === item.discipline);
+                if (match) {
+                    discSelect.value = item.discipline;
+                } else {
+                    const otherOpt = [...discSelect.options].find((o) => o.value.includes('سایر'));
+                    if (otherOpt) discSelect.value = otherOpt.value;
+                    if (customDisc) { customDisc.style.display = 'block'; customDisc.value = item.discipline; }
+                }
+            }
+        };
 
         function generateBill() {
             closeModal('expertModal');
+
+            const invoiceTpl = (typeof getSettings === 'function' ? (getSettings().invoiceTemplate || 'modern') : 'modern');
+            const printArea = document.getElementById('billPrintArea');
+            printArea.classList.remove('tpl-modern', 'tpl-formal', 'tpl-classic');
+            printArea.classList.add('tpl-' + invoiceTpl);
+            let bismillahEl = printArea.querySelector('.bismillah-line');
+            if (invoiceTpl === 'formal') {
+                if (!bismillahEl) {
+                    bismillahEl = document.createElement('div');
+                    bismillahEl.className = 'bismillah-line';
+                    bismillahEl.innerText = 'بسمه‌تعالی';
+                    printArea.insertBefore(bismillahEl, printArea.firstChild);
+                }
+            } else if (bismillahEl) {
+                bismillahEl.remove();
+            }
 
             document.getElementById('billExpDate').innerText = document.getElementById('expDate').value || 'درج نشده';
             document.getElementById('billCaseNum').innerText = document.getElementById('caseNum').value || 'درج نشده';
             document.getElementById('billClient').innerText = document.getElementById('clientName').value || 'درج نشده';
             document.getElementById('billCourt').innerText = document.getElementById('courtBranch').value || 'درج نشده';
+
+            autoUpsertApplicant(document.getElementById('clientName').value);
 
             let expertsContainer = document.getElementById('billExpertsContainer');
             let sigsContainer = document.getElementById('signaturesContainer');
@@ -2001,6 +2336,8 @@
                 let discipline = discSelect.includes('سایر') ? (customDisc || 'کارشناس رسمی') : discSelect;
                 let lic = item.querySelector('.exp-license-field').value;
                 let phone = item.querySelector('.exp-phone-field').value;
+
+                autoUpsertExpert(name, discipline, lic, phone);
 
                 let div = document.createElement('div');
                 div.className = 'expert-line-item';
@@ -2785,12 +3122,35 @@
         }
         function renderSettings() {
             const s = getSettings();
+            const themeOptions = [
+                { id: 'default', label: 'نیلی و فیروزه‌ای (پیش‌فرض)' },
+                { id: 'emerald', label: 'زمردی' },
+                { id: 'rosegold', label: 'رز طلایی' },
+                { id: 'slate', label: 'خاکستری مینیمال' }
+            ];
+            const invoiceTemplates = [
+                { id: 'modern', label: 'مدرن (پیش‌فرض)' },
+                { id: 'formal', label: 'رسمی و دولتی' },
+                { id: 'classic', label: 'کلاسیک' }
+            ];
             document.getElementById('settingsContent').innerHTML = `
                 <div class="view-header"><span class="view-title">تنظیمات</span></div>
                 <div class="section-box">
                     <div class="settings-row">
                         <div><div class="settings-row-label">حالت تاریک</div><div class="settings-row-sub">تغییر ظاهر برنامه</div></div>
                         <label class="switch"><input type="checkbox" id="stThemeSwitch" ${document.body.classList.contains('light-mode') ? '' : 'checked'} onchange="settingsToggleTheme(this)"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">رنگ‌بندی برنامه</div><div class="settings-row-sub">چند تم رنگی برای شخصی‌سازی ظاهر</div></div>
+                        <select id="stColorTheme" style="width:auto; padding:6px 10px;" onchange="setColorTheme(this.value)">
+                            ${themeOptions.map((t) => `<option value="${t.id}" ${((s.colorTheme || 'default') === t.id) ? 'selected' : ''}>${t.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">قالب پیش‌فاکتور</div><div class="settings-row-sub">ظاهر سند چاپی صادر شده</div></div>
+                        <select id="stInvoiceTemplate" style="width:auto; padding:6px 10px;" onchange="saveSettings({invoiceTemplate:this.value})">
+                            ${invoiceTemplates.map((t) => `<option value="${t.id}" ${((s.invoiceTemplate || 'modern') === t.id) ? 'selected' : ''}>${t.label}</option>`).join('')}
+                        </select>
                     </div>
                     <div class="settings-row">
                         <div><div class="settings-row-label">واحد پول در نمایش سریع</div><div class="settings-row-sub">ریال یا تومان (فعلاً محاسبات بر پایه ریال است)</div></div>
@@ -2810,15 +3170,124 @@
                 </div>
                 <div class="section-box">
                     <div class="settings-row">
+                        <div><div class="settings-row-label">قفل امنیتی PIN</div><div class="settings-row-sub">درخواست رمز ۴ رقمی هنگام باز شدن برنامه</div></div>
+                        <label class="switch"><input type="checkbox" id="stPinSwitch" ${s.pinEnabled ? 'checked' : ''} onchange="togglePinLock(this.checked)"><span class="switch-slider"></span></label>
+                    </div>
+                    ${s.pinEnabled ? `<button class="nav-btn" style="width:100%; margin-top:8px; height:36px;" onclick="openModal('pinSetupModal')">تغییر رمز PIN</button>` : ''}
+                </div>
+                <div class="section-box">
+                    <div class="settings-row">
                         <div><div class="settings-row-label" style="color:var(--accent-rose);">پاک‌سازی کامل اطلاعات این گوشی</div><div class="settings-row-sub">پرونده‌ها، کارشناسان، متقاضیان و یادآوری‌های محلی حذف می‌شوند</div></div>
                     </div>
                     <button class="btn-action" style="width:100%; margin-top:10px; color:var(--accent-rose); border-color:var(--accent-rose);" onclick="wipeLocalData()">پاک‌سازی اطلاعات محلی</button>
-                </div>`;
+                </div>
+                <p class="empty-state" id="hiddenFooterTap" style="cursor:pointer; user-select:none;" onclick="handleFooterTap()">کارشناس پلاس — نسخه ۱.۰</p>`;
         }
+        window.setColorTheme = function (id) {
+            document.body.setAttribute('data-theme', id === 'default' ? '' : id);
+            saveSettings({ colorTheme: id });
+        };
         window.settingsToggleTheme = function () {
             toggleTheme();
             saveSettings({ theme: document.body.classList.contains('light-mode') ? 'light' : 'dark' });
         };
+        window.togglePinLock = function (enabled) {
+            if (enabled) {
+                openModal('pinSetupModal');
+            } else {
+                saveSettings({ pinEnabled: false, pinCode: '' });
+                renderSettings();
+            }
+        };
+        window.savePinCode = function () {
+            const p1 = document.getElementById('pinNewInput').value.trim();
+            const p2 = document.getElementById('pinConfirmInput').value.trim();
+            if (!/^\d{4}$/.test(p1)) { alert('رمز باید دقیقاً ۴ رقم باشد.'); return; }
+            if (p1 !== p2) { alert('رمزها با هم مطابقت ندارند.'); return; }
+            saveSettings({ pinEnabled: true, pinCode: p1 });
+            document.getElementById('pinNewInput').value = '';
+            document.getElementById('pinConfirmInput').value = '';
+            closeModal('pinSetupModal');
+            renderSettings();
+            alert('قفل امنیتی فعال شد.');
+        };
+
+        let pinEnteredDigits = '';
+        function renderPinDots() {
+            const box = document.getElementById('pinDots');
+            if (!box) return;
+            box.innerHTML = [0, 1, 2, 3].map((i) => `<div style="width:14px; height:14px; border-radius:50%; border:2px solid ${i < pinEnteredDigits.length ? 'var(--accent-cyan)' : 'var(--border-color)'}; background:${i < pinEnteredDigits.length ? 'var(--accent-cyan)' : 'transparent'};"></div>`).join('');
+        }
+        window.pinKeyPress = function (digit) {
+            if (pinEnteredDigits.length >= 4) return;
+            pinEnteredDigits += digit;
+            renderPinDots();
+            document.getElementById('pinError').innerText = '';
+            if (pinEnteredDigits.length === 4) {
+                const s = getSettings();
+                if (pinEnteredDigits === s.pinCode) {
+                    document.getElementById('pinLockScreen').style.display = 'none';
+                    pinEnteredDigits = '';
+                } else {
+                    document.getElementById('pinError').innerText = 'رمز ورود اشتباه است.';
+                    setTimeout(() => { pinEnteredDigits = ''; renderPinDots(); }, 500);
+                }
+            }
+        };
+        window.pinKeyBackspace = function () {
+            pinEnteredDigits = pinEnteredDigits.slice(0, -1);
+            renderPinDots();
+        };
+        function checkPinLockOnLoad() {
+            const s = getSettings();
+            if (s.pinEnabled && s.pinCode) {
+                document.getElementById('pinLockScreen').style.display = 'flex';
+                pinEnteredDigits = '';
+                renderPinDots();
+            }
+        }
+        /* ---------------- Hidden visitor-counter admin panel ---------------- */
+        // Change this to your own secret code before publishing.
+        const ADMIN_SECRET_CODE = '1405';
+        let footerTapCount = 0;
+        let footerTapTimer = null;
+        window.handleFooterTap = function () {
+            footerTapCount++;
+            if (footerTapTimer) clearTimeout(footerTapTimer);
+            footerTapTimer = setTimeout(() => { footerTapCount = 0; }, 3000);
+            if (footerTapCount >= 7) {
+                footerTapCount = 0;
+                document.getElementById('adminCodeInput').value = '';
+                openModal('adminCodeModal');
+            }
+        };
+        window.checkAdminCode = function () {
+            const val = document.getElementById('adminCodeInput').value;
+            if (val === ADMIN_SECRET_CODE) {
+                closeModal('adminCodeModal');
+                openModal('adminStatsModal');
+                document.getElementById('adminStatsBody').innerText = 'در حال بارگذاری...';
+                if (typeof window.fetchVisitStats === 'function') {
+                    window.fetchVisitStats().then((stats) => {
+                        document.getElementById('adminStatsBody').innerHTML = stats
+                            ? `<div class="stat-grid">
+                                 <div class="stat-card"><div class="stat-val">${(stats.count || 0).toLocaleString('fa-IR')}</div><div class="stat-label">کل بازدیدها</div></div>
+                                 <div class="stat-card"><div class="stat-val">${(stats.today || 0).toLocaleString('fa-IR')}</div><div class="stat-label">بازدید امروز</div></div>
+                               </div>`
+                            : '<div class="empty-state">اتصال به سرور آمار برقرار نشد.</div>';
+                    });
+                } else {
+                    document.getElementById('adminStatsBody').innerHTML = '<div class="empty-state">ماژول آماری هنوز بارگذاری نشده.</div>';
+                }
+            } else {
+                alert('کد مدیریت اشتباه است.');
+            }
+        };
+        // Called once per page load; the actual Firestore write happens in the
+        // Firebase module below (works even for visitors who never sign in).
+        function trackVisit() {
+            if (typeof window.trackVisitCloud === 'function') window.trackVisitCloud();
+        }
         window.wipeLocalData = function () {
             if (!confirm('همه پرونده‌ها، کارشناسان، متقاضیان و یادآوری‌های ذخیره‌شده روی این گوشی حذف می‌شوند (اطلاعات ابری شما دست‌نخورده باقی می‌ماند). ادامه می‌دهید؟')) return;
             [K.cases, K.experts, K.applicants, K.reminders].forEach((k) => dbWrite(k, []));
@@ -2870,7 +3339,7 @@
             browserLocalPersistence
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import {
-            getFirestore, collection, doc, setDoc, getDocs, deleteDoc, serverTimestamp, enableIndexedDbPersistence
+            getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, increment, serverTimestamp, enableIndexedDbPersistence
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -2930,7 +3399,7 @@
                     ? `<img src="${user.photoURL}" referrerpolicy="no-referrer" alt="">`
                     : initial;
 
-                setSyncDots('synced');
+                setSyncDots('syncing');
                 const toast = document.getElementById('cloudToast');
                 if (toast) toast.classList.remove('show');
             } else {
@@ -2954,8 +3423,10 @@
 
         // On sign-in: pull down anything from the cloud not yet on this device, then push
         // up anything on this device not yet in the cloud. Runs for every collection.
-        async function pullAndMergeAll(user) {
+        async function pullAndMergeAll(user, opts) {
+            opts = opts || {};
             setSyncDots('syncing');
+            let hadError = false;
             for (const [localKey, cloudName] of Object.entries(SYNC_COLLECTIONS)) {
                 try {
                     const snap = await getDocs(collection(db, 'users', user.uid, cloudName));
@@ -2980,12 +3451,24 @@
                     }
                     writeLocalList(localKey, local);
                 } catch (err) {
+                    hadError = true;
                     console.error('Sync error for', cloudName, err);
                 }
             }
-            setSyncDots('synced');
+            setSyncDots(hadError ? 'idle' : 'synced');
             if (typeof window.refreshAllViews === 'function') window.refreshAllViews();
+            if (hadError && opts.manual) {
+                alert('همگام‌سازی با یک خطا مواجه شد. اتصال اینترنت را بررسی کن و دوباره امتحان کن. (جزئیات خطا در کنسول مرورگر قابل مشاهده است)');
+            } else if (!hadError && opts.manual) {
+                alert('همگام‌سازی با موفقیت انجام شد.');
+            }
+            return !hadError;
         }
+        window.manualCloudSync = function () {
+            const user = window.karshenasCurrentUser;
+            if (!user) { alert('برای همگام‌سازی دستی، ابتدا با گوگل وارد شو.'); return; }
+            pullAndMergeAll(user, { manual: true });
+        };
 
         onAuthStateChanged(auth, (user) => {
             window.karshenasCurrentUser = user;
@@ -2993,16 +3476,34 @@
             if (user) pullAndMergeAll(user);
         });
 
-        // Handle the redirect fallback (used automatically if the popup gets blocked).
-        getRedirectResult(auth).catch(() => {});
+        // On mobile browsers and installed/standalone PWAs, popup-based sign-in is
+        // frequently blocked or simply unsupported — redirect works everywhere.
+        function shouldUseRedirect() {
+            const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+            const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+            return standalone || mobileUA;
+        }
+
+        // Completes the sign-in if we just came back from a redirect (mobile flow).
+        getRedirectResult(auth).catch((err) => {
+            console.error('Redirect sign-in error:', err);
+            if (err && err.code && err.code !== 'auth/no-auth-event') {
+                alert('ورود با گوگل ناموفق بود: ' + err.code);
+            }
+        });
 
         window.signInWithGoogle = async function () {
+            if (shouldUseRedirect()) {
+                try { await signInWithRedirect(auth, provider); }
+                catch (err) { alert('ورود با گوگل ناموفق بود. اتصال اینترنت خود را بررسی کن.'); }
+                return;
+            }
             try {
                 await signInWithPopup(auth, provider);
                 if (typeof closeModal === 'function') closeModal('accountModal');
             } catch (err) {
                 const code = err && err.code;
-                if (code === 'auth/popup-blocked') {
+                if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
                     try { await signInWithRedirect(auth, provider); } catch (e2) { /* ignore */ }
                 } else if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
                     alert('ورود با گوگل ناموفق بود. اتصال اینترنت خود را بررسی و دوباره تلاش کنید.');
@@ -3049,6 +3550,38 @@
             if (!user || !id) return;
             try { await deleteDoc(doc(db, 'users', user.uid, cloudName, id)); }
             catch (err) { console.error('Cloud delete failed:', err); }
+        };
+
+        /* ---------- Hidden visitor counter (works for every visitor, logged in or not) ----------
+           Requires this addition to firestore.rules:
+           match /siteMeta/{doc} { allow get, create, update: if true; }
+           (Low-stakes: this only stores a visit count, nothing personal.) */
+        const VISIT_SESSION_KEY = 'karshenas_visit_counted_session';
+        window.trackVisitCloud = async function () {
+            if (sessionStorage.getItem(VISIT_SESSION_KEY) === '1') return;
+            sessionStorage.setItem(VISIT_SESSION_KEY, '1');
+            const todayKey = new Date().toISOString().slice(0, 10);
+            try {
+                await setDoc(doc(db, 'siteMeta', 'visits'), {
+                    count: increment(1),
+                    ['day_' + todayKey]: increment(1),
+                    lastVisitAt: serverTimestamp()
+                }, { merge: true });
+            } catch (err) {
+                console.error('Visit tracking failed (this is harmless):', err);
+            }
+        };
+        window.fetchVisitStats = async function () {
+            try {
+                const snap = await getDoc(doc(db, 'siteMeta', 'visits'));
+                if (!snap.exists()) return { count: 0, today: 0 };
+                const data = snap.data();
+                const todayKey = new Date().toISOString().slice(0, 10);
+                return { count: data.count || 0, today: data['day_' + todayKey] || 0 };
+            } catch (err) {
+                console.error('Fetching visit stats failed:', err);
+                return null;
+            }
         };
     </script>
 </body>
