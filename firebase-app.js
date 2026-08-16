@@ -174,14 +174,34 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
                 return 'مرورگر پنجره ورود را مسدود کرد؛ در حال امتحان روش دوم...';
             }
             if (code === 'auth/network-request-failed') {
-                return 'اتصال اینترنت برقرار نیست.';
+                // On phones this almost never means "no internet at all" — everything
+                // else on the site still works over the same connection. It usually
+                // means the request specifically to Google/Firebase's auth servers
+                // (accounts.google.com / identitytoolkit / *.firebaseapp.com) is being
+                // blocked or filtered by the mobile carrier, while the desktop browser
+                // is reaching them fine (different network, DNS, or VPN).
+                return 'اتصال به سرور ورود گوگل برقرار نشد. اگر بقیه‌ی سایت روی گوشی درست کار می‌کند اما همین بخش نه، معمولاً یعنی اپراتور موبایل دسترسی به سرورهای گوگل/فایربیس را فیلتر کرده — روی وای‌فای امتحان کن یا یک VPN را روشن کن و دوباره تلاش کن.';
             }
             return 'خطای ورود: ' + code + (err && err.message ? ' — ' + err.message : '');
         }
 
+        const IS_MOBILE_UA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
         window.signInWithGoogle = async function () {
             if (location.protocol === 'file:') {
                 alert('این صفحه مستقیم از روی حافظه باز شده (file://) — ورود با گوگل فقط روی آدرس اینترنتی واقعی سایت کار می‌کند، نه وقتی فایل را دابل‌کلیک می‌کنی.');
+                return;
+            }
+            // Popups are unreliable in mobile browsers (blocked by default in many
+            // mobile Chrome/Safari configs, and inside in-app webviews they often
+            // silently fail) — go straight to the redirect flow on phones instead
+            // of trying a popup first and only falling back after it errors.
+            if (IS_MOBILE_UA) {
+                try {
+                    await signInWithRedirect(auth, provider);
+                } catch (err) {
+                    alert(explainAuthError(err));
+                }
                 return;
             }
             try {

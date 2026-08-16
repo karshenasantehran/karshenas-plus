@@ -113,6 +113,35 @@
         flashObserver.observe(totalEl, { childList: true, characterData: true, subtree: true });
     }
 
+    /* ---------------- Light haptic feedback on touch devices ---------------- */
+    if ('vibrate' in navigator) {
+        document.addEventListener('click', function (e) {
+            var el = e.target.closest('.bn-item, .fab-add, .tab-btn, .btn-action');
+            if (el) { try { navigator.vibrate(8); } catch (e2) { /* ignore */ } }
+        });
+    }
+
+    /* ---------------- Offline banner — makes connection problems visible
+       instead of the app just silently failing to sync/log in ---------------- */
+    function updateOnlineBanner() {
+        var existing = document.getElementById('offlineBanner');
+        if (navigator.onLine) {
+            if (existing) existing.remove();
+            return;
+        }
+        if (existing) return;
+        var bar = document.createElement('div');
+        bar.id = 'offlineBanner';
+        bar.textContent = 'اتصال اینترنت قطع است — تغییرات فقط روی همین گوشی ذخیره می‌شود.';
+        bar.style.cssText = 'position:fixed;top:0;inset-inline:0;z-index:2000;background:var(--accent-amber);' +
+            'color:#1a1200;font-size:0.72rem;font-weight:700;text-align:center;padding:6px 10px;' +
+            'padding-top:calc(6px + env(safe-area-inset-top,0px));';
+        document.body.prepend(bar);
+    }
+    window.addEventListener('online', updateOnlineBanner);
+    window.addEventListener('offline', updateOnlineBanner);
+    updateOnlineBanner();
+
     /* ---------------- Copy final amount to clipboard ---------------- */
     window.copyTotalAmount = function () {
         var totalNode = document.getElementById('totalFeeVal');
