@@ -371,6 +371,26 @@
             --accent-cyan: #64748b;
         }
 
+        .side-menu-overlay { justify-content: flex-start; padding: 0; background: rgba(0,0,0,0.55); }
+        .side-menu-panel {
+            width: min(340px, 88vw); height: 100%; background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            transform: translateX(100%); transition: transform 0.32s cubic-bezier(0.32,0.72,0,1);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .side-menu-overlay.active .side-menu-panel { transform: translateX(0); }
+        .side-menu-overlay .modal-card { display: none; } /* not used, panel replaces it */
+        .side-menu-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 16px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+        }
+        .side-menu-body { padding: 16px; overflow-y: auto; flex: 1; }
+
+        @media (min-width: 900px) {
+            #hamburgerBtn { display: none; }
+            .side-menu-overlay { display: none !important; }
+        }
+
         .header { text-align: center; margin-bottom: 20px; }
         .header-icon {
             width: 56px; height: 56px;
@@ -718,6 +738,9 @@
     <div class="app-container">
         
         <div class="top-nav-bar">
+            <button class="nav-btn" id="hamburgerBtn" onclick="openModal('sideMenu')" title="فهرست بخش‌ها">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+            </button>
             <button class="account-btn" id="accountBtn" onclick="openModal('accountModal')" title="حساب کاربری و همگام‌سازی ابری">
                 <span class="account-avatar" id="accountAvatar">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -741,15 +764,15 @@
             </div>
         </div>
 
-        <div class="install-banner no-print" id="installBanner">
+        <div class="install-banner no-print" id="installBanner" style="display:none;">
             <div class="install-banner-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
             </div>
             <div class="install-banner-text">
-                <div class="install-banner-title">نصب روی صفحه اصلی گوشی</div>
-                <div class="install-banner-sub">بدون نیاز به اینترنت هم باز می‌شود، مثل یک اپلیکیشن</div>
+                <div class="install-banner-title">کارشناس پلاس رو نصب کن</div>
+                <div class="install-banner-sub">بدون اینترنت هم باز می‌شود، سریع‌تر لود می‌شود و مثل یک اپ واقعی روی صفحه اصلی می‌شینه — بدون نوار آدرس مرورگر</div>
             </div>
-            <button class="install-banner-btn" onclick="triggerInstall()">نصب</button>
+            <button class="install-banner-btn" onclick="triggerInstall()">نصب کن</button>
             <button class="install-banner-close" onclick="dismissInstallBanner()" title="بستن">&times;</button>
         </div>
 
@@ -1572,18 +1595,89 @@
         </div>
     </div>
 
-    <!-- MODAL 9: HIDDEN ADMIN STATS (owner-only) -->
+    <!-- SIDE MENU DRAWER (primary mobile navigation, matches reference design) -->
+    <div class="modal-overlay side-menu-overlay" id="sideMenu" onclick="closeModalOnOverlay(event, 'sideMenu')">
+        <div class="side-menu-panel">
+            <div class="side-menu-header">
+                <button class="modal-close" onclick="closeModal('sideMenu')" style="position:static;">&times;</button>
+                <span style="font-weight:800; font-size:0.95rem;">کارشناس پلاس</span>
+                <span style="width:32px;"></span>
+            </div>
+            <div class="side-menu-body">
+                <div class="more-grid">
+                    <div class="more-grid-item" onclick="switchView('calc'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+                        <span>محاسبه جدید</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('dashboard'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+                        <span>داشبورد</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('cases'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <span>پرونده‌ها و تاریخچه</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('applicants'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span>متقاضیان</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('experts'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
+                        <span>مدیریت کارشناسان</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('tariffs'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <span>مدیریت تعرفه</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('reports'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        <span>گزارش‌ها</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('reminders'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <span>یادآوری‌های کاری</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('backup'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                        <span>پشتیبان‌گیری</span>
+                    </div>
+                    <div class="more-grid-item" onclick="switchView('settings'); closeModal('sideMenu');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        <span>تنظیمات</span>
+                    </div>
+                    <div class="more-grid-item" onclick="closeModal('sideMenu'); openModal('helpModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01M12 8a3 3 0 0 0-3 3h1a2 2 0 1 1 2 2c-.8 0-1.5.7-1.5 1.5V15h1v-.5c0-.8.8-1.5 1.5-1.5a3 3 0 0 0 1-5.83z"/></svg>
+                        <span>راهنما</span>
+                    </div>
+                </div>
+                <a href="https://t.me/karshenasan_tehran" target="_blank" class="telegram-banner no-print" style="margin-top:14px;">
+                    <span style="font-size:0.72rem; font-weight:800;">عضویت در کانال تخصصی کارشناسان رسمی 📢</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 9: HIDDEN PANEL (owner-only, cryptographically gated) -->
     <div class="modal-overlay" id="adminCodeModal" onclick="closeModalOnOverlay(event, 'adminCodeModal')">
         <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">ورود کد مدیریت</div>
+                <div class="modal-title">تایید دسترسی</div>
                 <button class="modal-close" onclick="closeModal('adminCodeModal')">&times;</button>
             </div>
             <div class="modal-body">
+                <p style="font-size:0.72rem; color:var(--text-muted); line-height:1.9; margin-bottom:8px;">
+                    این کد را در ابزار امضای آفلاین خودت وارد کن، خروجی را همینجا برگردان.
+                </p>
                 <div class="input-group">
-                    <input type="password" id="adminCodeInput" placeholder="کد مدیریت را وارد کن">
+                    <label>کد یک‌بارمصرف:</label>
+                    <textarea id="adminChallengeBox" readonly rows="2" style="font-size:0.7rem; direction:ltr; text-align:left;"></textarea>
                 </div>
-                <button class="calc-btn" style="margin:6px 0 0;" onclick="checkAdminCode()">ورود</button>
+                <button class="btn-action" style="width:100%; margin-bottom:8px;" onclick="copyAdminChallenge()">کپی کد</button>
+                <div class="input-group">
+                    <label>پاسخ امضاشده:</label>
+                    <textarea id="adminSigInput" rows="3" style="font-size:0.7rem; direction:ltr; text-align:left;" placeholder="خروجی ابزار امضا را اینجا بچسبان"></textarea>
+                </div>
+                <button class="calc-btn" style="margin:6px 0 0;" onclick="verifyAdminSignature()">تایید و ورود</button>
             </div>
         </div>
     </div>
@@ -2577,9 +2671,19 @@
         function showInstallUI() {
             if (isStandaloneMode()) return;
             document.getElementById('installNavBtn').style.display = 'flex';
-            if (localStorage.getItem('installBannerDismissed') !== '1') {
-                document.getElementById('installBanner').style.display = 'flex';
-            }
+            scheduleInstallBanner();
+        }
+
+        let installBannerTimer = null;
+        function scheduleInstallBanner() {
+            if (localStorage.getItem('installBannerDismissed') === '1') return;
+            if (installBannerTimer) return;
+            installBannerTimer = setTimeout(() => {
+                if (isStandaloneMode()) return;
+                if (localStorage.getItem('installBannerDismissed') === '1') return;
+                const banner = document.getElementById('installBanner');
+                if (banner) banner.style.display = 'flex';
+            }, 10000);
         }
 
         function hideInstallUI() {
@@ -3246,43 +3350,105 @@
                 renderPinDots();
             }
         }
-        /* ---------------- Hidden visitor-counter admin panel ---------------- */
-        // Change this to your own secret code before publishing.
-        const ADMIN_SECRET_CODE = '1405';
+        /* ---------------- Hidden panel — cryptographically gated (ECDSA P-256) ----------------
+           No password or secret code lives anywhere in this file. This only holds a PUBLIC
+           key, which is safe to expose — it can verify a signature but cannot create one.
+           A valid signature can only be produced by whoever holds the matching PRIVATE key,
+           in the separate offline signer tool that never gets published anywhere. */
+        const PANEL_PUBLIC_KEY_JWK = {"kty":"EC","x":"4HBbFwlKoKK3CeJip2uz350pOF1f1mn1ZoL-fkBbwzg","y":"J50I8bZ81aWUPL1GPmfKxaZq3a8XQufoGwp9zWSmaHE","crv":"P-256"};
         let footerTapCount = 0;
         let footerTapTimer = null;
+        let currentAdminChallenge = '';
+
+        function randomChallenge() {
+            const bytes = crypto.getRandomValues(new Uint8Array(24));
+            return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
         window.handleFooterTap = function () {
             footerTapCount++;
             if (footerTapTimer) clearTimeout(footerTapTimer);
             footerTapTimer = setTimeout(() => { footerTapCount = 0; }, 3000);
             if (footerTapCount >= 7) {
                 footerTapCount = 0;
-                document.getElementById('adminCodeInput').value = '';
+                currentAdminChallenge = randomChallenge();
+                document.getElementById('adminChallengeBox').value = currentAdminChallenge;
+                document.getElementById('adminSigInput').value = '';
                 openModal('adminCodeModal');
             }
         };
-        window.checkAdminCode = function () {
-            const val = document.getElementById('adminCodeInput').value;
-            if (val === ADMIN_SECRET_CODE) {
+        window.copyAdminChallenge = function () {
+            const box = document.getElementById('adminChallengeBox');
+            box.select();
+            document.execCommand('copy');
+        };
+        window.verifyAdminSignature = async function () {
+            const sigB64 = document.getElementById('adminSigInput').value.trim();
+            if (!sigB64 || !currentAdminChallenge) { alert('کد و پاسخ امضاشده را کامل وارد کن.'); return; }
+            try {
+                const pubKey = await crypto.subtle.importKey(
+                    'jwk', PANEL_PUBLIC_KEY_JWK,
+                    { name: 'ECDSA', namedCurve: 'P-256' },
+                    false, ['verify']
+                );
+                const sigBytes = ub64u(sigB64);
+                const msgBytes = new TextEncoder().encode(currentAdminChallenge);
+                const valid = await crypto.subtle.verify(
+                    { name: 'ECDSA', hash: 'SHA-256' },
+                    pubKey, sigBytes, msgBytes
+                );
+                if (!valid) { alert('پاسخ نامعتبر است.'); return; }
+
                 closeModal('adminCodeModal');
                 openModal('adminStatsModal');
                 document.getElementById('adminStatsBody').innerText = 'در حال بارگذاری...';
                 if (typeof window.fetchVisitStats === 'function') {
-                    window.fetchVisitStats().then((stats) => {
-                        document.getElementById('adminStatsBody').innerHTML = stats
-                            ? `<div class="stat-grid">
-                                 <div class="stat-card"><div class="stat-val">${(stats.count || 0).toLocaleString('fa-IR')}</div><div class="stat-label">کل بازدیدها</div></div>
-                                 <div class="stat-card"><div class="stat-val">${(stats.today || 0).toLocaleString('fa-IR')}</div><div class="stat-label">بازدید امروز</div></div>
-                               </div>`
-                            : '<div class="empty-state">اتصال به سرور آمار برقرار نشد.</div>';
-                    });
+                    const stats = await window.fetchVisitStats();
+                    document.getElementById('adminStatsBody').innerHTML = stats ? renderAdminStats(stats) : '<div class="empty-state">اتصال به سرور آمار برقرار نشد. مطمئن شو قانون siteMeta در Firestore Rules فعال و منتشر شده باشد.</div>';
                 } else {
                     document.getElementById('adminStatsBody').innerHTML = '<div class="empty-state">ماژول آماری هنوز بارگذاری نشده.</div>';
                 }
-            } else {
-                alert('کد مدیریت اشتباه است.');
+            } catch (err) {
+                console.error(err);
+                alert('پاسخ قابل بررسی نبود — احتمالاً فرمتش درست نیست.');
             }
         };
+        function ub64u(s) {
+            s = s.replace(/-/g, '+').replace(/_/g, '/');
+            while (s.length % 4) s += '=';
+            return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+        }
+        function renderAdminStats(stats) {
+            const countryRows = (stats.countries || []).slice(0, 6);
+            const maxC = Math.max(1, ...countryRows.map((c) => c.count));
+            const hourRows = stats.hours || [];
+            const maxH = Math.max(1, ...hourRows.map((h) => h.count));
+            return `
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="stat-val">${(stats.total || 0).toLocaleString('fa-IR')}</div><div class="stat-label">کل بازدیدها</div></div>
+                    <div class="stat-card"><div class="stat-val">${(stats.today || 0).toLocaleString('fa-IR')}</div><div class="stat-label">بازدید امروز</div></div>
+                    <div class="stat-card"><div class="stat-val">${(stats.yesterday || 0).toLocaleString('fa-IR')}</div><div class="stat-label">بازدید دیروز</div></div>
+                    <div class="stat-card"><div class="stat-val">${stats.busiestHour !== null ? stats.busiestHour + ':00' : '-'}</div><div class="stat-label">شلوغ‌ترین ساعت (UTC)</div></div>
+                </div>
+                <div class="section-box">
+                    <div class="section-title"><span>پربازدیدترین کشورها</span></div>
+                    ${countryRows.map((c) => `
+                        <div class="bar-chart-row">
+                            <div class="bar-chart-label">${escapeHtml(c.name)}</div>
+                            <div class="bar-chart-track"><div class="bar-chart-fill" style="width:${Math.max(4, (c.count / maxC) * 100)}%"></div></div>
+                            <div class="bar-chart-val">${c.count.toLocaleString('fa-IR')}</div>
+                        </div>`).join('') || '<div class="empty-state">هنوز داده کشور ثبت نشده.</div>'}
+                </div>
+                <div class="section-box">
+                    <div class="section-title"><span>ترافیک به تفکیک ساعت (UTC)</span></div>
+                    ${hourRows.map((h) => `
+                        <div class="bar-chart-row">
+                            <div class="bar-chart-label">${h.hour}:00</div>
+                            <div class="bar-chart-track"><div class="bar-chart-fill" style="width:${Math.max(4, (h.count / maxH) * 100)}%"></div></div>
+                            <div class="bar-chart-val">${h.count.toLocaleString('fa-IR')}</div>
+                        </div>`).join('') || '<div class="empty-state">هنوز داده‌ای ثبت نشده.</div>'}
+                </div>`;
+        }
         // Called once per page load; the actual Firestore write happens in the
         // Firebase module below (works even for visitors who never sign in).
         function trackVisit() {
@@ -3356,6 +3522,8 @@
         const auth = getAuth(fbApp);
         const db = getFirestore(fbApp);
         const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        console.log('[karshenas-plus] running on host:', location.hostname, '— must match an Authorized domain in Firebase Auth settings.');
 
         // Keep the user signed in on this device/browser across visits & restarts.
         setPersistence(auth, browserLocalPersistence).catch(() => {});
@@ -3476,26 +3644,36 @@
             if (user) pullAndMergeAll(user);
         });
 
-        // On mobile browsers and installed/standalone PWAs, popup-based sign-in is
-        // frequently blocked or simply unsupported — redirect works everywhere.
-        function shouldUseRedirect() {
-            const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
-            const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
-            return standalone || mobileUA;
-        }
-
         // Completes the sign-in if we just came back from a redirect (mobile flow).
-        getRedirectResult(auth).catch((err) => {
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) console.log('Redirect sign-in completed for', result.user.email);
+        }).catch((err) => {
             console.error('Redirect sign-in error:', err);
             if (err && err.code && err.code !== 'auth/no-auth-event') {
-                alert('ورود با گوگل ناموفق بود: ' + err.code);
+                alert('ورود با گوگل ناموفق بود (' + err.code + '). اگر فایل را مستقیم از روی گوشی/کامپیوتر باز کرده‌اید (file://)، باید حتماً از آدرس اینترنتی واقعی سایت (https://...github.io/...) وارد شوید.');
             }
         });
 
+        function explainAuthError(err) {
+            const code = (err && err.code) || 'unknown';
+            if (code === 'auth/unauthorized-domain') {
+                return 'این دامنه در فایربیس مجاز نشده. برو Authentication ← Settings ← Authorized domains و آدرس سایتت رو اضافه کن.';
+            }
+            if (code === 'auth/operation-not-allowed') {
+                return 'ورود با گوگل در فایربیس فعال نیست. برو Authentication ← Sign-in method ← Google رو Enable کن.';
+            }
+            if (code === 'auth/popup-blocked') {
+                return 'مرورگر پنجره ورود را مسدود کرد؛ در حال امتحان روش دوم...';
+            }
+            if (code === 'auth/network-request-failed') {
+                return 'اتصال اینترنت برقرار نیست.';
+            }
+            return 'خطای ورود: ' + code + (err && err.message ? ' — ' + err.message : '');
+        }
+
         window.signInWithGoogle = async function () {
-            if (shouldUseRedirect()) {
-                try { await signInWithRedirect(auth, provider); }
-                catch (err) { alert('ورود با گوگل ناموفق بود. اتصال اینترنت خود را بررسی کن.'); }
+            if (location.protocol === 'file:') {
+                alert('این صفحه مستقیم از روی حافظه باز شده (file://) — ورود با گوگل فقط روی آدرس اینترنتی واقعی سایت کار می‌کند، نه وقتی فایل را دابل‌کلیک می‌کنی.');
                 return;
             }
             try {
@@ -3503,11 +3681,18 @@
                 if (typeof closeModal === 'function') closeModal('accountModal');
             } catch (err) {
                 const code = err && err.code;
-                if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
-                    try { await signInWithRedirect(auth, provider); } catch (e2) { /* ignore */ }
-                } else if (code !== 'auth/popup-closed-by-user' && code !== 'auth/cancelled-popup-request') {
-                    alert('ورود با گوگل ناموفق بود. اتصال اینترنت خود را بررسی و دوباره تلاش کنید.');
+                if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+                    return; // user closed it on purpose, no need to alert
                 }
+                if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment' || code === 'auth/internal-error') {
+                    try {
+                        await signInWithRedirect(auth, provider);
+                    } catch (e2) {
+                        alert(explainAuthError(e2));
+                    }
+                    return;
+                }
+                alert(explainAuthError(err));
             }
         };
 
@@ -3555,29 +3740,79 @@
         /* ---------- Hidden visitor counter (works for every visitor, logged in or not) ----------
            Requires this addition to firestore.rules:
            match /siteMeta/{doc} { allow get, create, update: if true; }
-           (Low-stakes: this only stores a visit count, nothing personal.) */
+           Stores only AGGREGATE counters (totals, per-day, per-country, per-hour) —
+           deliberately no raw IP addresses or per-person logs are stored, to keep this
+           low-stakes and not a privacy liability if the rule is ever read by someone. */
         const VISIT_SESSION_KEY = 'karshenas_visit_counted_session';
+
+        async function detectCountryCode() {
+            try {
+                const res = await fetch('https://ipwho.is/?fields=success,country,country_code');
+                const data = await res.json();
+                if (data && data.success && data.country) return { code: data.country_code || 'XX', name: data.country };
+            } catch (err) { /* offline or blocked — skip country for this visit */ }
+            return null;
+        }
+
         window.trackVisitCloud = async function () {
             if (sessionStorage.getItem(VISIT_SESSION_KEY) === '1') return;
             sessionStorage.setItem(VISIT_SESSION_KEY, '1');
-            const todayKey = new Date().toISOString().slice(0, 10);
+            const now = new Date();
+            const todayKey = now.toISOString().slice(0, 10);
+            const hourKey = now.getUTCHours();
+            const payload = {
+                count: increment(1),
+                ['day_' + todayKey]: increment(1),
+                ['hour_' + hourKey]: increment(1),
+                lastVisitAt: serverTimestamp()
+            };
+            const country = await detectCountryCode();
+            if (country) {
+                payload['country_' + country.code] = increment(1);
+                payload['countryName_' + country.code] = country.name;
+            }
             try {
-                await setDoc(doc(db, 'siteMeta', 'visits'), {
-                    count: increment(1),
-                    ['day_' + todayKey]: increment(1),
-                    lastVisitAt: serverTimestamp()
-                }, { merge: true });
+                await setDoc(doc(db, 'siteMeta', 'visits'), payload, { merge: true });
             } catch (err) {
                 console.error('Visit tracking failed (this is harmless):', err);
             }
         };
+
         window.fetchVisitStats = async function () {
             try {
                 const snap = await getDoc(doc(db, 'siteMeta', 'visits'));
-                if (!snap.exists()) return { count: 0, today: 0 };
+                if (!snap.exists()) return { total: 0, today: 0, yesterday: 0, busiestHour: null, countries: [], hours: [] };
                 const data = snap.data();
-                const todayKey = new Date().toISOString().slice(0, 10);
-                return { count: data.count || 0, today: data['day_' + todayKey] || 0 };
+                const now = new Date();
+                const todayKey = now.toISOString().slice(0, 10);
+                const yesterday = new Date(now.getTime() - 86400000).toISOString().slice(0, 10);
+
+                const countries = [];
+                const hours = [];
+                let busiestHour = null, busiestHourCount = -1;
+                Object.keys(data).forEach((key) => {
+                    if (key.startsWith('country_')) {
+                        const code = key.slice(8);
+                        countries.push({ code, name: data['countryName_' + code] || code, count: data[key] || 0 });
+                    }
+                    if (key.startsWith('hour_')) {
+                        const h = parseInt(key.slice(5), 10);
+                        const c = data[key] || 0;
+                        hours.push({ hour: h, count: c });
+                        if (c > busiestHourCount) { busiestHourCount = c; busiestHour = h; }
+                    }
+                });
+                countries.sort((a, b) => b.count - a.count);
+                hours.sort((a, b) => a.hour - b.hour);
+
+                return {
+                    total: data.count || 0,
+                    today: data['day_' + todayKey] || 0,
+                    yesterday: data['day_' + yesterday] || 0,
+                    busiestHour,
+                    countries,
+                    hours
+                };
             } catch (err) {
                 console.error('Fetching visit stats failed:', err);
                 return null;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tarefe-karshenasan-1405-v4';
+const CACHE_NAME = 'tarefe-karshenasan-1405-v5';
 const APP_SHELL = [
   './',
   './index.html',
