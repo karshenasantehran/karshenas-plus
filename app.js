@@ -25,12 +25,22 @@ let currentTariff = '1405';
             applySavedAppearance();
             checkPinLockOnLoad();
             trackVisit();
+            const startupView = (getSettings().startupView || 'calc');
+            if (startupView !== 'calc') switchView(startupView);
+            startReminderAlarmLoop();
         };
 
         function applySavedAppearance() {
+            const saved = dbRead(K.settings)[0] || {};
+            // Default appearance is the light theme. Only switch to dark if the
+            // user has explicitly chosen it before (saved.theme === 'dark').
+            if (saved.theme !== 'dark') document.body.classList.add('light-mode');
             const s = getSettings();
-            if (s.theme === 'light') document.body.classList.add('light-mode');
             if (s.colorTheme && s.colorTheme !== 'default') document.body.setAttribute('data-theme', s.colorTheme);
+            applyFontSize(s.fontSize || 'medium');
+            applyDensity(s.density || 'comfortable');
+            applyReducedMotion(!!s.reducedMotion);
+            applyHighContrast(!!s.highContrast);
         }
 
         function toggleTheme() {
@@ -930,7 +940,6 @@ let currentTariff = '1405';
 
         function showInstallUI() {
             if (isStandaloneMode()) return;
-            document.getElementById('installNavBtn').style.display = 'flex';
             scheduleInstallBanner();
         }
 
@@ -943,12 +952,12 @@ let currentTariff = '1405';
                 if (localStorage.getItem('installBannerDismissed') === '1') return;
                 const banner = document.getElementById('installBanner');
                 if (banner) banner.style.display = 'flex';
-            }, 10000);
+            }, 20000);
         }
 
         function hideInstallUI() {
-            document.getElementById('installBanner').style.display = 'none';
-            document.getElementById('installNavBtn').style.display = 'none';
+            const banner = document.getElementById('installBanner');
+            if (banner) banner.style.display = 'none';
         }
 
         function dismissInstallBanner() {
@@ -1333,15 +1342,32 @@ let currentTariff = '1405';
         }
 
         /* ---------------- Reports ---------------- */
+        const DONUT_COLORS = ['#4f46e5', '#22b8cf', '#12b981', '#f5a524', '#f24365', '#6366f1', '#0ea5e9', '#a855f7', '#84cc16', '#ec4899'];
+        function buildDonutSVG(rows, total) {
+            if (!rows.length || total <= 0) return '';
+            const r = 60, cx = 70, cy = 70, circumference = 2 * Math.PI * r;
+            let offset = 0;
+            const segments = rows.map(([label, val], i) => {
+                const frac = val / total;
+                const dash = frac * circumference;
+                const seg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${DONUT_COLORS[i % DONUT_COLORS.length]}" stroke-width="20"
+                    stroke-dasharray="${dash} ${circumference - dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"></circle>`;
+                offset += dash;
+                return seg;
+            }).join('');
+            return `<svg width="140" height="140" viewBox="0 0 140 140" role="img" aria-label="نمودار دایره‌ای سهم هر رشته از دستمزد">${segments}</svg>`;
+        }
         function renderReports() {
             const cases = dbRead(K.cases);
             const byCategory = {};
+            const countByCategory = {};
             let totalFee = 0;
             cases.forEach((c) => {
                 const fee = parseInt((c.totalFee || '0').toString().replace(/[^0-9]/g, ''), 10) || 0;
                 totalFee += fee;
                 const key = CATEGORY_LABELS[c.category] || c.category || 'سایر';
                 byCategory[key] = (byCategory[key] || 0) + fee;
+                countByCategory[key] = (countByCategory[key] || 0) + 1;
             });
             const maxVal = Math.max(1, ...Object.values(byCategory));
             const rows = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
@@ -1360,12 +1386,44 @@ let currentTariff = '1405';
                             <div class="bar-chart-track"><div class="bar-chart-fill" style="width:${Math.max(4, (val / maxVal) * 100)}%"></div></div>
                             <div class="bar-chart-val">${fmtMoney(val)}</div>
                         </div>`).join('') || '<div class="empty-state">هنوز داده‌ای برای گزارش وجود ندارد.</div>'}
-                </div>`;
+                </div>
+                ${rows.length ? `
+                <div class="section-box">
+                    <div class="section-title"><span>سهم هر رشته از کل دستمزد</span></div>
+                    <div class="donut-report-row">
+                        ${buildDonutSVG(rows, totalFee)}
+                        <div class="donut-legend">
+                            ${rows.map(([label, val], i) => `
+                                <div class="donut-legend-item">
+                                    <span class="donut-legend-dot" style="background:${DONUT_COLORS[i % DONUT_COLORS.length]}"></span>
+                                    <span class="donut-legend-label">${escapeHtml(label)}</span>
+                                    <span class="donut-legend-pct">${((val / totalFee) * 100).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪</span>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="section-box" style="overflow-x:auto;">
+                    <div class="section-title"><span>جدول گزارش تفصیلی</span></div>
+                    <table class="report-table">
+                        <thead><tr><th>رشته کارشناسی</th><th>تعداد پرونده</th><th>جمع دستمزد (ریال)</th><th>سهم</th></tr></thead>
+                        <tbody>
+                            ${rows.map(([label, val]) => `
+                                <tr>
+                                    <td>${escapeHtml(label)}</td>
+                                    <td>${(countByCategory[label] || 0).toLocaleString('fa-IR')}</td>
+                                    <td>${fmtMoney(val)}</td>
+                                    <td>${((val / totalFee) * 100).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪</td>
+                                </tr>`).join('')}
+                            <tr class="report-table-total"><td>جمع کل</td><td>${cases.length.toLocaleString('fa-IR')}</td><td>${fmtMoney(totalFee)}</td><td>۱۰۰٪</td></tr>
+                        </tbody>
+                    </table>
+                </div>` : ''}`;
         }
 
         /* ---------------- Reminders ---------------- */
         function renderReminders() {
             const list = dbRead(K.reminders).sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
+            const notifOn = !!getSettings().reminderNotifications;
             let html = `
                 <div class="view-header">
                     <span class="view-title">یادآوری‌ها (${list.filter((r) => !r.completed).length.toLocaleString('fa-IR')} باز)</span>
@@ -1373,6 +1431,10 @@ let currentTariff = '1405';
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                     </button>
                 </div>
+                ${!notifOn ? `<div class="install-banner no-print" style="display:flex; cursor:pointer;" onclick="toggleReminderNotifications(true); renderReminders();">
+                    <div class="install-banner-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+                    <div class="install-banner-text"><div class="install-banner-title">آلارم یادآوری‌ها فعال نیست</div><div class="install-banner-sub">برای دریافت اعلان و صدا هنگام سررسید، لمس کنید تا فعال شود</div></div>
+                </div>` : ''}
                 <div id="reminderFormBox"></div>
                 ${list.map((r) => `
                     <div class="list-item" style="${r.completed ? 'opacity:0.5;' : ''}">
@@ -1383,6 +1445,9 @@ let currentTariff = '1405';
                                 ${r.notes ? `<div class="list-item-sub" style="margin-top:2px;">${escapeHtml(r.notes)}</div>` : ''}
                             </div>
                             <div class="list-item-actions">
+                                <button title="افزودن به تقویم گوشی" onclick="addReminderToPhoneCalendar('${r.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </button>
                                 <button title="${r.completed ? 'برگردان به باز' : 'انجام شد'}" onclick="toggleReminder('${r.id}')">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
                                 </button>
@@ -1395,12 +1460,15 @@ let currentTariff = '1405';
             document.getElementById('remindersContent').innerHTML = html;
         }
         window.openReminderForm = function () {
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const todayISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
             document.getElementById('reminderFormBox').innerHTML = `
                 <div class="section-box">
                     <div class="mini-form-grid">
                         <input type="text" id="rmTitle" placeholder="عنوان یادآوری (مثلاً: پیگیری پرونده ۹۹۰۹۹۸)">
-                        <input type="text" id="rmDueDate" placeholder="تاریخ سررسید (۱۴۰۵/۰۲/۱۰)">
-                        <input type="text" id="rmDueTime" placeholder="ساعت (اختیاری)">
+                        <input type="date" id="rmDueDate" value="${todayISO}">
+                        <input type="time" id="rmDueTime" value="09:00">
                         <textarea id="rmNotes" placeholder="توضیحات"></textarea>
                     </div>
                     <button class="calc-btn" style="margin:0;" onclick="saveReminderForm()">ذخیره یادآوری</button>
@@ -1414,8 +1482,10 @@ let currentTariff = '1405';
                 dueDate: document.getElementById('rmDueDate').value.trim(),
                 dueTime: document.getElementById('rmDueTime').value.trim(),
                 notes: document.getElementById('rmNotes').value.trim(),
-                completed: false
+                completed: false,
+                alarmFired: false
             });
+            if (!getSettings().reminderNotifications) toggleReminderNotifications(true);
             renderReminders();
         };
         window.toggleReminder = function (id) {
@@ -1428,6 +1498,89 @@ let currentTariff = '1405';
             if (!confirm('این یادآوری حذف شود؟')) return;
             crudDelete(K.reminders, id);
             renderReminders();
+        };
+
+        /* Real (in-app) alarm: while the app/tab is open, checks every 20s
+           whether any open reminder's due date/time has arrived, and if so
+           fires a browser notification + a short beep. This cannot wake a
+           closed tab (no push server), so it's a best-effort in-app alarm. */
+        window.toggleReminderNotifications = function (checked) {
+            if (checked && 'Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then((perm) => {
+                    saveSettings({ reminderNotifications: perm === 'granted' });
+                    if (document.getElementById('view-reminders').classList.contains('active')) renderReminders();
+                    if (document.getElementById('view-settings') && document.getElementById('view-settings').classList.contains('active')) renderSettings();
+                });
+            } else {
+                saveSettings({ reminderNotifications: checked });
+            }
+        };
+        function playReminderBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine'; osc.frequency.value = 880;
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.35);
+            } catch (e) {}
+        }
+        function checkReminderAlarms() {
+            const s = getSettings();
+            if (!s.reminderNotifications) return;
+            const list = dbRead(K.reminders);
+            const now = new Date();
+            let changed = false;
+            list.forEach((r) => {
+                if (r.completed || r.alarmFired || !r.dueDate) return;
+                const due = new Date(`${r.dueDate}T${r.dueTime || '00:00'}:00`);
+                if (isNaN(due.getTime()) || due.getTime() > now.getTime()) return;
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    try { new Notification('یادآوری کارشناس پلاس', { body: r.title, tag: 'reminder-' + r.id }); } catch (e) {}
+                }
+                if (s.reminderSound !== false) playReminderBeep();
+                r.alarmFired = true;
+                changed = true;
+            });
+            if (changed) dbWrite(K.reminders, list);
+        }
+        let reminderAlarmInterval = null;
+        function startReminderAlarmLoop() {
+            checkReminderAlarms();
+            if (reminderAlarmInterval) clearInterval(reminderAlarmInterval);
+            reminderAlarmInterval = setInterval(checkReminderAlarms, 20000);
+        }
+
+        /* Add a reminder to the phone's own calendar app via a downloadable
+           .ics file — every mobile/desktop calendar app can open this. */
+        window.addReminderToPhoneCalendar = function (id) {
+            const list = dbRead(K.reminders);
+            const r = list.find((x) => x.id === id);
+            if (!r) return;
+            const digits = (str) => (str || '').toString().replace(/[۰-۹]/g, (d) => '0123456789'['۰۱۲۳۴۵۶۷۸۹'.indexOf(d)]);
+            const dateStr = digits(r.dueDate).replace(/-/g, '');
+            const timeStr = (digits(r.dueTime) || '09:00').replace(':', '') + '00';
+            if (!/^\d{8}$/.test(dateStr)) { alert('تاریخ سررسید این یادآوری معتبر نیست.'); return; }
+            const dtStart = `${dateStr}T${timeStr}`;
+            const ics = [
+                'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Karshenas Plus//Reminders//FA',
+                'BEGIN:VEVENT',
+                'UID:' + r.id + '@karshenasplus',
+                'DTSTAMP:' + dtStart,
+                'DTSTART:' + dtStart,
+                'SUMMARY:' + (r.title || 'یادآوری').replace(/\n/g, ' '),
+                r.notes ? ('DESCRIPTION:' + r.notes.replace(/\n/g, ' ')) : '',
+                'BEGIN:VALARM', 'TRIGGER:-PT10M', 'ACTION:DISPLAY', 'DESCRIPTION:یادآوری', 'END:VALARM',
+                'END:VEVENT', 'END:VCALENDAR'
+            ].filter(Boolean).join('\r\n');
+            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'yadavari.ics';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
         };
 
         /* ---------------- Backup / Restore (fully offline, no login needed) ---------------- */
@@ -1490,6 +1643,22 @@ let currentTariff = '1405';
             const merged = Object.assign({}, current, patch);
             dbWrite(K.settings, [merged]);
         }
+        function applyFontSize(size) {
+            document.documentElement.setAttribute('data-font-size', size || 'medium');
+        }
+        function applyDensity(density) {
+            document.documentElement.setAttribute('data-density', density || 'comfortable');
+        }
+        function applyReducedMotion(on) {
+            document.documentElement.setAttribute('data-reduced-motion', on ? 'true' : 'false');
+        }
+        function applyHighContrast(on) {
+            document.documentElement.setAttribute('data-high-contrast', on ? 'true' : 'false');
+        }
+        window.setFontSize = function (size) { applyFontSize(size); saveSettings({ fontSize: size }); };
+        window.setDensity = function (density) { applyDensity(density); saveSettings({ density: density }); };
+        window.toggleReducedMotion = function (checked) { applyReducedMotion(checked); saveSettings({ reducedMotion: checked }); };
+        window.toggleHighContrast = function (checked) { applyHighContrast(checked); saveSettings({ highContrast: checked }); };
         function renderSettings() {
             const s = getSettings();
             const themeOptions = [
@@ -1536,6 +1705,57 @@ let currentTariff = '1405';
                     <div class="settings-row">
                         <div><div class="settings-row-label">حریم خصوصی و نگهداری داده</div><div class="settings-row-sub">توضیح اینکه داده‌هایتان کجا ذخیره می‌شود</div></div>
                         <button class="nav-btn" onclick="openModal('privacyModal')" style="height:34px; padding:0 10px;">مشاهده</button>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">راهنما و متن تعرفه ۱۴۰۵</div><div class="settings-row-sub">احکام تعرفه و راهنمای استفاده از برنامه</div></div>
+                        <button class="nav-btn" onclick="openModal('helpModal')" style="height:34px; padding:0 10px;">مشاهده</button>
+                    </div>
+                </div>
+                <div class="section-box">
+                    <div class="section-title"><span>ظاهر و نمایش</span></div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">اندازه فونت</div><div class="settings-row-sub">بزرگ‌نمایی متن در کل برنامه</div></div>
+                        <select id="stFontSize" style="width:auto; padding:6px 10px;" onchange="setFontSize(this.value)">
+                            <option value="small" ${(s.fontSize||'medium')==='small'?'selected':''}>کوچک</option>
+                            <option value="medium" ${(s.fontSize||'medium')==='medium'?'selected':''}>متوسط (پیش‌فرض)</option>
+                            <option value="large" ${(s.fontSize||'medium')==='large'?'selected':''}>بزرگ</option>
+                            <option value="xlarge" ${(s.fontSize||'medium')==='xlarge'?'selected':''}>خیلی بزرگ</option>
+                        </select>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">تراکم چیدمان</div><div class="settings-row-sub">فاصله‌گذاری فشرده یا راحت بین عناصر</div></div>
+                        <select id="stDensity" style="width:auto; padding:6px 10px;" onchange="setDensity(this.value)">
+                            <option value="comfortable" ${(s.density||'comfortable')==='comfortable'?'selected':''}>راحت (پیش‌فرض)</option>
+                            <option value="compact" ${(s.density||'comfortable')==='compact'?'selected':''}>فشرده</option>
+                        </select>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">کاهش جلوه‌های متحرک</div><div class="settings-row-sub">غیرفعال کردن انیمیشن‌ها و ترنزیشن‌ها</div></div>
+                        <label class="switch"><input type="checkbox" id="stReducedMotion" ${s.reducedMotion ? 'checked' : ''} onchange="toggleReducedMotion(this.checked)"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">کنتراست بالا</div><div class="settings-row-sub">خطوط و مرزها پررنگ‌تر نمایش داده شوند</div></div>
+                        <label class="switch"><input type="checkbox" id="stHighContrast" ${s.highContrast ? 'checked' : ''} onchange="toggleHighContrast(this.checked)"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">صفحه شروع برنامه</div><div class="settings-row-sub">اولین صفحه‌ای که هنگام باز شدن دیده می‌شود</div></div>
+                        <select id="stStartupView" style="width:auto; padding:6px 10px;" onchange="saveSettings({startupView:this.value})">
+                            <option value="calc" ${(s.startupView||'calc')==='calc'?'selected':''}>محاسبه‌گر (پیش‌فرض)</option>
+                            <option value="dashboard" ${(s.startupView||'calc')==='dashboard'?'selected':''}>داشبورد</option>
+                            <option value="cases" ${(s.startupView||'calc')==='cases'?'selected':''}>پرونده‌ها</option>
+                            <option value="reminders" ${(s.startupView||'calc')==='reminders'?'selected':''}>یادآوری‌ها</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="section-box">
+                    <div class="section-title"><span>یادآوری‌ها</span></div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">اعلان و آلارم یادآوری‌ها</div><div class="settings-row-sub">وقتی برنامه باز است، سررسید یادآوری‌ها با اعلان و صدا اطلاع داده می‌شود</div></div>
+                        <label class="switch"><input type="checkbox" id="stReminderNotif" ${s.reminderNotifications ? 'checked' : ''} onchange="toggleReminderNotifications(this.checked)"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">صدای آلارم یادآوری</div><div class="settings-row-sub">پخش صدا هنگام رسیدن موعد یادآوری</div></div>
+                        <label class="switch"><input type="checkbox" id="stReminderSound" ${s.reminderSound !== false ? 'checked' : ''} onchange="saveSettings({reminderSound:this.checked})"><span class="switch-slider"></span></label>
                     </div>
                 </div>
                 <div class="section-box">

@@ -30,7 +30,7 @@
         <nav class="bottom-nav no-print" id="bottomNav">
             <div class="sidebar-brand">
                 <div class="sidebar-brand-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 3v6m0 12v-6m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                    <img src="icons/icon-192.png" alt="کارشناس پلاس" width="36" height="36" loading="eager">
                 </div>
                 <span class="sidebar-brand-text">کارشناس پلاس</span>
             </div>
@@ -113,14 +113,8 @@
                 <button class="nav-btn" onclick="toggleTheme()" title="تغییر تم (تاریک/روشن)">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
                 </button>
-                <button class="nav-btn" id="installNavBtn" onclick="triggerInstall()" title="نصب برنامه" style="display:none; color: var(--accent-cyan); border-color: var(--accent-cyan);">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-                </button>
                 <button class="nav-btn" onclick="resetForm()" title="پاکسازی فرم">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                </button>
-                <button class="nav-btn" onclick="openModal('helpModal')" title="راهنما و متن تعرفه ۱۴۰۵">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01M12 8a3 3 0 0 0-3 3h1a2 2 0 1 1 2 2c-.8 0-1.5.7-1.5 1.5V15h1v-.5c0-.8.8-1.5 1.5-1.5a3 3 0 0 0 1-5.83z"/></svg>
                 </button>
             </div>
         </div>
@@ -130,11 +124,11 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
             </div>
             <div class="install-banner-text">
-                <div class="install-banner-title">کارشناس پلاس رو نصب کن</div>
+                <div class="install-banner-title">آیا مایلید کارشناس پلاس نصب شود؟</div>
                 <div class="install-banner-sub">بدون اینترنت هم باز می‌شود، سریع‌تر لود می‌شود و مثل یک اپ واقعی روی صفحه اصلی می‌شینه — بدون نوار آدرس مرورگر</div>
             </div>
-            <button class="install-banner-btn" onclick="triggerInstall()">نصب کن</button>
-            <button class="install-banner-close" onclick="dismissInstallBanner()" title="بستن">&times;</button>
+            <button class="install-banner-btn" onclick="triggerInstall()">بله، نصب کن</button>
+            <button class="install-banner-close" onclick="dismissInstallBanner()" title="فعلاً نه">فعلاً نه</button>
         </div>
 
         <!-- =================== CALCULATOR VIEW =================== -->
@@ -188,7 +182,7 @@
 
                             <div class="input-group" id="valuationGroup">
                                 <div class="label-row">
-                                    <label for="amountInput" id="valuationLabel">ارزش موضوع کارشناسی / اجاره‌بها:</label>
+                                    <label for="amountInput" id="valuationLabel">ارزش موضوع کارشناسی (برآورد):</label>
                                     <span class="unit-badge">ریال</span>
                                 </div>
                                 <input type="text" id="amountInput" placeholder="۰" inputmode="numeric" oninput="handleInput(this)">
