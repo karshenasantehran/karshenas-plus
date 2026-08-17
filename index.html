@@ -18,6 +18,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/shabnam-font@v5.0.1/dist/font-face.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/samim-font@v4.0.5/dist/font-face.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/parastoo-font@v2.0.1/dist/font-face.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -647,6 +651,14 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                         <span>اشتراک‌گذاری پیش‌فاکتور</span>
                     </button>
+                    <button class="btn-action" onclick="saveCaseAsFinal()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        <span>ذخیره پرونده</span>
+                    </button>
+                    <button class="btn-action" onclick="saveCaseAsDraft()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                        <span>ذخیره پیش‌نویس</span>
+                    </button>
                 </div>
 
                 <a href="https://t.me/karshenasan_tehran" target="_blank" class="telegram-banner no-print">
@@ -692,55 +704,96 @@
             <div class="modal-body">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
 
-                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-                        <label style="font-size: 0.78rem; font-weight: 800; color: var(--accent-cyan);">لیست مشخصات کارشناسان:</label>
-                        <div id="expertsAccordionContainer" style="margin-top: 8px;"></div>
-                        <select id="expertQuickPick" style="margin-top: 6px;" onchange="quickAddExpert(this.value); this.value='';">
-                            <option value="">+ انتخاب سریع از کارشناسان ذخیره‌شده...</option>
-                        </select>
-                        <button class="btn-action" style="width: 100%; margin-top: 6px; border-style: dashed;" onclick="addExpertAccordionField()">
-                            <span>+ افزودن کارشناس جدید به هیات</span>
+                    <div class="section-box expanded" id="sectionBillCaseInfo">
+                        <div class="section-title collapsible" onclick="toggleSection('sectionBillCaseInfo')">
+                            <span class="st-left">
+                                <span class="step-num-badge">۱</span>
+                                <span>اطلاعات پرونده</span>
+                            </span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                        </div>
+                        <div class="section-content-wrap"><div class="section-content-inner">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div class="input-group">
+                                    <label>تاریخ تنظیم:</label>
+                                    <input type="text" id="expDate" placeholder="۱۴۰۵/۰۱/۱۵">
+                                </div>
+                                <div class="input-group">
+                                    <label>شماره پرونده / کلاسه:</label>
+                                    <input type="text" id="caseNum" placeholder="۹۹۰۹۹۸XXX">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>نام متقاضی / خواهان / خوانده:</label>
+                                <input type="text" id="clientName" placeholder="مثال: شرکت عمران سازه / آقای حسینی">
+                                <select id="applicantQuickPick" style="margin-top: 6px;" onchange="quickPickApplicant(this.value)">
+                                    <option value="">+ انتخاب سریع از متقاضیان ذخیره‌شده...</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>مرجع قضایی / شعبه:</label>
+                                <input type="text" id="courtBranch" placeholder="شعبه ۱۰ دادگاه عمومی حقوقی">
+                            </div>
+                        </div></div>
+                    </div>
+
+                    <div class="section-box expanded" id="sectionBillExperts">
+                        <div class="section-title collapsible" onclick="toggleSection('sectionBillExperts')">
+                            <span class="st-left">
+                                <span class="step-num-badge">۲</span>
+                                <span>هیات کارشناسان</span>
+                            </span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                        </div>
+                        <div class="section-content-wrap"><div class="section-content-inner">
+                            <div id="expertsAccordionContainer" style="margin-top: 4px;"></div>
+                            <select id="expertQuickPick" style="margin-top: 6px;" onchange="quickAddExpert(this.value); this.value='';">
+                                <option value="">+ انتخاب سریع از کارشناسان ذخیره‌شده...</option>
+                            </select>
+                            <button class="btn-action" style="width: 100%; margin-top: 6px; border-style: dashed;" onclick="addExpertAccordionField()">
+                                <span>+ افزودن کارشناس جدید به هیات</span>
+                            </button>
+                        </div></div>
+                    </div>
+
+                    <div class="section-box" id="sectionBillExtras">
+                        <div class="section-title collapsible" onclick="toggleSection('sectionBillExtras')">
+                            <span class="st-left">
+                                <span class="step-num-badge">۳</span>
+                                <span>گزینه‌های تکمیلی سند</span>
+                            </span>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                        </div>
+                        <div class="section-content-wrap"><div class="section-content-inner">
+                            <div class="addon-item" id="item-bank" style="margin-bottom: 0;">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="chkBank" onchange="toggleBankInput()">
+                                    <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
+                                    <span class="addon-text">درج شماره کارت / شبا کارشناس (جهت واریز)</span>
+                                </label>
+                                <div class="addon-subinput" id="sub-bank" style="flex-direction: column; align-items: stretch;">
+                                    <input type="text" id="bankAccount" placeholder="شماره کارت یا شبا (مثلا: IR600170000000000000000000)">
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="margin-top: 6px;">
+                                <label>توضیحات و شروط اختصاصی پیش‌فاکتور:</label>
+                                <textarea id="billNotes" placeholder="مثلا: هزینه ایاب و ذهاب و کارشناسی بر عهده متقاضی می‌باشد..."></textarea>
+                            </div>
+                        </div></div>
+                    </div>
+
+                    <div class="action-grid" style="grid-template-columns: 1fr 1fr; margin-top: 0;">
+                        <button class="btn-action" onclick="saveCaseAsDraft()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                            <span>ذخیره پیش‌نویس</span>
+                        </button>
+                        <button class="btn-action" onclick="saveCaseAsFinal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+                            <span>ذخیره پرونده</span>
                         </button>
                     </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <div class="input-group">
-                            <label>تاریخ تنظیم:</label>
-                            <input type="text" id="expDate" placeholder="۱۴۰۵/۰۱/۱۵">
-                        </div>
-                        <div class="input-group">
-                            <label>شماره پرونده / کلاسه:</label>
-                            <input type="text" id="caseNum" placeholder="۹۹۰۹۹۸XXX">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>نام متقاضی / خواهان / خوانده:</label>
-                        <input type="text" id="clientName" placeholder="مثال: شرکت عمران سازه / آقای حسینی">
-                        <select id="applicantQuickPick" style="margin-top: 6px;" onchange="quickPickApplicant(this.value)">
-                            <option value="">+ انتخاب سریع از متقاضیان ذخیره‌شده...</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>مرجع قضایی / شعبه:</label>
-                        <input type="text" id="courtBranch" placeholder="شعبه ۱۰ دادگاه عمومی حقوقی">
-                    </div>
-
-                    <div class="addon-item" id="item-bank" style="margin-bottom: 0;">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="chkBank" onchange="toggleBankInput()">
-                            <span class="custom-checkbox"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></span>
-                            <span class="addon-text">درج شماره کارت / شبا کارشناس (جهت واریز)</span>
-                        </label>
-                        <div class="addon-subinput" id="sub-bank" style="flex-direction: column; align-items: stretch;">
-                            <input type="text" id="bankAccount" placeholder="شماره کارت یا شبا (مثلا: IR600170000000000000000000)">
-                        </div>
-                    </div>
-
-                    <div class="input-group" style="margin-top: 6px;">
-                        <label>توضیحات و شروط اختصاصی پیش‌فاکتور:</label>
-                        <textarea id="billNotes" placeholder="مثلا: هزینه ایاب و ذهاب و کارشناسی بر عهده متقاضی می‌باشد..."></textarea>
-                    </div>
-                    <button class="calc-btn" style="margin-top: 10px; margin-bottom: 0;" onclick="generateBill()">تایید و صدور پیش‌فاکتور</button>
+                    <button class="calc-btn" style="margin-top: 4px; margin-bottom: 0;" onclick="generateBill()">تایید و صدور پیش‌فاکتور</button>
                 </div>
             </div>
         </div>
@@ -835,6 +888,19 @@
             </div>
             <div class="modal-body" id="installInstructionsBody">
                 <!-- filled by JS based on device -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SELECTIVE PRINT (applicants/experts list) -->
+    <div class="modal-overlay" id="printPickModal" onclick="closeModalOnOverlay(event, 'printPickModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">انتخاب موارد برای چاپ</div>
+                <button class="modal-close" onclick="closeModal('printPickModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="printPickBody">
+                <!-- filled by JS -->
             </div>
         </div>
     </div>
@@ -1037,6 +1103,10 @@
                     <div class="more-grid-item" onclick="switchView('backup'); closeModal('sideMenu');">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
                         <span>پشتیبان‌گیری</span>
+                    </div>
+                    <div class="more-grid-item" id="sideMenuInstallItem" onclick="closeModal('sideMenu'); triggerInstall();" style="display:none;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>نصب برنامه</span>
                     </div>
                     <div class="more-grid-item" onclick="switchView('settings'); closeModal('sideMenu');">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>

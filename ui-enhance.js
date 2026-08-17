@@ -113,13 +113,28 @@
         flashObserver.observe(totalEl, { childList: true, characterData: true, subtree: true });
     }
 
-    /* ---------------- Light haptic feedback on touch devices ---------------- */
-    if ('vibrate' in navigator) {
-        document.addEventListener('click', function (e) {
-            var el = e.target.closest('.bn-item, .fab-add, .tab-btn, .btn-action');
-            if (el) { try { navigator.vibrate(8); } catch (e2) { /* ignore */ } }
-        });
+    /* ---------------- Light haptic feedback + optional click sound ---------------- */
+    let uiClickAudioCtx = null;
+    function playUiClick() {
+        try {
+            uiClickAudioCtx = uiClickAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            const osc = uiClickAudioCtx.createOscillator();
+            const gain = uiClickAudioCtx.createGain();
+            osc.connect(gain); gain.connect(uiClickAudioCtx.destination);
+            osc.type = 'square'; osc.frequency.value = 1200;
+            gain.gain.setValueAtTime(0.04, uiClickAudioCtx.currentTime);
+            osc.start(); osc.stop(uiClickAudioCtx.currentTime + 0.03);
+        } catch (e) { /* ignore */ }
     }
+    document.addEventListener('click', function (e) {
+        var el = e.target.closest('.bn-item, .fab-add, .tab-btn, .btn-action');
+        if (!el) return;
+        var s = (typeof getSettings === 'function') ? getSettings() : {};
+        if ('vibrate' in navigator && s.hapticFeedback !== false) {
+            try { navigator.vibrate(8); } catch (e2) { /* ignore */ }
+        }
+        if (s.uiClickSound) playUiClick();
+    });
 
     /* ---------------- Offline banner — makes connection problems visible
        instead of the app just silently failing to sync/log in ---------------- */

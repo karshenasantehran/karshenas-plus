@@ -48,6 +48,9 @@
 
     --sidebar-w: 248px;
     --sidebar-w-collapsed: 76px;
+
+    /* ---- Selectable app-wide font (Settings > font family) ---- */
+    --app-font: 'Vazirmatn', Tahoma, 'Segoe UI', system-ui, sans-serif;
 }
 
 .light-mode {
@@ -81,6 +84,12 @@
 body[data-theme="emerald"] { --accent-glow: #059669; --accent-glow-2: #047857; --accent-cyan: #10b981; }
 body[data-theme="rosegold"] { --accent-glow: #e11d48; --accent-glow-2: #be123c; --accent-cyan: #d97706; }
 body[data-theme="slate"] { --accent-glow: #475569; --accent-glow-2: #334155; --accent-cyan: #64748b; }
+body[data-theme="ocean"] { --accent-glow: #0284c7; --accent-glow-2: #0369a1; --accent-cyan: #06b6d4; }
+body[data-theme="sunset"] { --accent-glow: #ea580c; --accent-glow-2: #c2410c; --accent-cyan: #f59e0b; }
+body[data-theme="violet"] { --accent-glow: #7c3aed; --accent-glow-2: #6d28d9; --accent-cyan: #a855f7; }
+body[data-theme="forest"] { --accent-glow: #16a34a; --accent-glow-2: #15803d; --accent-cyan: #65a30d; }
+body[data-theme="crimson"] { --accent-glow: #b91c1c; --accent-glow-2: #991b1b; --accent-cyan: #dc2626; }
+body[data-theme="graphite"] { --accent-glow: #52525b; --accent-glow-2: #3f3f46; --accent-cyan: #71717a; }
 
 /* ---------------------------------------------------------------------- */
 /* Reset & base                                                          */
@@ -89,7 +98,7 @@ body[data-theme="slate"] { --accent-glow: #475569; --accent-glow-2: #334155; --a
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Vazirmatn', Tahoma, 'Segoe UI', system-ui, sans-serif;
+    font-family: var(--app-font);
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -105,12 +114,17 @@ html { font-variant-numeric: tabular-nums; }
     }
 }
 
+html { font-size: 14px; } /* default scale; overridden by html[data-font-size] rules below */
+
 body {
     background: var(--bg-color);
     color: var(--text-main);
     min-height: 100vh;
+    min-height: 100dvh; /* real viewport height once the browser's address bar
+                            is accounted for — 100vh alone renders taller than
+                            the visible area in Samsung Internet's default UI
+                            mode, cutting off the bottom nav until you scroll */
     transition: background 0.25s ease, color 0.25s ease;
-    font-size: 14px;
     line-height: 1.55;
 }
 
@@ -119,11 +133,15 @@ body {
     *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
 }
 
-/* Font size preference (Settings) */
-html[data-font-size="small"] body { font-size: 12.5px; }
-html[data-font-size="medium"] body { font-size: 14px; }
-html[data-font-size="large"] body { font-size: 16px; }
-html[data-font-size="xlarge"] body { font-size: 18px; }
+/* Font size preference (Settings). Applied to the ROOT element (not body) —
+   almost every text size in this app is defined in rem, which is always
+   relative to the html element's font-size, not body's. Setting it on body
+   only was why this control visually did nothing for most of the UI. */
+html[data-font-size="small"] { font-size: 12.5px; }
+html[data-font-size="medium"] { font-size: 14px; }
+html[data-font-size="large"] { font-size: 16px; }
+html[data-font-size="xlarge"] { font-size: 18px; }
+/* body no longer sets its own competing font-size — it now inherits from html */
 
 /* Density preference (Settings) */
 html[data-density="compact"] .section-box { padding: 12px; margin-bottom: 10px; }
@@ -140,6 +158,14 @@ html[data-reduced-motion="true"] *, html[data-reduced-motion="true"] *::before, 
 /* High-contrast preference (Settings) */
 html[data-high-contrast="true"] { --border-color: rgba(120,130,150,0.55); --border-strong: rgba(140,150,175,0.85); --text-muted: var(--text-secondary); }
 html[data-high-contrast="true"] body.light-mode { --border-color: rgba(20,25,35,0.35); --border-strong: rgba(20,25,35,0.55); }
+
+/* Font family preference (Settings) — user can pick any of 5 Persian fonts;
+   the print/invoice template picks it up too since it uses var(--app-font). */
+html[data-font-family="vazirmatn"] { --app-font: 'Vazirmatn', Tahoma, 'Segoe UI', system-ui, sans-serif; }
+html[data-font-family="sahel"] { --app-font: 'Sahel', Tahoma, 'Segoe UI', system-ui, sans-serif; }
+html[data-font-family="shabnam"] { --app-font: 'Shabnam', Tahoma, 'Segoe UI', system-ui, sans-serif; }
+html[data-font-family="samim"] { --app-font: 'Samim', Tahoma, 'Segoe UI', system-ui, sans-serif; }
+html[data-font-family="parastoo"] { --app-font: 'Parastoo', Tahoma, 'Segoe UI', system-ui, sans-serif; }
 
 html { scroll-behavior: smooth; }
 
@@ -169,6 +195,7 @@ a { color: inherit; }
 .app-shell {
     display: flex;
     min-height: 100vh;
+    min-height: 100dvh;
     background:
         radial-gradient(circle at 12% 0%, rgba(99, 102, 241, 0.06), transparent 40%),
         radial-gradient(circle at 100% 100%, rgba(34, 184, 207, 0.05), transparent 40%),
@@ -226,6 +253,12 @@ a { color: inherit; }
 .bn-item svg { width: 19px; height: 19px; }
 .bn-item.active { color: var(--accent-cyan); }
 .bn-item:active { transform: scale(0.94); }
+
+/* Compact bottom nav (Settings > نوار پایین فشرده) — icon only, no label. Mobile only. */
+@media (max-width: 899px) {
+    body.compact-bottom-nav .bn-item span:not(.sr-only) { display: none; }
+    body.compact-bottom-nav .bn-item { padding: 10px 8px; }
+}
 
 .desktop-only-nav { display: none; }
 
@@ -477,6 +510,12 @@ a { color: inherit; }
     transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1);
 }
 .section-box.expanded > .section-title.collapsible .chevron { transform: rotate(180deg); color: var(--accent-cyan); }
+.step-num-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent-glow-2), var(--accent-cyan));
+    color: #fff; font-size: 0.68rem; font-weight: 800;
+}
 
 .section-content-wrap {
     display: grid; grid-template-rows: 0fr; opacity: 0;
@@ -638,7 +677,7 @@ input[type="range"] { accent-color: var(--accent-glow); height: 18px; cursor: po
 /* ---------------------------------------------------------------------- */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(6, 8, 14, 0.6); backdrop-filter: blur(6px);
+    background: rgba(6, 8, 14, 0.6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
     z-index: 1000; display: flex; align-items: center; justify-content: center;
     padding: 16px; opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease;
 }
@@ -1023,7 +1062,7 @@ select {
    ========================================================================= */
 .bill-template {
     background: var(--bill-bg); color: var(--bill-text); padding: 16px; border-radius: var(--r-sm);
-    font-family: 'Vazirmatn', Tahoma, 'Segoe UI', system-ui, sans-serif; direction: rtl; text-align: right;
+    font-family: var(--app-font); direction: rtl; text-align: right;
     border: 1px solid #cbd5e1; position: relative; font-size: 0.75rem; line-height: 1.45;
 }
 .bill-header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 6px; margin-bottom: 8px; }
@@ -1057,7 +1096,7 @@ select {
 .bill-template.tpl-formal .bill-table, .bill-template.tpl-formal .bill-table th, .bill-template.tpl-formal .bill-table td { border-color: #0f172a; }
 .bill-template.tpl-formal .signature-card { border: 1px solid #0f172a; border-radius: 0; background: #fff; }
 
-.bill-template.tpl-classic { border: 1px solid #333; font-family: 'Vazirmatn', serif; }
+.bill-template.tpl-classic { border: 1px solid #333; font-family: var(--app-font); }
 .bill-template.tpl-classic .bill-header { border-bottom: 1px solid #333; }
 .bill-template.tpl-classic .bill-info-container { background: #fff; border: 1px solid #999; border-radius: 0; }
 .bill-template.tpl-classic .bill-table th { background: #f4f4f4 !important; -webkit-print-color-adjust: exact; }
@@ -1156,3 +1195,14 @@ select {
 @media (max-width: 899px) {
     .txt-display, .page-title { max-width: 100%; }
 }
+
+/* =========================================================================
+   Cross-browser hardening (older Samsung Internet / WebView builds)
+   ========================================================================= */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .bottom-nav, .top-nav-bar { background: var(--card-bg) !important; }
+    .modal-overlay { background: rgba(6, 8, 14, 0.82) !important; }
+}
+/* Some Samsung Internet versions render native select/checkbox controls with
+   their own accent color that clashes with the custom theme — force ours */
+select, input[type="checkbox"], input[type="radio"] { accent-color: var(--accent-glow); }

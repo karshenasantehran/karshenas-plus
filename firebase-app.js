@@ -187,6 +187,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 
         const IS_MOBILE_UA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
+        /* Quick reachability probe: tries to reach Google's auth servers with a
+           short timeout before even attempting sign-in. This distinguishes
+           "no internet at all" from "everything works except Google's domains
+           are filtered" — the second is very common on mobile carrier data and
+           usually clears up over Wi‑Fi or a VPN. no-cors means we can't read the
+           response, but a resolved fetch (vs a thrown/timeout error) still tells
+           us the request reached somewhere. */
+        function probeGoogleReachability(timeoutMs) {
+            return new Promise((resolve) => {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => { ctrl.abort(); resolve(false); }, timeoutMs || 3500);
+                fetch('https://accounts.google.com/gsi/status', { mode: 'no-cors', signal: ctrl.signal })
+                    .then(() => { clearTimeout(timer); resolve(true); })
+                    .catch(() => { clearTimeout(timer); resolve(false); });
+            });
+        }
+
         window.signInWithGoogle = async function () {
             if (location.protocol === 'file:') {
                 alert('این صفحه مستقیم از روی حافظه باز شده (file://) — ورود با گوگل فقط روی آدرس اینترنتی واقعی سایت کار می‌کند، نه وقتی فایل را دابل‌کلیک می‌کنی.');
@@ -197,6 +214,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
             // silently fail) — go straight to the redirect flow on phones instead
             // of trying a popup first and only falling back after it errors.
             if (IS_MOBILE_UA) {
+                if (navigator.onLine === false) {
+                    alert('گوشی به هیچ اینترنتی وصل نیست.');
+                    return;
+                }
+                if (typeof showToast === 'function') showToast('در حال بررسی اتصال به گوگل...', 'info');
+                const reachable = await probeGoogleReachability();
+                if (!reachable) {
+                    const usingWifi = (navigator.connection && navigator.connection.type === 'wifi');
+                    alert(
+                        'اتصال به سرورهای گوگل روی همین شبکه برقرار نشد، در حالی که بقیه سایت کار می‌کند — ' +
+                        'این معمولاً یعنی اپراتور موبایل دسترسی به گوگل/فایربیس را فیلتر کرده، نه اینکه اینترنت قطع باشد.\n\n' +
+                        (usingWifi
+                            ? 'الان روی وای‌فای هستی و باز هم فیلتر شده — یک VPN را روشن کن و دوباره امتحان کن.'
+                            : 'اگر الان روی اینترنت موبایل (سیم‌کارت) هستی، یک بار با وای‌فای امتحان کن؛ یا یک VPN را روشن کن.')
+                    );
+                    return;
+                }
                 try {
                     await signInWithRedirect(auth, provider);
                 } catch (err) {

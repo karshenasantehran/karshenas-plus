@@ -25,10 +25,56 @@ let currentTariff = '1405';
             applySavedAppearance();
             checkPinLockOnLoad();
             trackVisit();
+            const savedDefaultMode = (getSettings().defaultCalcMode || 'single');
+            if (savedDefaultMode === 'board') setMode('board');
+            if (typeof updateSideMenuInstallItem === 'function') updateSideMenuInstallItem();
             const startupView = (getSettings().startupView || 'calc');
             if (startupView !== 'calc') switchView(startupView);
             startReminderAlarmLoop();
         };
+
+        /* Converts Persian/Arabic-Indic digits to plain ASCII digits so amounts
+           that were displayed with toLocaleString('fa-IR') (which uses ۰۱۲۳...)
+           can be parsed back into numbers correctly. This was the cause of the
+           "سهم هر رشته" report showing ناعدد (NaN): totalFee was stored as a
+           Persian-digit string, then re-parsed with an ASCII-only regex, which
+           silently produced 0 every time. */
+        function toEnglishDigits(str) {
+            const fa = '۰۱۲۳۴۵۶۷۸۹', ar = '٠١٢٣٤٥٦٧٨٩';
+            return String(str == null ? '' : str).replace(/[۰-۹٠-٩]/g, (ch) => {
+                const i1 = fa.indexOf(ch); if (i1 !== -1) return i1;
+                const i2 = ar.indexOf(ch); if (i2 !== -1) return i2;
+                return ch;
+            });
+        }
+        function parseStoredAmount(str) {
+            return parseInt(toEnglishDigits(str).replace(/[^0-9]/g, ''), 10) || 0;
+        }
+        window.toEnglishDigits = toEnglishDigits;
+        window.parseStoredAmount = parseStoredAmount;
+
+        function applyBackToTopVisibility() {
+            const btn = document.getElementById('backToTopBtn');
+            if (btn) btn.style.display = (getSettings().showBackToTop === false) ? 'none' : '';
+        }
+        function applyCompactBottomNav() {
+            document.body.classList.toggle('compact-bottom-nav', !!getSettings().compactBottomNav);
+        }
+        function applyTelegramBannerVisibility() {
+            document.querySelectorAll('.telegram-banner').forEach((el) => {
+                el.style.display = getSettings().hideTelegramBanner ? 'none' : '';
+            });
+        }
+        window.checkForAppUpdate = function () {
+            if (!('serviceWorker' in navigator)) { alert('این مرورگر از به‌روزرسانی خودکار پشتیبانی نمی‌کند.'); return; }
+            navigator.serviceWorker.getRegistration().then((reg) => {
+                if (!reg) { alert('برنامه هنوز به‌صورت آفلاین ثبت نشده — یک بار با اینترنت باز کن.'); return; }
+                reg.update().then(() => showToast('بررسی شد — اگر نسخه جدیدی باشد، پس از بستن و باز کردن مجدد برنامه اعمال می‌شود.', 'success'));
+            });
+        };
+        window.applyBackToTopVisibility = applyBackToTopVisibility;
+        window.applyCompactBottomNav = applyCompactBottomNav;
+        window.applyTelegramBannerVisibility = applyTelegramBannerVisibility;
 
         function applySavedAppearance() {
             const saved = dbRead(K.settings)[0] || {};
@@ -36,11 +82,16 @@ let currentTariff = '1405';
             // user has explicitly chosen it before (saved.theme === 'dark').
             if (saved.theme !== 'dark') document.body.classList.add('light-mode');
             const s = getSettings();
-            if (s.colorTheme && s.colorTheme !== 'default') document.body.setAttribute('data-theme', s.colorTheme);
+            const themeToApply = s.colorTheme || 'rosegold';
+            if (themeToApply !== 'default') document.body.setAttribute('data-theme', themeToApply);
             applyFontSize(s.fontSize || 'medium');
+            applyFontFamily(s.fontFamily || 'vazirmatn');
             applyDensity(s.density || 'comfortable');
             applyReducedMotion(!!s.reducedMotion);
             applyHighContrast(!!s.highContrast);
+            applyBackToTopVisibility();
+            applyCompactBottomNav();
+            applyTelegramBannerVisibility();
         }
 
         function toggleTheme() {
@@ -78,7 +129,7 @@ let currentTariff = '1405';
         }
 
         function changeMembers(delta) {
-            boardMembers = Math.max(3, Math.min(15, boardMembers + delta));
+            boardMembers = Math.max(3, Math.min(21, boardMembers + delta));
             if(boardMembers % 2 === 0) boardMembers += (delta > 0 ? 1 : -1);
             document.getElementById('memberCountText').innerText = boardMembers + ' نفر';
             calculate();
@@ -852,7 +903,28 @@ let currentTariff = '1405';
 
             document.getElementById('billTotal').innerText = document.getElementById('totalFeeVal').innerText;
 
-            saveCaseRecord({
+            saveCaseRecord(Object.assign(buildCaseRecordFromForm(), { status: 'final', invoiceIssued: true }));
+
+            openModal('billModal');
+            if (getSettings().autoResetAfterInvoice) resetForm();
+        }
+
+        /* Gathers the current calculator form + expert list into one record,
+           shared by invoice issuance, "save case" and "save draft". */
+        function buildCaseRecordFromForm() {
+            const experts = [];
+            document.querySelectorAll('#expertsAccordionContainer .accordion-item').forEach((item) => {
+                const name = (item.querySelector('.exp-name-field').value || '').trim();
+                if (!name) return;
+                experts.push(name);
+                const discSelect = item.querySelector('.exp-disc-select').value;
+                const customDisc = item.querySelector('.exp-custom-disc').value;
+                const discipline = discSelect.includes('سایر') ? (customDisc || 'کارشناس رسمی') : discSelect;
+                const lic = item.querySelector('.exp-license-field').value;
+                const phone = item.querySelector('.exp-phone-field').value;
+                autoUpsertExpert(name, discipline, lic, phone);
+            });
+            return {
                 expDate: document.getElementById('expDate').value || '',
                 caseNum: document.getElementById('caseNum').value || '',
                 clientName: document.getElementById('clientName').value || '',
@@ -861,11 +933,24 @@ let currentTariff = '1405';
                 category: document.getElementById('categorySelect').value,
                 amount: document.getElementById('amountInput').value || '',
                 totalFee: document.getElementById('totalFeeVal').innerText || '',
+                expertsSummary: experts.join('، '),
                 createdAt: Date.now()
-            });
-
-            openModal('billModal');
+            };
         }
+
+        window.saveCaseAsFinal = function () {
+            const clientName = document.getElementById('clientName').value || '';
+            if (clientName.trim()) autoUpsertApplicant(clientName);
+            saveCaseRecord(Object.assign(buildCaseRecordFromForm(), { status: 'final' }));
+            showToast('پرونده با موفقیت ذخیره شد.', 'success');
+            closeModal('expertModal');
+        };
+
+        window.saveCaseAsDraft = function () {
+            saveCaseRecord(Object.assign(buildCaseRecordFromForm(), { status: 'draft' }));
+            showToast('پیش‌نویس ذخیره شد — از بخش «پرونده‌ها» قابل تکمیل است.', 'success');
+            closeModal('expertModal');
+        };
 
         function downloadBillAsHTML() {
             let content = document.getElementById('billPrintArea').outerHTML;
@@ -941,6 +1026,13 @@ let currentTariff = '1405';
         function showInstallUI() {
             if (isStandaloneMode()) return;
             scheduleInstallBanner();
+            updateSideMenuInstallItem();
+        }
+
+        function updateSideMenuInstallItem() {
+            const item = document.getElementById('sideMenuInstallItem');
+            if (!item) return;
+            item.style.display = isStandaloneMode() ? 'none' : 'flex';
         }
 
         let installBannerTimer = null;
@@ -1002,9 +1094,11 @@ let currentTariff = '1405';
         window.addEventListener('appinstalled', () => {
             hideInstallUI();
             localStorage.setItem('installBannerDismissed', '1');
+            updateSideMenuInstallItem();
         });
 
         document.addEventListener('DOMContentLoaded', () => {
+            updateSideMenuInstallItem();
             if (!isStandaloneMode() && isIOSDevice()) {
                 showInstallUI();
             }
@@ -1066,7 +1160,10 @@ let currentTariff = '1405';
         function dbRead(key) { try { return JSON.parse(localStorage.getItem(key)) || []; } catch (e) { return []; } }
         function dbWrite(key, list) { localStorage.setItem(key, JSON.stringify(list)); }
         function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
-        function fmtMoney(n) { n = Math.round(Number(n) || 0); return n.toLocaleString('fa-IR'); }
+        function fmtMoney(n) {
+            n = Math.round(Number(n) || 0);
+            return (getSettings().digitStyle === 'en') ? n.toLocaleString('en-US') : n.toLocaleString('fa-IR');
+        }
         function escapeHtml(s) { return (s || '').toString().replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
         // Generic save: upserts into a collection, marks it unsynced, then hands off
@@ -1128,7 +1225,7 @@ let currentTariff = '1405';
         function renderDashboard() {
             const cases = dbRead(K.cases);
             const reminders = dbRead(K.reminders).filter((r) => !r.completed);
-            const totalFee = cases.reduce((sum, c) => sum + (parseInt((c.totalFee || '0').toString().replace(/[^0-9]/g, ''), 10) || 0), 0);
+            const totalFee = cases.reduce((sum, c) => sum + (parseStoredAmount(c.totalFee)), 0);
             const thisMonth = cases.length; // simple count, no Jalali month parsing needed for a useful glance
 
             let html = `
@@ -1156,15 +1253,36 @@ let currentTariff = '1405';
         }
 
         /* ---------------- Cases History ---------------- */
-        function renderCases() {
-            const cases = dbRead(K.cases);
+        function renderCases(searchTerm, statusFilter) {
+            searchTerm = (searchTerm != null) ? searchTerm : (document.getElementById('caseSearchInput') ? document.getElementById('caseSearchInput').value : '');
+            statusFilter = (statusFilter != null) ? statusFilter : (document.getElementById('caseStatusFilter') ? document.getElementById('caseStatusFilter').value : 'all');
+            const all = dbRead(K.cases);
+            const q = (searchTerm || '').trim();
+            const cases = all.filter((c) => {
+                if (statusFilter && statusFilter !== 'all' && (c.status || 'final') !== statusFilter) return false;
+                if (!q) return true;
+                const hay = [c.clientName, c.caseNum, c.courtBranch, c.expertsSummary].join(' ');
+                return hay.includes(q);
+            });
             let html = `
-                <div class="view-header"><span class="view-title">تاریخچه پرونده‌ها (${cases.length.toLocaleString('fa-IR')})</span></div>
-                ${cases.map((c) => `
-                    <div class="list-item">
+                <div class="view-header"><span class="view-title">تاریخچه پرونده‌ها (${cases.length.toLocaleString('fa-IR')} از ${all.length.toLocaleString('fa-IR')})</span></div>
+                <div class="section-box" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <input id="caseSearchInput" type="text" placeholder="جستجو بر اساس نام، شماره کلاسه، شعبه یا کارشناس..." value="${escapeHtml(q)}"
+                        style="flex:1; min-width:180px;" oninput="renderCases(this.value)">
+                    <select id="caseStatusFilter" style="width:auto;" onchange="renderCases(document.getElementById('caseSearchInput').value, this.value)">
+                        <option value="all" ${statusFilter==='all'?'selected':''}>همه</option>
+                        <option value="final" ${statusFilter==='final'?'selected':''}>نهایی‌شده</option>
+                        <option value="draft" ${statusFilter==='draft'?'selected':''}>پیش‌نویس</option>
+                    </select>
+                </div>
+                ${cases.map((c, idx) => `
+                    <div class="section-box list-item" id="caseItem-${c.id}" style="cursor:pointer;" onclick="toggleSection('caseItem-${c.id}')">
                         <div class="list-item-row">
                             <div>
-                                <div class="list-item-title">${escapeHtml(c.clientName || 'بدون نام متقاضی')}</div>
+                                <div class="list-item-title">
+                                    ${escapeHtml(c.clientName || 'بدون نام متقاضی')}
+                                    ${(c.status === 'draft') ? '<span style="font-size:0.62rem; font-weight:800; color:var(--accent-amber); border:1px solid var(--accent-amber); border-radius:6px; padding:1px 6px; margin-inline-start:6px;">پیش‌نویس</span>' : ''}
+                                </div>
                                 <div class="list-item-sub">${CATEGORY_LABELS[c.category] || c.category || ''} · کلاسه: ${escapeHtml(c.caseNum || '-')} · شعبه: ${escapeHtml(c.courtBranch || '-')}</div>
                                 <div class="list-item-sub" style="margin-top:4px; font-weight:800; color:var(--accent-cyan);">${escapeHtml(c.totalFee || '')} ریال</div>
                             </div>
@@ -1174,31 +1292,62 @@ let currentTariff = '1405';
                                 </button>
                             </div>
                         </div>
-                    </div>`).join('') || '<div class="empty-state">هنوز پرونده‌ای ثبت نشده. هر بار که پیش‌فاکتور صادر کنی، اینجا اضافه می‌شود.</div>'}`;
+                        <div class="section-content-wrap">
+                            <div style="padding-top:10px; border-top:1px solid var(--border-color); margin-top:10px; font-size:0.78rem; line-height:2;">
+                                <div><strong>۱. اطلاعات پرونده:</strong> تاریخ ${escapeHtml(c.expDate || '-')} · تعرفه سال ${escapeHtml(String(c.tariffYear || ''))}</div>
+                                <div><strong>۲. کارشناسان:</strong> ${escapeHtml(c.expertsSummary || 'ثبت نشده')}</div>
+                                <div><strong>۳. مبلغ:</strong> ${escapeHtml(c.amount || '-')} → جمع کل ${escapeHtml(c.totalFee || '')} ریال</div>
+                            </div>
+                        </div>
+                    </div>`).join('') || '<div class="empty-state">موردی یافت نشد.</div>'}`;
             document.getElementById('casesContent').innerHTML = html;
         }
+        window.renderCases = renderCases;
         window.deleteCase = function (id) {
-            if (!confirm('این پرونده حذف شود؟')) return;
+            if (getSettings().confirmDelete !== false && !confirm('این پرونده حذف شود؟')) return;
             crudDelete(K.cases, id);
             renderCases();
         };
 
         /* ---------------- Applicants ---------------- */
-        function renderApplicants() {
-            const list = dbRead(K.applicants);
+        function renderApplicants(searchTerm, folderFilter) {
+            searchTerm = (searchTerm != null) ? searchTerm : (document.getElementById('apSearchInput') ? document.getElementById('apSearchInput').value : '');
+            folderFilter = (folderFilter != null) ? folderFilter : (document.getElementById('apFolderFilter') ? document.getElementById('apFolderFilter').value : 'all');
+            const all = dbRead(K.applicants);
+            const folders = Array.from(new Set(all.map((a) => (a.folder || '').trim()).filter(Boolean))).sort();
+            const q = (searchTerm || '').trim();
+            const list = all.filter((a) => {
+                if (folderFilter === 'none' && a.folder) return false;
+                if (folderFilter !== 'all' && folderFilter !== 'none' && (a.folder || '') !== folderFilter) return false;
+                if (!q) return true;
+                return [a.fullName, a.phone, a.nationalId, a.address, a.folder].join(' ').includes(q);
+            });
             let html = `
                 <div class="view-header">
-                    <span class="view-title">متقاضیان (${list.length.toLocaleString('fa-IR')})</span>
+                    <span class="view-title">متقاضیان (${list.length.toLocaleString('fa-IR')} از ${all.length.toLocaleString('fa-IR')})</span>
                     <button class="fab-add" onclick="openApplicantForm()" title="افزودن متقاضی">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                     </button>
+                </div>
+                <div class="section-box" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <input id="apSearchInput" type="text" placeholder="جستجو بر اساس نام، شهر/پوشه، شماره تماس..." value="${escapeHtml(q)}"
+                        style="flex:1; min-width:180px;" oninput="renderApplicants(this.value)">
+                    <select id="apFolderFilter" style="width:auto;" onchange="renderApplicants(document.getElementById('apSearchInput').value, this.value)">
+                        <option value="all" ${folderFilter==='all'?'selected':''}>همه پوشه‌ها</option>
+                        <option value="none" ${folderFilter==='none'?'selected':''}>بدون پوشه</option>
+                        ${folders.map((f) => `<option value="${escapeHtml(f)}" ${folderFilter===f?'selected':''}>${escapeHtml(f)}</option>`).join('')}
+                    </select>
+                    <button class="nav-btn" style="height:36px; padding:0 10px;" onclick="printFolderList('applicants')">چاپ فهرست</button>
                 </div>
                 <div id="applicantFormBox"></div>
                 ${list.map((a) => `
                     <div class="list-item">
                         <div class="list-item-row">
                             <div>
-                                <div class="list-item-title">${escapeHtml(a.fullName)}</div>
+                                <div class="list-item-title">
+                                    ${escapeHtml(a.fullName)}
+                                    ${a.folder ? `<span style="font-size:0.62rem; font-weight:800; color:var(--accent-cyan); border:1px solid var(--accent-cyan); border-radius:6px; padding:1px 6px; margin-inline-start:6px;">${escapeHtml(a.folder)}</span>` : ''}
+                                </div>
                                 <div class="list-item-sub">${escapeHtml(a.phone || '')} ${a.nationalId ? '· کدملی: ' + escapeHtml(a.nationalId) : ''}</div>
                                 ${a.address ? `<div class="list-item-sub" style="margin-top:2px;">${escapeHtml(a.address)}</div>` : ''}
                             </div>
@@ -1211,9 +1360,10 @@ let currentTariff = '1405';
                                 </button>
                             </div>
                         </div>
-                    </div>`).join('') || '<div class="empty-state">هنوز متقاضی‌ای ثبت نشده.</div>'}`;
+                    </div>`).join('') || '<div class="empty-state">موردی یافت نشد.</div>'}`;
             document.getElementById('applicantsContent').innerHTML = html;
         }
+        window.renderApplicants = renderApplicants;
         window.openApplicantForm = function (id) {
             const list = dbRead(K.applicants);
             const item = id ? list.find((x) => x.id === id) : null;
@@ -1221,6 +1371,7 @@ let currentTariff = '1405';
                 <div class="section-box">
                     <div class="mini-form-grid">
                         <input type="text" id="apFullName" placeholder="نام و نام خانوادگی" value="${escapeHtml(item ? item.fullName : '')}">
+                        <input type="text" id="apFolder" placeholder="پوشه/دسته‌بندی (مثلاً: تهران، دماوند...)" value="${escapeHtml(item ? item.folder : '')}">
                         <input type="text" id="apPhone" placeholder="شماره تماس" value="${escapeHtml(item ? item.phone : '')}">
                         <input type="text" id="apNationalId" placeholder="کد ملی" value="${escapeHtml(item ? item.nationalId : '')}">
                         <input type="text" id="apAddress" placeholder="آدرس" value="${escapeHtml(item ? item.address : '')}">
@@ -1235,6 +1386,7 @@ let currentTariff = '1405';
             crudSave(K.applicants, {
                 id: id || undefined,
                 fullName,
+                folder: document.getElementById('apFolder').value.trim(),
                 phone: document.getElementById('apPhone').value.trim(),
                 nationalId: document.getElementById('apNationalId').value.trim(),
                 address: document.getElementById('apAddress').value.trim(),
@@ -1243,27 +1395,50 @@ let currentTariff = '1405';
             renderApplicants();
         };
         window.deleteApplicant = function (id) {
-            if (!confirm('این متقاضی حذف شود؟')) return;
+            if (getSettings().confirmDelete !== false && !confirm('این متقاضی حذف شود؟')) return;
             crudDelete(K.applicants, id);
             renderApplicants();
         };
 
         /* ---------------- Experts ---------------- */
-        function renderExperts() {
-            const list = dbRead(K.experts);
+        function renderExperts(searchTerm, folderFilter) {
+            searchTerm = (searchTerm != null) ? searchTerm : (document.getElementById('exSearchInput') ? document.getElementById('exSearchInput').value : '');
+            folderFilter = (folderFilter != null) ? folderFilter : (document.getElementById('exFolderFilter') ? document.getElementById('exFolderFilter').value : 'all');
+            const all = dbRead(K.experts);
+            const folders = Array.from(new Set(all.map((e) => (e.folder || '').trim()).filter(Boolean))).sort();
+            const q = (searchTerm || '').trim();
+            const list = all.filter((e) => {
+                if (folderFilter === 'none' && e.folder) return false;
+                if (folderFilter !== 'all' && folderFilter !== 'none' && (e.folder || '') !== folderFilter) return false;
+                if (!q) return true;
+                return [e.fullName, e.discipline, e.licenseNumber, e.phone, e.folder].join(' ').includes(q);
+            });
             let html = `
                 <div class="view-header">
-                    <span class="view-title">کارشناسان (${list.length.toLocaleString('fa-IR')})</span>
+                    <span class="view-title">کارشناسان (${list.length.toLocaleString('fa-IR')} از ${all.length.toLocaleString('fa-IR')})</span>
                     <button class="fab-add" onclick="openExpertForm()" title="افزودن کارشناس">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                     </button>
+                </div>
+                <div class="section-box" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <input id="exSearchInput" type="text" placeholder="جستجو بر اساس نام، رشته، پوشه، شماره پروانه..." value="${escapeHtml(q)}"
+                        style="flex:1; min-width:180px;" oninput="renderExperts(this.value)">
+                    <select id="exFolderFilter" style="width:auto;" onchange="renderExperts(document.getElementById('exSearchInput').value, this.value)">
+                        <option value="all" ${folderFilter==='all'?'selected':''}>همه پوشه‌ها</option>
+                        <option value="none" ${folderFilter==='none'?'selected':''}>بدون پوشه</option>
+                        ${folders.map((f) => `<option value="${escapeHtml(f)}" ${folderFilter===f?'selected':''}>${escapeHtml(f)}</option>`).join('')}
+                    </select>
+                    <button class="nav-btn" style="height:36px; padding:0 10px;" onclick="printFolderList('experts')">چاپ فهرست</button>
                 </div>
                 <div id="expertFormBox"></div>
                 ${list.map((e) => `
                     <div class="list-item">
                         <div class="list-item-row">
                             <div>
-                                <div class="list-item-title">${escapeHtml(e.fullName)}</div>
+                                <div class="list-item-title">
+                                    ${escapeHtml(e.fullName)}
+                                    ${e.folder ? `<span style="font-size:0.62rem; font-weight:800; color:var(--accent-cyan); border:1px solid var(--accent-cyan); border-radius:6px; padding:1px 6px; margin-inline-start:6px;">${escapeHtml(e.folder)}</span>` : ''}
+                                </div>
                                 <div class="list-item-sub">${escapeHtml(e.discipline || '')} ${e.licenseNumber ? '· پروانه: ' + escapeHtml(e.licenseNumber) : ''}</div>
                                 <div class="list-item-sub">${escapeHtml(e.phone || '')}</div>
                             </div>
@@ -1276,9 +1451,10 @@ let currentTariff = '1405';
                                 </button>
                             </div>
                         </div>
-                    </div>`).join('') || '<div class="empty-state">هنوز کارشناسی ثبت نشده.</div>'}`;
+                    </div>`).join('') || '<div class="empty-state">موردی یافت نشد.</div>'}`;
             document.getElementById('expertsContent').innerHTML = html;
         }
+        window.renderExperts = renderExperts;
         window.openExpertForm = function (id) {
             const list = dbRead(K.experts);
             const item = id ? list.find((x) => x.id === id) : null;
@@ -1286,6 +1462,7 @@ let currentTariff = '1405';
                 <div class="section-box">
                     <div class="mini-form-grid">
                         <input type="text" id="exFullName" placeholder="نام و نام خانوادگی" value="${escapeHtml(item ? item.fullName : '')}">
+                        <input type="text" id="exFolder" placeholder="پوشه/دسته‌بندی (مثلاً: تهران، دماوند...)" value="${escapeHtml(item ? item.folder : '')}">
                         <input type="text" id="exDiscipline" placeholder="رشته کارشناسی" value="${escapeHtml(item ? item.discipline : '')}">
                         <input type="text" id="exLicense" placeholder="شماره پروانه" value="${escapeHtml(item ? item.licenseNumber : '')}">
                         <input type="text" id="exPhone" placeholder="شماره تماس" value="${escapeHtml(item ? item.phone : '')}">
@@ -1301,6 +1478,7 @@ let currentTariff = '1405';
             crudSave(K.experts, {
                 id: id || undefined,
                 fullName,
+                folder: document.getElementById('exFolder').value.trim(),
                 discipline: document.getElementById('exDiscipline').value.trim(),
                 licenseNumber: document.getElementById('exLicense').value.trim(),
                 phone: document.getElementById('exPhone').value.trim(),
@@ -1310,9 +1488,80 @@ let currentTariff = '1405';
             renderExperts();
         };
         window.deleteExpert = function (id) {
-            if (!confirm('این کارشناس حذف شود؟')) return;
+            if (getSettings().confirmDelete !== false && !confirm('این کارشناس حذف شود؟')) return;
             crudDelete(K.experts, id);
             renderExperts();
+        };
+
+        /* ---------------- Beautiful selective print for applicants/experts lists ---------------- */
+        let printPickDataset = [];
+        window.printFolderList = function (kind) {
+            const isApplicant = kind === 'applicants';
+            const all = dbRead(isApplicant ? K.applicants : K.experts);
+            if (!all.length) { alert('موردی برای چاپ وجود ندارد.'); return; }
+            printPickDataset = all;
+            const folders = Array.from(new Set(all.map((x) => (x.folder || '').trim()).filter(Boolean))).sort();
+            const rowsHtml = all.map((x) => `
+                <label class="checkbox-label" style="display:flex; gap:8px; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                    <input type="checkbox" class="print-pick" value="${x.id}" checked>
+                    <span>${escapeHtml(x.fullName)}${x.folder ? ' — ' + escapeHtml(x.folder) : ''}</span>
+                </label>`).join('');
+            document.getElementById('printPickBody').innerHTML = `
+                <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">موارد موردنظر برای چاپ را انتخاب کن:</p>
+                <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+                    <button class="nav-btn" style="height:30px; padding:0 8px; font-size:0.7rem;" onclick="document.querySelectorAll('.print-pick').forEach(c=>c.checked=true)">انتخاب همه</button>
+                    <button class="nav-btn" style="height:30px; padding:0 8px; font-size:0.7rem;" onclick="document.querySelectorAll('.print-pick').forEach(c=>c.checked=false)">لغو همه</button>
+                    ${folders.map((f) => `<button class="nav-btn" style="height:30px; padding:0 8px; font-size:0.7rem;" onclick="filterPrintPicksByFolder('${escapeHtml(f).replace(/'/g, "\\'")}')">فقط ${escapeHtml(f)}</button>`).join('')}
+                </div>
+                <div style="max-height:40vh; overflow-y:auto;">${rowsHtml}</div>
+                <button class="calc-btn" style="margin-top:14px;" onclick="doPrintFolderList('${kind}')">چاپ فهرست انتخاب‌شده</button>`;
+            openModal('printPickModal');
+        };
+
+        window.filterPrintPicksByFolder = function (folderName) {
+            document.querySelectorAll('.print-pick').forEach((c) => {
+                const item = printPickDataset.find((x) => x.id === c.value);
+                c.checked = !!(item && (item.folder || '').trim() === folderName);
+            });
+        };
+
+        window.doPrintFolderList = function (kind) {
+            const isApplicant = kind === 'applicants';
+            const picked = printPickDataset.filter((x) => document.querySelector(`.print-pick[value="${x.id}"]`)?.checked);
+            if (!picked.length) { alert('چیزی انتخاب نشده.'); return; }
+            const title = isApplicant ? 'فهرست متقاضیان' : 'فهرست کارشناسان';
+            const rows = picked.map((x, i) => `
+                <tr>
+                    <td>${(i + 1).toLocaleString('fa-IR')}</td>
+                    <td>${escapeHtml(x.fullName)}</td>
+                    ${isApplicant
+                        ? `<td>${escapeHtml(x.phone || '-')}</td><td>${escapeHtml(x.nationalId || '-')}</td>`
+                        : `<td>${escapeHtml(x.discipline || '-')}</td><td>${escapeHtml(x.licenseNumber || '-')}</td>`}
+                    <td>${escapeHtml(x.folder || '-')}</td>
+                </tr>`).join('');
+            const w = window.open('', '_blank');
+            if (!w) { alert('اجازه باز کردن پنجره چاپ داده نشد.'); return; }
+            w.document.write(`<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8"><title>${title}</title>
+                <style>
+                    body{font-family:Tahoma,'Vazirmatn',sans-serif;padding:24px;color:#0f172a;}
+                    h2{border-bottom:3px solid #0f172a;padding-bottom:8px;margin-bottom:4px;}
+                    .meta{color:#64748b;font-size:12px;margin-bottom:18px;}
+                    table{width:100%;border-collapse:collapse;}
+                    th,td{border:1px solid #cbd5e1;padding:8px;text-align:center;font-size:13px;}
+                    th{background:#0f172a;color:#fff;}
+                    tr:nth-child(even){background:#f8fafc;}
+                    .footer{margin-top:24px;font-size:11px;color:#94a3b8;text-align:center;}
+                </style></head><body>
+                <h2>${title} — کارشناس پلاس</h2>
+                <div class="meta">تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')} · تعداد: ${picked.length.toLocaleString('fa-IR')} نفر</div>
+                <table>
+                    <thead><tr><th>#</th><th>نام و نام خانوادگی</th>${isApplicant ? '<th>تلفن</th><th>کد ملی</th>' : '<th>رشته</th><th>شماره پروانه</th>'}<th>پوشه</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div class="footer">تولید شده توسط اپلیکیشن کارشناس پلاس</div>
+                </body></html>`);
+            w.document.close();
+            w.onload = () => { w.focus(); w.print(); };
         };
 
         /* ---------------- Tariffs (reference view) ---------------- */
@@ -1363,7 +1612,7 @@ let currentTariff = '1405';
             const countByCategory = {};
             let totalFee = 0;
             cases.forEach((c) => {
-                const fee = parseInt((c.totalFee || '0').toString().replace(/[^0-9]/g, ''), 10) || 0;
+                const fee = parseStoredAmount(c.totalFee);
                 totalFee += fee;
                 const key = CATEGORY_LABELS[c.category] || c.category || 'سایر';
                 byCategory[key] = (byCategory[key] || 0) + fee;
@@ -1373,7 +1622,13 @@ let currentTariff = '1405';
             const rows = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
 
             document.getElementById('reportsContent').innerHTML = `
-                <div class="view-header"><span class="view-title">گزارش‌ها</span></div>
+                <div class="view-header">
+                    <span class="view-title">گزارش‌ها</span>
+                    <div style="display:flex; gap:6px;">
+                        <button class="nav-btn no-print" style="height:34px; padding:0 10px;" onclick="printReports()">چاپ گزارش</button>
+                        <button class="nav-btn no-print" style="height:34px; padding:0 10px;" onclick="exportReportsCSV()">خروجی CSV</button>
+                    </div>
+                </div>
                 <div class="stat-grid">
                     <div class="stat-card"><div class="stat-val">${cases.length.toLocaleString('fa-IR')}</div><div class="stat-label">تعداد کل پرونده‌ها</div></div>
                     <div class="stat-card"><div class="stat-val">${fmtMoney(totalFee)}</div><div class="stat-label">جمع کل دستمزد (ریال)</div></div>
@@ -1397,7 +1652,7 @@ let currentTariff = '1405';
                                 <div class="donut-legend-item">
                                     <span class="donut-legend-dot" style="background:${DONUT_COLORS[i % DONUT_COLORS.length]}"></span>
                                     <span class="donut-legend-label">${escapeHtml(label)}</span>
-                                    <span class="donut-legend-pct">${((val / totalFee) * 100).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪</span>
+                                    <span class="donut-legend-pct">${(totalFee > 0 ? (val / totalFee) * 100 : 0).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪</span>
                                 </div>`).join('')}
                         </div>
                     </div>
@@ -1412,13 +1667,57 @@ let currentTariff = '1405';
                                     <td>${escapeHtml(label)}</td>
                                     <td>${(countByCategory[label] || 0).toLocaleString('fa-IR')}</td>
                                     <td>${fmtMoney(val)}</td>
-                                    <td>${((val / totalFee) * 100).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪</td>
+                                    <td>${(totalFee > 0 ? (val / totalFee) * 100 : 0).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪</td>
                                 </tr>`).join('')}
                             <tr class="report-table-total"><td>جمع کل</td><td>${cases.length.toLocaleString('fa-IR')}</td><td>${fmtMoney(totalFee)}</td><td>۱۰۰٪</td></tr>
                         </tbody>
                     </table>
                 </div>` : ''}`;
         }
+
+        window.printReports = function () {
+            const original = document.body.innerHTML;
+            const box = document.getElementById('reportsContent');
+            if (!box) return;
+            const w = window.open('', '_blank');
+            if (!w) { alert('اجازه باز کردن پنجره چاپ داده نشد.'); return; }
+            w.document.write(`<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8">
+                <title>گزارش‌ها — کارشناس پلاس</title>
+                <style>
+                    body{font-family:Tahoma,'Vazirmatn',sans-serif;padding:20px;color:#0f172a;}
+                    .stat-grid{display:flex;gap:12px;margin-bottom:16px;}
+                    .stat-card{border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;}
+                    .section-box{border:1px solid #cbd5e1;border-radius:8px;padding:12px;margin-bottom:14px;}
+                    .no-print{display:none !important;}
+                    table{width:100%;border-collapse:collapse;}
+                    th,td{border:1px solid #cbd5e1;padding:6px;text-align:center;font-size:13px;}
+                    .bar-chart-row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;}
+                    .bar-chart-track{flex:1;background:#eef2f7;border-radius:6px;height:10px;overflow:hidden;}
+                    .bar-chart-fill{background:#4f46e5;height:100%;}
+                </style></head><body>${box.innerHTML}</body></html>`);
+            w.document.close();
+            w.onload = () => { w.focus(); w.print(); };
+        };
+
+        window.exportReportsCSV = function () {
+            const cases = dbRead(K.cases);
+            const byCategory = {};
+            const countByCategory = {};
+            cases.forEach((c) => {
+                const fee = parseStoredAmount(c.totalFee);
+                const key = CATEGORY_LABELS[c.category] || c.category || 'سایر';
+                byCategory[key] = (byCategory[key] || 0) + fee;
+                countByCategory[key] = (countByCategory[key] || 0) + 1;
+            });
+            const rows = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
+            let csv = '\uFEFFرشته کارشناسی,تعداد پرونده,جمع دستمزد (ریال)\n';
+            rows.forEach(([label, val]) => { csv += `"${label}",${countByCategory[label] || 0},${val}\n`; });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `گزارش_کارشناس_پلاس_${Date.now()}.csv`;
+            link.click();
+        };
 
         /* ---------------- Reminders ---------------- */
         function renderReminders() {
@@ -1447,6 +1746,9 @@ let currentTariff = '1405';
                             <div class="list-item-actions">
                                 <button title="افزودن به تقویم گوشی" onclick="addReminderToPhoneCalendar('${r.id}')">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </button>
+                                <button title="اشتراک‌گذاری یادآوری" onclick="shareReminder('${r.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                                 </button>
                                 <button title="${r.completed ? 'برگردان به باز' : 'انجام شد'}" onclick="toggleReminder('${r.id}')">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
@@ -1495,7 +1797,7 @@ let currentTariff = '1405';
             renderReminders();
         };
         window.deleteReminder = function (id) {
-            if (!confirm('این یادآوری حذف شود؟')) return;
+            if (getSettings().confirmDelete !== false && !confirm('این یادآوری حذف شود؟')) return;
             crudDelete(K.reminders, id);
             renderReminders();
         };
@@ -1536,7 +1838,9 @@ let currentTariff = '1405';
             list.forEach((r) => {
                 if (r.completed || r.alarmFired || !r.dueDate) return;
                 const due = new Date(`${r.dueDate}T${r.dueTime || '00:00'}:00`);
-                if (isNaN(due.getTime()) || due.getTime() > now.getTime()) return;
+                if (isNaN(due.getTime())) return;
+                const leadMs = (parseInt(s.reminderLeadMinutes, 10) || 0) * 60000;
+                if ((due.getTime() - leadMs) > now.getTime()) return;
                 if ('Notification' in window && Notification.permission === 'granted') {
                     try { new Notification('یادآوری کارشناس پلاس', { body: r.title, tag: 'reminder-' + r.id }); } catch (e) {}
                 }
@@ -1553,8 +1857,11 @@ let currentTariff = '1405';
             reminderAlarmInterval = setInterval(checkReminderAlarms, 20000);
         }
 
-        /* Add a reminder to the phone's own calendar app via a downloadable
-           .ics file — every mobile/desktop calendar app can open this. */
+        /* Adds a reminder to the phone's calendar. On Android this opens the
+           Calendar app directly (Google Calendar's web intent is routed straight
+           into the installed app by the OS) instead of forcing a download-then-
+           import step. iOS/desktop still use a downloadable .ics, since there's
+           no equivalent one-tap deep link into Apple's Calendar from the web. */
         window.addReminderToPhoneCalendar = function (id) {
             const list = dbRead(K.reminders);
             const r = list.find((x) => x.id === id);
@@ -1564,6 +1871,25 @@ let currentTariff = '1405';
             const timeStr = (digits(r.dueTime) || '09:00').replace(':', '') + '00';
             if (!/^\d{8}$/.test(dateStr)) { alert('تاریخ سررسید این یادآوری معتبر نیست.'); return; }
             const dtStart = `${dateStr}T${timeStr}`;
+
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            if (isAndroid) {
+                // End time = start + 1 hour, in the same YYYYMMDDTHHMMSS format
+                const endDate = new Date(
+                    +dateStr.slice(0, 4), +dateStr.slice(4, 6) - 1, +dateStr.slice(6, 8),
+                    +timeStr.slice(0, 2), +timeStr.slice(2, 4)
+                );
+                endDate.setHours(endDate.getHours() + 1);
+                const pad = (n) => String(n).padStart(2, '0');
+                const dtEnd = `${endDate.getFullYear()}${pad(endDate.getMonth() + 1)}${pad(endDate.getDate())}T${pad(endDate.getHours())}${pad(endDate.getMinutes())}00`;
+                const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+                    + '&text=' + encodeURIComponent(r.title || 'یادآوری کارشناس پلاس')
+                    + '&dates=' + dtStart + '/' + dtEnd
+                    + '&details=' + encodeURIComponent(r.notes || '');
+                window.open(url, '_blank');
+                return;
+            }
+
             const ics = [
                 'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Karshenas Plus//Reminders//FA',
                 'BEGIN:VEVENT',
@@ -1581,6 +1907,17 @@ let currentTariff = '1405';
             a.href = url; a.download = 'yadavari.ics';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             setTimeout(() => URL.revokeObjectURL(url), 4000);
+        };
+
+        window.shareReminder = function (id) {
+            const r = dbRead(K.reminders).find((x) => x.id === id);
+            if (!r) return;
+            const text = `یادآوری: ${r.title || ''}\nموعد: ${r.dueDate || ''} ${r.dueTime || ''}\n${r.notes || ''}`.trim();
+            if (navigator.share) {
+                navigator.share({ title: 'یادآوری کارشناس پلاس', text: text }).catch(() => {});
+            } else if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => showToast('متن یادآوری کپی شد.', 'success'));
+            }
         };
 
         /* ---------------- Backup / Restore (fully offline, no login needed) ---------------- */
@@ -1646,6 +1983,10 @@ let currentTariff = '1405';
         function applyFontSize(size) {
             document.documentElement.setAttribute('data-font-size', size || 'medium');
         }
+        function applyFontFamily(family) {
+            document.documentElement.setAttribute('data-font-family', family || 'vazirmatn');
+        }
+        window.setFontFamily = function (family) { applyFontFamily(family); saveSettings({ fontFamily: family }); };
         function applyDensity(density) {
             document.documentElement.setAttribute('data-density', density || 'comfortable');
         }
@@ -1662,10 +2003,16 @@ let currentTariff = '1405';
         function renderSettings() {
             const s = getSettings();
             const themeOptions = [
-                { id: 'default', label: 'نیلی و فیروزه‌ای (پیش‌فرض)' },
+                { id: 'rosegold', label: 'رز طلایی (پیش‌فرض)' },
+                { id: 'default', label: 'نیلی و فیروزه‌ای' },
                 { id: 'emerald', label: 'زمردی' },
-                { id: 'rosegold', label: 'رز طلایی' },
-                { id: 'slate', label: 'خاکستری مینیمال' }
+                { id: 'slate', label: 'خاکستری مینیمال' },
+                { id: 'ocean', label: 'آبی اقیانوسی' },
+                { id: 'sunset', label: 'غروب نارنجی' },
+                { id: 'violet', label: 'بنفش' },
+                { id: 'forest', label: 'سبز جنگلی' },
+                { id: 'crimson', label: 'قرمز آجری' },
+                { id: 'graphite', label: 'زغالی مدرن' }
             ];
             const invoiceTemplates = [
                 { id: 'modern', label: 'مدرن (پیش‌فرض)' },
@@ -1682,7 +2029,7 @@ let currentTariff = '1405';
                     <div class="settings-row">
                         <div><div class="settings-row-label">رنگ‌بندی برنامه</div><div class="settings-row-sub">چند تم رنگی برای شخصی‌سازی ظاهر</div></div>
                         <select id="stColorTheme" style="width:auto; padding:6px 10px;" onchange="setColorTheme(this.value)">
-                            ${themeOptions.map((t) => `<option value="${t.id}" ${((s.colorTheme || 'default') === t.id) ? 'selected' : ''}>${t.label}</option>`).join('')}
+                            ${themeOptions.map((t) => `<option value="${t.id}" ${((s.colorTheme || 'rosegold') === t.id) ? 'selected' : ''}>${t.label}</option>`).join('')}
                         </select>
                     </div>
                     <div class="settings-row">
@@ -1723,6 +2070,16 @@ let currentTariff = '1405';
                         </select>
                     </div>
                     <div class="settings-row">
+                        <div><div class="settings-row-label">فونت برنامه</div><div class="settings-row-sub">در چاپ پیش‌فاکتور هم همین فونت استفاده می‌شود</div></div>
+                        <select id="stFontFamily" style="width:auto; padding:6px 10px;" onchange="setFontFamily(this.value)">
+                            <option value="vazirmatn" ${(s.fontFamily||'vazirmatn')==='vazirmatn'?'selected':''}>وزیرمتن (پیش‌فرض)</option>
+                            <option value="sahel" ${(s.fontFamily||'vazirmatn')==='sahel'?'selected':''}>ساحل</option>
+                            <option value="shabnam" ${(s.fontFamily||'vazirmatn')==='shabnam'?'selected':''}>شبنم</option>
+                            <option value="samim" ${(s.fontFamily||'vazirmatn')==='samim'?'selected':''}>صمیم</option>
+                            <option value="parastoo" ${(s.fontFamily||'vazirmatn')==='parastoo'?'selected':''}>پرستو</option>
+                        </select>
+                    </div>
+                    <div class="settings-row">
                         <div><div class="settings-row-label">تراکم چیدمان</div><div class="settings-row-sub">فاصله‌گذاری فشرده یا راحت بین عناصر</div></div>
                         <select id="stDensity" style="width:auto; padding:6px 10px;" onchange="setDensity(this.value)">
                             <option value="comfortable" ${(s.density||'comfortable')==='comfortable'?'selected':''}>راحت (پیش‌فرض)</option>
@@ -1756,6 +2113,64 @@ let currentTariff = '1405';
                     <div class="settings-row">
                         <div><div class="settings-row-label">صدای آلارم یادآوری</div><div class="settings-row-sub">پخش صدا هنگام رسیدن موعد یادآوری</div></div>
                         <label class="switch"><input type="checkbox" id="stReminderSound" ${s.reminderSound !== false ? 'checked' : ''} onchange="saveSettings({reminderSound:this.checked})"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">هشدار زودتر از موعد</div><div class="settings-row-sub">چند دقیقه قبل از سررسید هم اعلان بده</div></div>
+                        <select id="stReminderLead" style="width:auto; padding:6px 10px;" onchange="saveSettings({reminderLeadMinutes:this.value})">
+                            <option value="0" ${(s.reminderLeadMinutes||'0')==='0'?'selected':''}>دقیقاً سر موعد</option>
+                            <option value="10" ${(s.reminderLeadMinutes||'0')==='10'?'selected':''}>۱۰ دقیقه زودتر</option>
+                            <option value="30" ${(s.reminderLeadMinutes||'0')==='30'?'selected':''}>۳۰ دقیقه زودتر</option>
+                            <option value="60" ${(s.reminderLeadMinutes||'0')==='60'?'selected':''}>۱ ساعت زودتر</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="section-box">
+                    <div class="section-title"><span>بهبود و شخصی‌سازی برنامه</span></div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">تأیید قبل از حذف موارد</div><div class="settings-row-sub">نمایش پیام تأیید پیش از حذف پرونده، متقاضی، کارشناس یا یادآوری</div></div>
+                        <label class="switch"><input type="checkbox" ${s.confirmDelete !== false ? 'checked' : ''} onchange="saveSettings({confirmDelete:this.checked})"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">دکمه بازگشت به بالا</div><div class="settings-row-sub">نمایش دکمه شناور برای برگشت سریع به ابتدای صفحه</div></div>
+                        <label class="switch"><input type="checkbox" ${s.showBackToTop !== false ? 'checked' : ''} onchange="saveSettings({showBackToTop:this.checked}); applyBackToTopVisibility();"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">پاک‌سازی خودکار فرم</div><div class="settings-row-sub">پس از صدور پیش‌فاکتور، فرم محاسبه خالی شود</div></div>
+                        <label class="switch"><input type="checkbox" ${s.autoResetAfterInvoice ? 'checked' : ''} onchange="saveSettings({autoResetAfterInvoice:this.checked})"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">صدای کلیک دکمه‌ها</div><div class="settings-row-sub">پخش یک تیک صدای کوتاه هنگام لمس دکمه‌های اصلی</div></div>
+                        <label class="switch"><input type="checkbox" ${s.uiClickSound ? 'checked' : ''} onchange="saveSettings({uiClickSound:this.checked})"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">لرزش لمسی دکمه‌ها</div><div class="settings-row-sub">ویبره سبک هنگام ضربه روی دکمه‌های ناوبری (در گوشی‌های پشتیبان)</div></div>
+                        <label class="switch"><input type="checkbox" ${s.hapticFeedback !== false ? 'checked' : ''} onchange="saveSettings({hapticFeedback:this.checked})"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">ارقام نمایشی در گزارش‌ها</div><div class="settings-row-sub">فارسی یا انگلیسی نمایش داده شود</div></div>
+                        <select id="stDigitStyle" style="width:auto; padding:6px 10px;" onchange="saveSettings({digitStyle:this.value}); if(typeof renderReports==='function') renderReports();">
+                            <option value="fa" ${(s.digitStyle||'fa')==='fa'?'selected':''}>فارسی (۱۲۳...)</option>
+                            <option value="en" ${(s.digitStyle||'fa')==='en'?'selected':''}>انگلیسی (123...)</option>
+                        </select>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">نوار پایین فشرده</div><div class="settings-row-sub">فقط آیکون، بدون عنوان متنی زیر آن</div></div>
+                        <label class="switch"><input type="checkbox" ${s.compactBottomNav ? 'checked' : ''} onchange="saveSettings({compactBottomNav:this.checked}); applyCompactBottomNav();"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">بنر کانال تلگرام</div><div class="settings-row-sub">نمایش دعوت به عضویت در کانال، پایین منوی همبرگری</div></div>
+                        <label class="switch"><input type="checkbox" ${s.hideTelegramBanner ? '' : 'checked'} onchange="saveSettings({hideTelegramBanner:!this.checked}); applyTelegramBannerVisibility();"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">حالت پیش‌فرض محاسبه‌گر</div><div class="settings-row-sub">تک‌کارشناسه یا هیئتی، هنگام باز کردن برنامه</div></div>
+                        <select id="stDefaultCalcMode" style="width:auto; padding:6px 10px;" onchange="saveSettings({defaultCalcMode:this.value})">
+                            <option value="single" ${(s.defaultCalcMode||'single')==='single'?'selected':''}>تک‌کارشناسه</option>
+                            <option value="board" ${(s.defaultCalcMode||'single')==='board'?'selected':''}>هیئت کارشناسی</option>
+                        </select>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">به‌روزرسانی برنامه</div><div class="settings-row-sub">بررسی نسخه جدید و بارگذاری فوری</div></div>
+                        <button class="nav-btn" style="height:34px; padding:0 12px;" onclick="checkForAppUpdate()">بررسی الان</button>
                     </div>
                 </div>
                 <div class="section-box">
