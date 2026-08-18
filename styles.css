@@ -104,13 +104,13 @@ body[data-theme="graphite"] { --accent-glow: #52525b; --accent-glow-2: #3f3f46; 
 
 html { font-variant-numeric: tabular-nums; }
 
-/* Default "zoomed-in" presentation on desktop only — page opens ~15% larger
-   than a plain 1:1 render. Never applied on phones: that 1.3x zoom on top of
-   an already mobile-sized layout is what made every font look oversized. */
+/* Default "zoomed-in" presentation on desktop only — page opens 30% larger
+   than a plain 1:1 render. Never applied on phones: zooming on top of an
+   already mobile-sized layout is what made fonts look oversized there. */
 @media (min-width: 900px) {
-    html { zoom: 1.15; }
+    html { zoom: 1.3; }
     @supports not (zoom: 1) {
-        html { transform: scale(1.15); transform-origin: top center; width: 86.96%; }
+        html { transform: scale(1.3); transform-origin: top center; width: 76.92%; }
     }
 }
 
@@ -437,7 +437,10 @@ a { color: inherit; }
 .page-subtitle { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
 .page-header-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
-.view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px; }
+.view-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 10px;
+    position: sticky; top: 0; z-index: 20; background: var(--bg-color); padding-block: 6px; margin-inline: -2px; padding-inline: 2px;
+}
 .view-title { font-size: 1.02rem; font-weight: 800; }
 
 .header { text-align: center; margin-bottom: 4px; display: none; } /* legacy hook, superseded by .page-header */
@@ -818,6 +821,52 @@ input[type="range"] { accent-color: var(--accent-glow); height: 18px; cursor: po
 .list-item-actions button.danger:hover { color: var(--accent-rose); border-color: var(--accent-rose); }
 .list-item-actions button:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); }
 
+/* ---------------------------------------------------------------------- */
+/* Selectable card grid (cases / applicants / experts) — user picks the   */
+/* density (1 / 3 / 4 columns); selection gives a clear color change.     */
+/* ---------------------------------------------------------------------- */
+.entity-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.entity-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.entity-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 640px) {
+    .entity-grid.cols-3, .entity-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 420px) {
+    .entity-grid.cols-3, .entity-grid.cols-4 { grid-template-columns: 1fr; }
+}
+.entity-grid .list-item { margin-bottom: 0; }
+.layout-picker { display: flex; gap: 4px; }
+.layout-picker button {
+    width: 30px; height: 30px; border-radius: var(--r-sm); border: 1px solid var(--border-color);
+    background: var(--input-bg); color: var(--text-muted); cursor: pointer; font-size: 0.62rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+}
+.layout-picker button.active { color: #fff; background: var(--accent-cyan); border-color: var(--accent-cyan); }
+
+/* Selection mode: the whole card visibly changes when picked — not just a
+   small checkbox — so it never reads as "did that register?" */
+.list-item.selectable { position: relative; }
+.list-item.selectable.selected {
+    border-color: var(--accent-cyan); background: color-mix(in srgb, var(--accent-cyan) 12%, var(--section-bg));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-cyan) 35%, transparent);
+}
+.list-item.selectable::before {
+    content: ""; position: absolute; top: 10px; inset-inline-start: 10px; width: 18px; height: 18px;
+    border-radius: 50%; border: 2px solid var(--border-strong); background: var(--input-bg); transition: all 0.15s ease;
+}
+.list-item.selectable.selected::before {
+    background: var(--accent-cyan); border-color: var(--accent-cyan);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+    background-size: 12px; background-repeat: no-repeat; background-position: center;
+}
+.list-item.selectable { padding-inline-start: 34px; }
+.selection-toolbar {
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+    background: var(--section-bg); border: 1px solid var(--accent-cyan); border-radius: var(--r-md);
+    padding: 8px 10px; margin-bottom: 10px; font-size: 0.72rem; font-weight: 700;
+}
+.selection-toolbar .sel-count { color: var(--accent-cyan); margin-inline-end: auto; }
+
 .empty-state {
     text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.78rem;
     border: 1.5px dashed var(--border-color); border-radius: var(--r-lg); background: var(--surface-2);
@@ -1103,6 +1152,61 @@ select {
 .bill-template.tpl-classic .bill-table, .bill-template.tpl-classic .bill-table th, .bill-template.tpl-classic .bill-table td { border-color: #999; }
 .bill-template.tpl-classic .expert-line-item { border-radius: 0; background: #fafafa; border-color: #ccc; }
 .bill-template.tpl-classic .signature-card { border-radius: 0; border: 1px dashed #666; }
+
+/* --- 4. Minimal — no boxes, just hairline dividers and whitespace --- */
+.bill-template.tpl-minimal { border: none; padding: 6px; }
+.bill-template.tpl-minimal .bill-header { border-bottom: 1px solid #e2e8f0; }
+.bill-template.tpl-minimal .bill-info-container { background: transparent; border: none; border-bottom: 1px solid #e2e8f0; border-radius: 0; padding: 8px 0; }
+.bill-template.tpl-minimal .bill-table, .bill-template.tpl-minimal .bill-table th, .bill-template.tpl-minimal .bill-table td { border: none; border-bottom: 1px solid #e2e8f0; }
+.bill-template.tpl-minimal .bill-table th { background: transparent !important; font-weight: 800; }
+.bill-template.tpl-minimal .expert-line-item { background: transparent; border: none; border-bottom: 1px solid #f1f5f9; border-radius: 0; }
+.bill-template.tpl-minimal .signature-card { border: none; border-top: 1px solid #e2e8f0; border-radius: 0; background: transparent; }
+
+/* --- 5. Colorful — accent-colored bands using the active color theme --- */
+.bill-template.tpl-colorful { border: 2px solid var(--accent-glow); }
+.bill-template.tpl-colorful .bill-header { background: linear-gradient(90deg, var(--accent-glow), var(--accent-cyan)); color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 8px; border-radius: 6px 6px 0 0; border-bottom: none; margin: -16px -16px 8px -16px; width: auto; }
+.bill-template.tpl-colorful .bill-info-container { background: color-mix(in srgb, var(--accent-glow) 8%, #fff); border-color: var(--accent-glow); }
+.bill-template.tpl-colorful .bill-table th { background: var(--accent-glow) !important; color: #fff !important; -webkit-print-color-adjust: exact; }
+.bill-template.tpl-colorful .expert-line-item { border-color: var(--accent-cyan); }
+.bill-template.tpl-colorful .signature-card { border-color: var(--accent-glow); }
+
+/* --- 6. Elegant — ornate double border, serif-feel header --- */
+.bill-template.tpl-elegant { border: 1px solid #92400e; outline: 4px double #92400e; outline-offset: -6px; padding: 20px; }
+.bill-template.tpl-elegant .bill-header { border-bottom: 2px solid #92400e; }
+.bill-template.tpl-elegant .bill-header h4 { font-weight: 900; letter-spacing: 1px; }
+.bill-template.tpl-elegant .bill-info-container { background: #fffbeb; border: 1px solid #d97706; }
+.bill-template.tpl-elegant .bill-table th { background: #92400e !important; color: #fff !important; -webkit-print-color-adjust: exact; }
+.bill-template.tpl-elegant .signature-card { border: 1px solid #92400e; background: #fffbeb; }
+
+/* --- 7. Compact — tight, fits more content per page (paper-saving) --- */
+.bill-template.tpl-compact { padding: 8px; font-size: 0.64rem; }
+.bill-template.tpl-compact .bill-header { padding-bottom: 3px; margin-bottom: 4px; }
+.bill-template.tpl-compact .bill-info-container { padding: 5px; margin-bottom: 4px; }
+.bill-template.tpl-compact .bill-table th, .bill-template.tpl-compact .bill-table td { padding: 3px; font-size: 0.62rem; }
+.bill-template.tpl-compact .signatures-container { margin-top: 6px; padding-top: 5px; }
+.bill-template.tpl-compact .signature-space { height: 22px; }
+
+/* --- 8. Bold title — large statement-style header --- */
+.bill-template.tpl-boldtitle .bill-header h4 { font-size: 1.35rem; font-weight: 900; }
+.bill-template.tpl-boldtitle .bill-header { border-bottom: 4px solid #0f172a; padding-bottom: 10px; }
+.bill-template.tpl-boldtitle .bill-table th { background: #0f172a !important; color: #fff !important; font-size: 0.8rem !important; -webkit-print-color-adjust: exact; }
+
+/* --- 9. Watermark — faint diagonal status text behind the content --- */
+.bill-template.tpl-watermark { overflow: hidden; }
+.bill-template.tpl-watermark::before {
+    content: "کارشناس پلاس"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 2.6rem; font-weight: 900; color: rgba(15, 23, 42, 0.06); transform: rotate(-30deg);
+    pointer-events: none; z-index: 0; white-space: nowrap;
+}
+.bill-template.tpl-watermark > * { position: relative; z-index: 1; }
+
+/* --- 10. Stamp frame — dedicated circular stamp/seal placeholder near signatures --- */
+.bill-template.tpl-stamp .signature-card { position: relative; padding-top: 14px; }
+.bill-template.tpl-stamp .signature-card::after {
+    content: "محل مهر"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    width: 46px; height: 46px; border: 2px dashed #94a3b8; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 0.52rem; color: #94a3b8; background: #fff;
+}
 
 /* STRICT EXACT 1-PAGE A4 PRINT CSS (Zero Multi-page/Duplicates) */
 @media print {

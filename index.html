@@ -651,11 +651,11 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                         <span>اشتراک‌گذاری پیش‌فاکتور</span>
                     </button>
-                    <button class="btn-action" onclick="saveCaseAsFinal()">
+                    <button class="btn-action" onclick="openExpertModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                         <span>ذخیره پرونده</span>
                     </button>
-                    <button class="btn-action" onclick="saveCaseAsDraft()">
+                    <button class="btn-action" onclick="openExpertModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                         <span>ذخیره پیش‌نویس</span>
                     </button>
@@ -704,7 +704,7 @@
             <div class="modal-body">
                 <div style="display: flex; flex-direction: column; gap: 10px;">
 
-                    <div class="section-box expanded" id="sectionBillCaseInfo">
+                    <div class="section-box" id="sectionBillCaseInfo">
                         <div class="section-title collapsible" onclick="toggleSection('sectionBillCaseInfo')">
                             <span class="st-left">
                                 <span class="step-num-badge">۱</span>
@@ -737,7 +737,7 @@
                         </div></div>
                     </div>
 
-                    <div class="section-box expanded" id="sectionBillExperts">
+                    <div class="section-box" id="sectionBillExperts">
                         <div class="section-title collapsible" onclick="toggleSection('sectionBillExperts')">
                             <span class="st-left">
                                 <span class="step-num-badge">۲</span>
@@ -783,17 +783,9 @@
                         </div></div>
                     </div>
 
-                    <div class="action-grid" style="grid-template-columns: 1fr 1fr; margin-top: 0;">
-                        <button class="btn-action" onclick="saveCaseAsDraft()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                            <span>ذخیره پیش‌نویس</span>
-                        </button>
-                        <button class="btn-action" onclick="saveCaseAsFinal()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
-                            <span>ذخیره پرونده</span>
-                        </button>
-                    </div>
                     <button class="calc-btn" style="margin-top: 4px; margin-bottom: 0;" onclick="generateBill()">تایید و صدور پیش‌فاکتور</button>
+                    <button class="btn-action" style="width: 100%; margin-top: 8px;" onclick="saveCaseAsFinal()">تأیید و ذخیره پرونده (بدون صدور فاکتور)</button>
+                    <button class="btn-action" style="width: 100%; margin-top: 6px;" onclick="saveCaseAsDraft()">تأیید و ذخیره پیش‌نویس</button>
                 </div>
             </div>
         </div>

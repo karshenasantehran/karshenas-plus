@@ -612,6 +612,10 @@ let currentTariff = '1405';
         function openExpertModal() {
             openModal('expertModal');
             populateQuickPicks();
+            ['sectionBillCaseInfo', 'sectionBillExperts', 'sectionBillExtras'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('expanded');
+            });
         }
 
         function populateQuickPicks() {
@@ -718,7 +722,8 @@ let currentTariff = '1405';
 
             const invoiceTpl = (typeof getSettings === 'function' ? (getSettings().invoiceTemplate || 'modern') : 'modern');
             const printArea = document.getElementById('billPrintArea');
-            printArea.classList.remove('tpl-modern', 'tpl-formal', 'tpl-classic');
+            const ALL_TPL_CLASSES = ['tpl-modern', 'tpl-formal', 'tpl-classic', 'tpl-minimal', 'tpl-colorful', 'tpl-elegant', 'tpl-compact', 'tpl-boldtitle', 'tpl-watermark', 'tpl-stamp'];
+            printArea.classList.remove(...ALL_TPL_CLASSES);
             printArea.classList.add('tpl-' + invoiceTpl);
             let bismillahEl = printArea.querySelector('.bismillah-line');
             if (invoiceTpl === 'formal') {
@@ -907,7 +912,10 @@ let currentTariff = '1405';
 
             openModal('billModal');
             if (getSettings().autoResetAfterInvoice) resetForm();
+            editingCaseId = null;
         }
+
+        let editingCaseId = null;
 
         /* Gathers the current calculator form + expert list into one record,
            shared by invoice issuance, "save case" and "save draft". */
@@ -924,7 +932,7 @@ let currentTariff = '1405';
                 const phone = item.querySelector('.exp-phone-field').value;
                 autoUpsertExpert(name, discipline, lic, phone);
             });
-            return {
+            const rec = {
                 expDate: document.getElementById('expDate').value || '',
                 caseNum: document.getElementById('caseNum').value || '',
                 clientName: document.getElementById('clientName').value || '',
@@ -933,10 +941,40 @@ let currentTariff = '1405';
                 category: document.getElementById('categorySelect').value,
                 amount: document.getElementById('amountInput').value || '',
                 totalFee: document.getElementById('totalFeeVal').innerText || '',
-                expertsSummary: experts.join('، '),
-                createdAt: Date.now()
+                expertsSummary: experts.join('، ')
             };
+            if (editingCaseId) {
+                const original = dbRead(K.cases).find((c) => c.id === editingCaseId);
+                const originalDate = (original && original.expDate) || (original && original.createdAt ? new Date(original.createdAt).toLocaleDateString('fa-IR') : 'نامشخص');
+                rec.id = editingCaseId;
+                rec.editNote = `اصل پرونده در تاریخ ${originalDate} وارد شده و در تاریخ ${new Date().toLocaleDateString('fa-IR')} ویرایش شده است.`;
+            } else {
+                rec.createdAt = Date.now();
+            }
+            return rec;
         }
+
+        window.editCase = function (id) {
+            const c = dbRead(K.cases).find((x) => x.id === id);
+            if (!c) return;
+            editingCaseId = id;
+            switchView('calc');
+            setTimeout(() => {
+                if (c.tariffYear) {
+                    const btn = document.querySelector(`.tab-btn[onclick*="setTariff('${c.tariffYear}'"]`);
+                    if (btn) setTariff(c.tariffYear, btn);
+                }
+                if (c.category) { document.getElementById('categorySelect').value = c.category; }
+                document.getElementById('amountInput').value = c.amount || '';
+                document.getElementById('expDate').value = c.expDate || '';
+                document.getElementById('caseNum').value = c.caseNum || '';
+                document.getElementById('clientName').value = c.clientName || '';
+                document.getElementById('courtBranch').value = c.courtBranch || '';
+                calculate();
+                showToast('در حال ویرایش این پرونده هستی — پس از تغییرات، دوباره ذخیره یا صادر کن.', 'info');
+                document.getElementById('expDate').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 50);
+        };
 
         window.saveCaseAsFinal = function () {
             const clientName = document.getElementById('clientName').value || '';
@@ -944,12 +982,14 @@ let currentTariff = '1405';
             saveCaseRecord(Object.assign(buildCaseRecordFromForm(), { status: 'final' }));
             showToast('پرونده با موفقیت ذخیره شد.', 'success');
             closeModal('expertModal');
+            editingCaseId = null;
         };
 
         window.saveCaseAsDraft = function () {
             saveCaseRecord(Object.assign(buildCaseRecordFromForm(), { status: 'draft' }));
             showToast('پیش‌نویس ذخیره شد — از بخش «پرونده‌ها» قابل تکمیل است.', 'success');
             closeModal('expertModal');
+            editingCaseId = null;
         };
 
         function downloadBillAsHTML() {
@@ -1231,10 +1271,10 @@ let currentTariff = '1405';
             let html = `
                 <div class="view-header"><span class="view-title">داشبورد</span></div>
                 <div class="stat-grid">
-                    <div class="stat-card"><div class="stat-val">${cases.length.toLocaleString('fa-IR')}</div><div class="stat-label">تعداد پرونده‌های ثبت‌شده</div></div>
-                    <div class="stat-card"><div class="stat-val">${fmtMoney(totalFee)}</div><div class="stat-label">جمع کل دستمزد (ریال)</div></div>
-                    <div class="stat-card"><div class="stat-val">${dbRead(K.experts).length.toLocaleString('fa-IR')}</div><div class="stat-label">کارشناسان ثبت‌شده</div></div>
-                    <div class="stat-card"><div class="stat-val">${reminders.length.toLocaleString('fa-IR')}</div><div class="stat-label">یادآوری‌های باز</div></div>
+                    <div class="stat-card"><div class="stat-val" data-countup="${cases.length}">۰</div><div class="stat-label">تعداد پرونده‌های ثبت‌شده</div></div>
+                    <div class="stat-card"><div class="stat-val" data-countup="${totalFee}" data-money="1">۰</div><div class="stat-label">جمع کل دستمزد (ریال)</div></div>
+                    <div class="stat-card"><div class="stat-val" data-countup="${dbRead(K.experts).length}">۰</div><div class="stat-label">کارشناسان ثبت‌شده</div></div>
+                    <div class="stat-card"><div class="stat-val" data-countup="${reminders.length}">۰</div><div class="stat-label">یادآوری‌های باز</div></div>
                 </div>
                 <div class="section-box">
                     <div class="section-title"><span>آخرین پرونده‌ها</span></div>
@@ -1250,9 +1290,113 @@ let currentTariff = '1405';
                         </div>`).join('') || '<div class="empty-state">هنوز هیچ پرونده‌ای ثبت نشده. از تب «محاسبه» شروع کن.</div>'}
                 </div>`;
             document.getElementById('dashboardContent').innerHTML = html;
+            runCountUpAnimations();
         }
 
         /* ---------------- Cases History ---------------- */
+        /* ---------------- Shared multi-select + grid-layout system, used by
+           Cases / Applicants / Experts list views ---------------- */
+        const selectionState = { cases: new Set(), applicants: new Set(), experts: new Set() };
+        const selectionModeOn = { cases: false, applicants: false, experts: false };
+
+        function getGridLayout(kind) { return getSettings()[kind + 'GridLayout'] || '1'; }
+        window.setGridLayout = function (kind, cols) {
+            saveSettings({ [kind + 'GridLayout']: cols });
+            rerenderKind(kind);
+        };
+        function rerenderKind(kind) {
+            if (kind === 'cases') renderCases();
+            else if (kind === 'applicants') renderApplicants();
+            else renderExperts();
+        }
+        window.toggleSelectionMode = function (kind) {
+            selectionModeOn[kind] = !selectionModeOn[kind];
+            selectionState[kind].clear();
+            rerenderKind(kind);
+        };
+        window.toggleItemSelected = function (kind, id) {
+            if (!selectionModeOn[kind]) return;
+            const set = selectionState[kind];
+            if (set.has(id)) set.delete(id); else set.add(id);
+            const card = document.getElementById(kind + 'Card-' + id);
+            if (card) card.classList.toggle('selected', set.has(id));
+            updateSelectionToolbar(kind);
+        };
+        window.selectAllVisible = function (kind, ids) {
+            ids.forEach((id) => selectionState[kind].add(id));
+            ids.forEach((id) => { const c = document.getElementById(kind + 'Card-' + id); if (c) c.classList.add('selected'); });
+            updateSelectionToolbar(kind);
+        };
+        window.deselectAllVisible = function (kind) {
+            selectionState[kind].forEach((id) => { const c = document.getElementById(kind + 'Card-' + id); if (c) c.classList.remove('selected'); });
+            selectionState[kind].clear();
+            updateSelectionToolbar(kind);
+        };
+        function updateSelectionToolbar(kind) {
+            const el = document.getElementById(kind + 'SelCount');
+            if (el) el.innerText = selectionState[kind].size.toLocaleString('fa-IR');
+        }
+        function layoutPickerHtml(kind) {
+            const cur = getGridLayout(kind);
+            const opts = [['1', '۱×۱'], ['3', '۳×۳'], ['4', '۴×۴']];
+            return `<div class="layout-picker">${opts.map(([v, l]) => `<button class="${cur === v ? 'active' : ''}" title="چیدمان ${l}" onclick="setGridLayout('${kind}', '${v}')">${l}</button>`).join('')}</div>`;
+        }
+        function selectionToolbarHtml(kind, allIds) {
+            if (!selectionModeOn[kind]) {
+                return `<button class="nav-btn" style="height:34px; padding:0 10px;" onclick="toggleSelectionMode('${kind}')">حالت انتخاب</button>`;
+            }
+            return `
+                <button class="nav-btn" style="height:34px; padding:0 10px;" onclick="toggleSelectionMode('${kind}')">پایان انتخاب</button>
+                <div class="selection-toolbar" style="width:100%;">
+                    <span>انتخاب‌شده: <span class="sel-count" id="${kind}SelCount">${selectionState[kind].size.toLocaleString('fa-IR')}</span></span>
+                    <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.68rem;" onclick="selectAllVisible('${kind}', ${JSON.stringify(allIds)})">انتخاب همه</button>
+                    <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.68rem;" onclick="deselectAllVisible('${kind}')">لغو انتخاب</button>
+                    <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.68rem;" onclick="printSelectedEntities('${kind}')">چاپ</button>
+                    <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.68rem;" onclick="shareSelectedEntities('${kind}')">اشتراک‌گذاری</button>
+                </div>`;
+        }
+
+        /* Animates [data-countup] elements from 0 to their target value — small
+           visual touch that makes the dashboard/report numbers feel alive. */
+        function runCountUpAnimations() {
+            document.querySelectorAll('[data-countup]').forEach((el) => {
+                const target = Number(el.getAttribute('data-countup')) || 0;
+                const isMoney = el.getAttribute('data-money') === '1';
+                const duration = 600;
+                const start = performance.now();
+                function tick(now) {
+                    const p = Math.min(1, (now - start) / duration);
+                    const eased = 1 - Math.pow(1 - p, 3);
+                    const val = Math.round(target * eased);
+                    el.textContent = isMoney ? fmtMoney(val) : val.toLocaleString('fa-IR');
+                    if (p < 1) requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
+            });
+        }
+        window.runCountUpAnimations = runCountUpAnimations;
+
+        /* Deterministic color per discipline/category name, so the same
+           category always gets the same accent color across the app. */
+        const CHIP_COLORS = ['#4f46e5', '#059669', '#d97706', '#dc2626', '#0891b2', '#7c3aed', '#db2777', '#65a30d'];
+        function colorForLabel(label) {
+            let hash = 0;
+            const s = String(label || '');
+            for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) >>> 0;
+            return CHIP_COLORS[hash % CHIP_COLORS.length];
+        }
+        window.colorForLabel = colorForLabel;
+
+        function emptyStateHtml(message) {
+            return `<div class="empty-state">
+                <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.35; margin-bottom:8px;">
+                    <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="3" y1="12" x2="21" y2="12"/>
+                </svg>
+                <div>${escapeHtml(message)}</div>
+            </div>`;
+        }
+        window.emptyStateHtml = emptyStateHtml;
+
         function renderCases(searchTerm, statusFilter) {
             searchTerm = (searchTerm != null) ? searchTerm : (document.getElementById('caseSearchInput') ? document.getElementById('caseSearchInput').value : '');
             statusFilter = (statusFilter != null) ? statusFilter : (document.getElementById('caseStatusFilter') ? document.getElementById('caseStatusFilter').value : 'all');
@@ -1264,8 +1408,13 @@ let currentTariff = '1405';
                 const hay = [c.clientName, c.caseNum, c.courtBranch, c.expertsSummary].join(' ');
                 return hay.includes(q);
             });
+            const cols = getGridLayout('cases');
+            const selOn = selectionModeOn.cases;
             let html = `
-                <div class="view-header"><span class="view-title">تاریخچه پرونده‌ها (${cases.length.toLocaleString('fa-IR')} از ${all.length.toLocaleString('fa-IR')})</span></div>
+                <div class="view-header">
+                    <span class="view-title">تاریخچه پرونده‌ها (${cases.length.toLocaleString('fa-IR')} از ${all.length.toLocaleString('fa-IR')})</span>
+                    ${layoutPickerHtml('cases')}
+                </div>
                 <div class="section-box" style="display:flex; gap:8px; flex-wrap:wrap;">
                     <input id="caseSearchInput" type="text" placeholder="جستجو بر اساس نام، شماره کلاسه، شعبه یا کارشناس..." value="${escapeHtml(q)}"
                         style="flex:1; min-width:180px;" oninput="renderCases(this.value)">
@@ -1274,32 +1423,41 @@ let currentTariff = '1405';
                         <option value="final" ${statusFilter==='final'?'selected':''}>نهایی‌شده</option>
                         <option value="draft" ${statusFilter==='draft'?'selected':''}>پیش‌نویس</option>
                     </select>
+                    ${selectionToolbarHtml('cases', cases.map((c) => c.id))}
                 </div>
-                ${cases.map((c, idx) => `
-                    <div class="section-box list-item" id="caseItem-${c.id}" style="cursor:pointer;" onclick="toggleSection('caseItem-${c.id}')">
+                <div class="entity-grid ${cols === '3' ? 'cols-3' : cols === '4' ? 'cols-4' : ''}">
+                ${cases.map((c) => `
+                    <div class="section-box list-item ${selOn ? 'selectable' : ''} ${selectionState.cases.has(c.id) ? 'selected' : ''}" id="casesCard-${c.id}"
+                         style="cursor:pointer;" onclick="${selOn ? `toggleItemSelected('cases','${c.id}')` : `toggleSection('casesCard-${c.id}')`}">
                         <div class="list-item-row">
                             <div>
                                 <div class="list-item-title">
                                     ${escapeHtml(c.clientName || 'بدون نام متقاضی')}
                                     ${(c.status === 'draft') ? '<span style="font-size:0.62rem; font-weight:800; color:var(--accent-amber); border:1px solid var(--accent-amber); border-radius:6px; padding:1px 6px; margin-inline-start:6px;">پیش‌نویس</span>' : ''}
                                 </div>
-                                <div class="list-item-sub">${CATEGORY_LABELS[c.category] || c.category || ''} · کلاسه: ${escapeHtml(c.caseNum || '-')} · شعبه: ${escapeHtml(c.courtBranch || '-')}</div>
+                                <div class="list-item-sub"><span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:${colorForLabel(CATEGORY_LABELS[c.category] || c.category)}; margin-inline-end:4px;"></span>${CATEGORY_LABELS[c.category] || c.category || ''} · کلاسه: ${escapeHtml(c.caseNum || '-')} · شعبه: ${escapeHtml(c.courtBranch || '-')}</div>
                                 <div class="list-item-sub" style="margin-top:4px; font-weight:800; color:var(--accent-cyan);">${escapeHtml(c.totalFee || '')} ریال</div>
                             </div>
+                            ${!selOn ? `
                             <div class="list-item-actions">
+                                <button title="ویرایش" onclick="event.stopPropagation(); editCase('${c.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                </button>
                                 <button class="danger" title="حذف" onclick="event.stopPropagation(); deleteCase('${c.id}')">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
                                 </button>
-                            </div>
+                            </div>` : ''}
                         </div>
                         <div class="section-content-wrap">
                             <div style="padding-top:10px; border-top:1px solid var(--border-color); margin-top:10px; font-size:0.78rem; line-height:2;">
                                 <div><strong>۱. اطلاعات پرونده:</strong> تاریخ ${escapeHtml(c.expDate || '-')} · تعرفه سال ${escapeHtml(String(c.tariffYear || ''))}</div>
                                 <div><strong>۲. کارشناسان:</strong> ${escapeHtml(c.expertsSummary || 'ثبت نشده')}</div>
                                 <div><strong>۳. مبلغ:</strong> ${escapeHtml(c.amount || '-')} → جمع کل ${escapeHtml(c.totalFee || '')} ریال</div>
+                                ${c.editNote ? `<div><strong>۴. یادداشت ویرایش:</strong> ${escapeHtml(c.editNote)}</div>` : ''}
                             </div>
                         </div>
-                    </div>`).join('') || '<div class="empty-state">موردی یافت نشد.</div>'}`;
+                    </div>`).join('') || emptyStateHtml('موردی یافت نشد.')}
+                </div>`;
             document.getElementById('casesContent').innerHTML = html;
         }
         window.renderCases = renderCases;
@@ -1322,12 +1480,17 @@ let currentTariff = '1405';
                 if (!q) return true;
                 return [a.fullName, a.phone, a.nationalId, a.address, a.folder].join(' ').includes(q);
             });
+            const cols = getGridLayout('applicants');
+            const selOn = selectionModeOn.applicants;
             let html = `
                 <div class="view-header">
                     <span class="view-title">متقاضیان (${list.length.toLocaleString('fa-IR')} از ${all.length.toLocaleString('fa-IR')})</span>
-                    <button class="fab-add" onclick="openApplicantForm()" title="افزودن متقاضی">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                    </button>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        ${layoutPickerHtml('applicants')}
+                        <button class="fab-add" onclick="openApplicantForm()" title="افزودن متقاضی">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="section-box" style="display:flex; gap:8px; flex-wrap:wrap;">
                     <input id="apSearchInput" type="text" placeholder="جستجو بر اساس نام، شهر/پوشه، شماره تماس..." value="${escapeHtml(q)}"
@@ -1337,11 +1500,13 @@ let currentTariff = '1405';
                         <option value="none" ${folderFilter==='none'?'selected':''}>بدون پوشه</option>
                         ${folders.map((f) => `<option value="${escapeHtml(f)}" ${folderFilter===f?'selected':''}>${escapeHtml(f)}</option>`).join('')}
                     </select>
-                    <button class="nav-btn" style="height:36px; padding:0 10px;" onclick="printFolderList('applicants')">چاپ فهرست</button>
+                    ${selectionToolbarHtml('applicants', list.map((a) => a.id))}
                 </div>
                 <div id="applicantFormBox"></div>
+                <div class="entity-grid ${cols === '3' ? 'cols-3' : cols === '4' ? 'cols-4' : ''}">
                 ${list.map((a) => `
-                    <div class="list-item">
+                    <div class="list-item ${selOn ? 'selectable' : ''} ${selectionState.applicants.has(a.id) ? 'selected' : ''}" id="applicantsCard-${a.id}"
+                         ${selOn ? `onclick="toggleItemSelected('applicants','${a.id}')" style="cursor:pointer;"` : ''}>
                         <div class="list-item-row">
                             <div>
                                 <div class="list-item-title">
@@ -1351,6 +1516,7 @@ let currentTariff = '1405';
                                 <div class="list-item-sub">${escapeHtml(a.phone || '')} ${a.nationalId ? '· کدملی: ' + escapeHtml(a.nationalId) : ''}</div>
                                 ${a.address ? `<div class="list-item-sub" style="margin-top:2px;">${escapeHtml(a.address)}</div>` : ''}
                             </div>
+                            ${!selOn ? `
                             <div class="list-item-actions">
                                 <button title="ویرایش" onclick="openApplicantForm('${a.id}')">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -1358,9 +1524,10 @@ let currentTariff = '1405';
                                 <button class="danger" title="حذف" onclick="deleteApplicant('${a.id}')">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
                                 </button>
-                            </div>
+                            </div>` : ''}
                         </div>
-                    </div>`).join('') || '<div class="empty-state">موردی یافت نشد.</div>'}`;
+                    </div>`).join('') || emptyStateHtml('موردی یافت نشد.')}
+                </div>`;
             document.getElementById('applicantsContent').innerHTML = html;
         }
         window.renderApplicants = renderApplicants;
@@ -1413,12 +1580,17 @@ let currentTariff = '1405';
                 if (!q) return true;
                 return [e.fullName, e.discipline, e.licenseNumber, e.phone, e.folder].join(' ').includes(q);
             });
+            const cols = getGridLayout('experts');
+            const selOn = selectionModeOn.experts;
             let html = `
                 <div class="view-header">
                     <span class="view-title">کارشناسان (${list.length.toLocaleString('fa-IR')} از ${all.length.toLocaleString('fa-IR')})</span>
-                    <button class="fab-add" onclick="openExpertForm()" title="افزودن کارشناس">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                    </button>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        ${layoutPickerHtml('experts')}
+                        <button class="fab-add" onclick="openExpertForm()" title="افزودن کارشناس">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="section-box" style="display:flex; gap:8px; flex-wrap:wrap;">
                     <input id="exSearchInput" type="text" placeholder="جستجو بر اساس نام، رشته، پوشه، شماره پروانه..." value="${escapeHtml(q)}"
@@ -1428,11 +1600,13 @@ let currentTariff = '1405';
                         <option value="none" ${folderFilter==='none'?'selected':''}>بدون پوشه</option>
                         ${folders.map((f) => `<option value="${escapeHtml(f)}" ${folderFilter===f?'selected':''}>${escapeHtml(f)}</option>`).join('')}
                     </select>
-                    <button class="nav-btn" style="height:36px; padding:0 10px;" onclick="printFolderList('experts')">چاپ فهرست</button>
+                    ${selectionToolbarHtml('experts', list.map((e) => e.id))}
                 </div>
                 <div id="expertFormBox"></div>
+                <div class="entity-grid ${cols === '3' ? 'cols-3' : cols === '4' ? 'cols-4' : ''}">
                 ${list.map((e) => `
-                    <div class="list-item">
+                    <div class="list-item ${selOn ? 'selectable' : ''} ${selectionState.experts.has(e.id) ? 'selected' : ''}" id="expertsCard-${e.id}"
+                         ${selOn ? `onclick="toggleItemSelected('experts','${e.id}')" style="cursor:pointer;"` : ''}>
                         <div class="list-item-row">
                             <div>
                                 <div class="list-item-title">
@@ -1442,6 +1616,7 @@ let currentTariff = '1405';
                                 <div class="list-item-sub">${escapeHtml(e.discipline || '')} ${e.licenseNumber ? '· پروانه: ' + escapeHtml(e.licenseNumber) : ''}</div>
                                 <div class="list-item-sub">${escapeHtml(e.phone || '')}</div>
                             </div>
+                            ${!selOn ? `
                             <div class="list-item-actions">
                                 <button title="ویرایش" onclick="openExpertForm('${e.id}')">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -1449,9 +1624,10 @@ let currentTariff = '1405';
                                 <button class="danger" title="حذف" onclick="deleteExpert('${e.id}')">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
                                 </button>
-                            </div>
+                            </div>` : ''}
                         </div>
-                    </div>`).join('') || '<div class="empty-state">موردی یافت نشد.</div>'}`;
+                    </div>`).join('') || emptyStateHtml('موردی یافت نشد.')}
+                </div>`;
             document.getElementById('expertsContent').innerHTML = html;
         }
         window.renderExperts = renderExperts;
@@ -1526,9 +1702,13 @@ let currentTariff = '1405';
         };
 
         window.doPrintFolderList = function (kind) {
-            const isApplicant = kind === 'applicants';
             const picked = printPickDataset.filter((x) => document.querySelector(`.print-pick[value="${x.id}"]`)?.checked);
             if (!picked.length) { alert('چیزی انتخاب نشده.'); return; }
+            printPeopleTable(kind, picked);
+        };
+
+        function printPeopleTable(kind, picked) {
+            const isApplicant = kind === 'applicants';
             const title = isApplicant ? 'فهرست متقاضیان' : 'فهرست کارشناسان';
             const rows = picked.map((x, i) => `
                 <tr>
@@ -1562,6 +1742,77 @@ let currentTariff = '1405';
                 </body></html>`);
             w.document.close();
             w.onload = () => { w.focus(); w.print(); };
+        }
+
+        function printCasesTable(picked) {
+            const rows = picked.map((c, i) => `
+                <tr>
+                    <td>${(i + 1).toLocaleString('fa-IR')}</td>
+                    <td>${escapeHtml(c.clientName || '-')}</td>
+                    <td>${escapeHtml(c.caseNum || '-')}</td>
+                    <td>${escapeHtml(c.courtBranch || '-')}</td>
+                    <td>${escapeHtml(c.expDate || '-')}</td>
+                    <td>${escapeHtml(CATEGORY_LABELS[c.category] || c.category || '-')}</td>
+                    <td>${escapeHtml(c.expertsSummary || '-')}</td>
+                    <td>${escapeHtml(c.totalFee || '-')}</td>
+                    <td>${c.status === 'draft' ? 'پیش‌نویس' : 'نهایی'}</td>
+                </tr>`).join('');
+            const w = window.open('', '_blank');
+            if (!w) { alert('اجازه باز کردن پنجره چاپ داده نشد.'); return; }
+            w.document.write(`<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8"><title>فهرست پرونده‌ها</title>
+                <style>
+                    body{font-family:Tahoma,'Vazirmatn',sans-serif;padding:20px;color:#0f172a;}
+                    h2{border-bottom:3px solid #0f172a;padding-bottom:8px;margin-bottom:4px;}
+                    .meta{color:#64748b;font-size:12px;margin-bottom:18px;}
+                    table{width:100%;border-collapse:collapse;}
+                    th,td{border:1px solid #cbd5e1;padding:6px;text-align:center;font-size:11px;}
+                    th{background:#0f172a;color:#fff;}
+                    tr:nth-child(even){background:#f8fafc;}
+                    .footer{margin-top:24px;font-size:11px;color:#94a3b8;text-align:center;}
+                </style></head><body>
+                <h2>فهرست پرونده‌ها — کارشناس پلاس</h2>
+                <div class="meta">تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')} · تعداد: ${picked.length.toLocaleString('fa-IR')} پرونده</div>
+                <table>
+                    <thead><tr><th>#</th><th>متقاضی</th><th>کلاسه</th><th>شعبه</th><th>تاریخ</th><th>رشته</th><th>کارشناسان</th><th>مبلغ (ریال)</th><th>وضعیت</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div class="footer">تولید شده توسط اپلیکیشن کارشناس پلاس</div>
+                </body></html>`);
+            w.document.close();
+            w.onload = () => { w.focus(); w.print(); };
+        }
+
+        function getEntityList(kind) {
+            if (kind === 'cases') return dbRead(K.cases);
+            if (kind === 'applicants') return dbRead(K.applicants);
+            return dbRead(K.experts);
+        }
+
+        window.printSelectedEntities = function (kind) {
+            const all = getEntityList(kind);
+            const ids = selectionState[kind].size ? Array.from(selectionState[kind]) : all.map((x) => x.id);
+            const picked = all.filter((x) => ids.includes(x.id));
+            if (!picked.length) { alert('چیزی برای چاپ وجود ندارد.'); return; }
+            if (kind === 'cases') printCasesTable(picked); else printPeopleTable(kind, picked);
+        };
+
+        window.shareSelectedEntities = function (kind) {
+            const all = getEntityList(kind);
+            const ids = selectionState[kind].size ? Array.from(selectionState[kind]) : all.map((x) => x.id);
+            const picked = all.filter((x) => ids.includes(x.id));
+            if (!picked.length) { alert('چیزی برای اشتراک‌گذاری وجود ندارد.'); return; }
+            let text;
+            if (kind === 'cases') {
+                text = picked.map((c, i) => `${i + 1}. ${c.clientName || '-'} — کلاسه ${c.caseNum || '-'} — ${c.totalFee || '-'} ریال`).join('\n');
+            } else {
+                text = picked.map((x, i) => `${i + 1}. ${x.fullName}${x.folder ? ' — ' + x.folder : ''}`).join('\n');
+            }
+            const title = kind === 'cases' ? 'فهرست پرونده‌ها' : (kind === 'applicants' ? 'فهرست متقاضیان' : 'فهرست کارشناسان');
+            if (navigator.share) {
+                navigator.share({ title: title + ' — کارشناس پلاس', text }).catch(() => {});
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => showToast('فهرست در کلیپ‌بورد کپی شد.', 'success'));
+            }
         };
 
         /* ---------------- Tariffs (reference view) ---------------- */
@@ -1624,14 +1875,16 @@ let currentTariff = '1405';
             document.getElementById('reportsContent').innerHTML = `
                 <div class="view-header">
                     <span class="view-title">گزارش‌ها</span>
-                    <div style="display:flex; gap:6px;">
-                        <button class="nav-btn no-print" style="height:34px; padding:0 10px;" onclick="printReports()">چاپ گزارش</button>
-                        <button class="nav-btn no-print" style="height:34px; padding:0 10px;" onclick="exportReportsCSV()">خروجی CSV</button>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="nav-btn no-print" style="height:34px; padding:0 10px;" onclick="printReports()">چاپ خلاصه</button>
+                        <button class="nav-btn no-print" style="height:34px; padding:0 10px;" onclick="exportReportsCSV()">CSV خلاصه</button>
+                        <button class="nav-btn no-print" style="height:34px; padding:0 10px; font-weight:800;" onclick="printFullDetailedReport()">گزارش کامل (چاپ)</button>
+                        <button class="nav-btn no-print" style="height:34px; padding:0 10px; font-weight:800;" onclick="exportFullReportCSV()">گزارش کامل (CSV)</button>
                     </div>
                 </div>
                 <div class="stat-grid">
-                    <div class="stat-card"><div class="stat-val">${cases.length.toLocaleString('fa-IR')}</div><div class="stat-label">تعداد کل پرونده‌ها</div></div>
-                    <div class="stat-card"><div class="stat-val">${fmtMoney(totalFee)}</div><div class="stat-label">جمع کل دستمزد (ریال)</div></div>
+                    <div class="stat-card"><div class="stat-val" data-countup="${cases.length}">۰</div><div class="stat-label">تعداد کل پرونده‌ها</div></div>
+                    <div class="stat-card"><div class="stat-val" data-countup="${totalFee}" data-money="1">۰</div><div class="stat-label">جمع کل دستمزد (ریال)</div></div>
                 </div>
                 <div class="section-box">
                     <div class="section-title"><span>جمع دستمزد بر اساس نوع کارشناسی</span></div>
@@ -1673,6 +1926,7 @@ let currentTariff = '1405';
                         </tbody>
                     </table>
                 </div>` : ''}`;
+            runCountUpAnimations();
         }
 
         window.printReports = function () {
@@ -1716,6 +1970,94 @@ let currentTariff = '1405';
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `گزارش_کارشناس_پلاس_${Date.now()}.csv`;
+            link.click();
+        };
+
+        /* Comprehensive report — every single case with every field, not just
+           category totals. Addresses "screenshot isn't useful, I want the full
+           story of every case" — this is a real data export, not a picture. */
+        window.printFullDetailedReport = function () {
+            const cases = dbRead(K.cases);
+            const applicants = dbRead(K.applicants);
+            const experts = dbRead(K.experts);
+            if (!cases.length) { alert('هنوز پرونده‌ای ثبت نشده.'); return; }
+            let totalFee = 0;
+            const byCategory = {};
+            cases.forEach((c) => { totalFee += parseStoredAmount(c.totalFee); const k = CATEGORY_LABELS[c.category] || c.category || 'سایر'; byCategory[k] = (byCategory[k] || 0) + parseStoredAmount(c.totalFee); });
+            const sortedCases = [...cases].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            const rows = sortedCases.map((c, i) => `
+                <tr>
+                    <td>${(i + 1).toLocaleString('fa-IR')}</td>
+                    <td>${escapeHtml(c.expDate || '-')}</td>
+                    <td>${escapeHtml(c.clientName || '-')}</td>
+                    <td>${escapeHtml(c.caseNum || '-')}</td>
+                    <td>${escapeHtml(c.courtBranch || '-')}</td>
+                    <td>${escapeHtml(CATEGORY_LABELS[c.category] || c.category || '-')}</td>
+                    <td>${escapeHtml(c.tariffYear ? String(c.tariffYear) : '-')}</td>
+                    <td style="text-align:right; direction:ltr;">${escapeHtml(c.expertsSummary || '-')}</td>
+                    <td>${escapeHtml(c.amount || '-')}</td>
+                    <td style="font-weight:800;">${escapeHtml(c.totalFee || '-')}</td>
+                    <td>${c.status === 'draft' ? 'پیش‌نویس' : 'نهایی'}</td>
+                    <td>${escapeHtml(c.editNote || '-')}</td>
+                </tr>`).join('');
+            const catRows = Object.entries(byCategory).sort((a, b) => b[1] - a[1])
+                .map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${fmtMoney(v)}</td><td>${(totalFee > 0 ? (v / totalFee) * 100 : 0).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪</td></tr>`).join('');
+            const w = window.open('', '_blank');
+            if (!w) { alert('اجازه باز کردن پنجره چاپ داده نشد.'); return; }
+            w.document.write(`<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="UTF-8"><title>گزارش کامل — کارشناس پلاس</title>
+                <style>
+                    body{font-family:Tahoma,'Vazirmatn',sans-serif;padding:18px;color:#0f172a;}
+                    h1{font-size:18px;border-bottom:3px solid #0f172a;padding-bottom:8px;margin-bottom:4px;}
+                    h2{font-size:14px;margin-top:22px;margin-bottom:6px;}
+                    .meta{color:#64748b;font-size:11px;margin-bottom:14px;}
+                    .stat-grid{display:flex;gap:10px;margin-bottom:16px;}
+                    .stat-card{border:1px solid #cbd5e1;border-radius:8px;padding:8px 12px;font-size:12px;}
+                    .stat-card b{display:block;font-size:16px;}
+                    table{width:100%;border-collapse:collapse;margin-bottom:10px;}
+                    th,td{border:1px solid #cbd5e1;padding:5px;text-align:center;font-size:10.5px;}
+                    th{background:#0f172a;color:#fff;}
+                    tr:nth-child(even){background:#f8fafc;}
+                    .footer{margin-top:20px;font-size:10px;color:#94a3b8;text-align:center;}
+                    @page { size: A4 landscape; margin: 12mm; }
+                </style></head><body>
+                <h1>گزارش کامل و تفصیلی پرونده‌ها — کارشناس پلاس</h1>
+                <div class="meta">تاریخ تهیه گزارش: ${new Date().toLocaleDateString('fa-IR')} — ${new Date().toLocaleTimeString('fa-IR')}</div>
+                <div class="stat-grid">
+                    <div class="stat-card">تعداد کل پرونده‌ها<b>${cases.length.toLocaleString('fa-IR')}</b></div>
+                    <div class="stat-card">جمع کل دستمزد<b>${fmtMoney(totalFee)} ریال</b></div>
+                    <div class="stat-card">تعداد متقاضیان ثبت‌شده<b>${applicants.length.toLocaleString('fa-IR')}</b></div>
+                    <div class="stat-card">تعداد کارشناسان ثبت‌شده<b>${experts.length.toLocaleString('fa-IR')}</b></div>
+                </div>
+                <h2>سهم هر رشته از کل دستمزد</h2>
+                <table><thead><tr><th>رشته</th><th>جمع دستمزد (ریال)</th><th>سهم</th></tr></thead><tbody>${catRows}</tbody></table>
+                <h2>فهرست کامل پرونده‌ها (${cases.length.toLocaleString('fa-IR')} مورد)</h2>
+                <table>
+                    <thead><tr><th>#</th><th>تاریخ</th><th>متقاضی</th><th>کلاسه</th><th>شعبه</th><th>رشته</th><th>تعرفه</th><th>کارشناسان</th><th>مبلغ موضوع</th><th>دستمزد نهایی</th><th>وضعیت</th><th>یادداشت ویرایش</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div class="footer">تولید شده توسط اپلیکیشن کارشناس پلاس — این گزارش شامل تمام جزئیات ثبت‌شده در دستگاه است.</div>
+                </body></html>`);
+            w.document.close();
+            w.onload = () => { w.focus(); w.print(); };
+        };
+
+        window.exportFullReportCSV = function () {
+            const cases = dbRead(K.cases);
+            if (!cases.length) { alert('هنوز پرونده‌ای ثبت نشده.'); return; }
+            const sortedCases = [...cases].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            let csv = '\uFEFFردیف,تاریخ,متقاضی,شماره کلاسه,شعبه,رشته کارشناسی,سال تعرفه,کارشناسان,مبلغ موضوع دعوی,دستمزد نهایی (ریال),وضعیت,یادداشت ویرایش\n';
+            sortedCases.forEach((c, i) => {
+                const cells = [
+                    i + 1, c.expDate || '', c.clientName || '', c.caseNum || '', c.courtBranch || '',
+                    CATEGORY_LABELS[c.category] || c.category || '', c.tariffYear || '', c.expertsSummary || '',
+                    c.amount || '', parseStoredAmount(c.totalFee), c.status === 'draft' ? 'پیش‌نویس' : 'نهایی', c.editNote || ''
+                ];
+                csv += cells.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `گزارش_کامل_کارشناس_پلاس_${Date.now()}.csv`;
             link.click();
         };
 
@@ -2017,7 +2359,14 @@ let currentTariff = '1405';
             const invoiceTemplates = [
                 { id: 'modern', label: 'مدرن (پیش‌فرض)' },
                 { id: 'formal', label: 'رسمی و دولتی' },
-                { id: 'classic', label: 'کلاسیک' }
+                { id: 'classic', label: 'کلاسیک' },
+                { id: 'minimal', label: 'مینیمال (بدون کادر)' },
+                { id: 'colorful', label: 'رنگی (هم‌رنگ تم)' },
+                { id: 'elegant', label: 'شیک با کادر دوتایی' },
+                { id: 'compact', label: 'فشرده (کم‌مصرف کاغذ)' },
+                { id: 'boldtitle', label: 'عنوان درشت' },
+                { id: 'watermark', label: 'با واترمارک' },
+                { id: 'stamp', label: 'با محل مهر مشخص' }
             ];
             document.getElementById('settingsContent').innerHTML = `
                 <div class="view-header"><span class="view-title">تنظیمات</span></div>
