@@ -76,6 +76,27 @@ let currentTariff = '1405';
         window.applyCompactBottomNav = applyCompactBottomNav;
         window.applyTelegramBannerVisibility = applyTelegramBannerVisibility;
 
+        window.takeAppScreenshot = function () {
+            if (typeof html2canvas !== 'function') {
+                showToast('در حال آماده‌سازی ابزار عکس‌برداری... چند لحظه دیگر دوباره امتحان کن.', 'info');
+                return;
+            }
+            const target = document.querySelector('.app-shell') || document.body;
+            showToast('در حال گرفتن عکس از صفحه...', 'info');
+            html2canvas(target, { useCORS: true, backgroundColor: getComputedStyle(document.body).getPropertyValue('--bg-color') || '#0b0e14' }).then((canvas) => {
+                canvas.toBlob((blob) => {
+                    if (!blob) return;
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `karshenas-plus-screenshot-${Date.now()}.png`;
+                    link.click();
+                    showToast('عکس ذخیره شد.', 'success');
+                });
+            }).catch(() => {
+                showToast('گرفتن عکس ناموفق بود.', 'error');
+            });
+        };
+
         function applySavedAppearance() {
             const saved = dbRead(K.settings)[0] || {};
             // Default appearance is the light theme. Only switch to dark if the
@@ -540,8 +561,14 @@ let currentTariff = '1405';
                 document.getElementById('kanonVal').innerText = '(' + Math.round(kanonShare).toLocaleString('fa-IR') + ' ریال)';
             } else { document.getElementById('kanonRow').style.display = 'none'; }
 
-            document.getElementById('totalFeeVal').innerText = Math.round(totalPayable).toLocaleString('fa-IR') + ' ریال';
-            document.getElementById('tomanVal').innerText = 'معادل ' + numberToWords(Math.floor(totalPayable / 10)) + ' تومان';
+            const rialRounded = Math.round(totalPayable);
+            const totalFeeEl = document.getElementById('totalFeeVal');
+            totalFeeEl.dataset.rial = rialRounded;
+            const curUnit = (typeof getSettings === 'function' ? (getSettings().currencyUnit || 'rial') : 'rial');
+            totalFeeEl.innerText = (curUnit === 'toman')
+                ? Math.round(rialRounded / 10).toLocaleString('fa-IR') + ' تومان'
+                : rialRounded.toLocaleString('fa-IR') + ' ریال';
+            document.getElementById('tomanVal').innerText = 'معادل ' + numberToWords(Math.floor(rialRounded / 10)) + ' تومان';
 
             let fee1402 = calculateBaseFee(value, '1402');
             let diff = baseFee - fee1402;
@@ -722,7 +749,7 @@ let currentTariff = '1405';
 
             const invoiceTpl = (typeof getSettings === 'function' ? (getSettings().invoiceTemplate || 'modern') : 'modern');
             const printArea = document.getElementById('billPrintArea');
-            const ALL_TPL_CLASSES = ['tpl-modern', 'tpl-formal', 'tpl-classic', 'tpl-minimal', 'tpl-colorful', 'tpl-elegant', 'tpl-compact', 'tpl-boldtitle', 'tpl-watermark', 'tpl-stamp'];
+            const ALL_TPL_CLASSES = ['tpl-modern', 'tpl-formal', 'tpl-classic', 'tpl-minimal', 'tpl-colorful', 'tpl-elegant', 'tpl-compact', 'tpl-boldtitle', 'tpl-watermark'];
             printArea.classList.remove(...ALL_TPL_CLASSES);
             printArea.classList.add('tpl-' + invoiceTpl);
             let bismillahEl = printArea.querySelector('.bismillah-line');
@@ -736,6 +763,18 @@ let currentTariff = '1405';
             } else if (bismillahEl) {
                 bismillahEl.remove();
             }
+
+            const brandS = getSettings();
+            const logoBox = document.getElementById('billLogoBox');
+            const logoImg = document.getElementById('billLogoImg');
+            if (brandS.invoiceLogo) { logoImg.src = brandS.invoiceLogo; logoBox.style.display = ''; } else { logoBox.style.display = 'none'; }
+            const sigImg = document.getElementById('billSignatureImg');
+            const stampImg = document.getElementById('billStampImg');
+            const sigStampBox = document.getElementById('billStampSigBox');
+            let showSigStamp = false;
+            if (brandS.invoiceSignature) { sigImg.src = brandS.invoiceSignature; sigImg.style.display = ''; showSigStamp = true; } else { sigImg.style.display = 'none'; }
+            if (brandS.invoiceStamp) { stampImg.src = brandS.invoiceStamp; stampImg.style.display = ''; showSigStamp = true; } else { stampImg.style.display = 'none'; }
+            sigStampBox.style.display = showSigStamp ? 'flex' : 'none';
 
             document.getElementById('billExpDate').innerText = document.getElementById('expDate').value || 'درج نشده';
             document.getElementById('billCaseNum').innerText = document.getElementById('caseNum').value || 'درج نشده';
@@ -906,7 +945,8 @@ let currentTariff = '1405';
             let notes = document.getElementById('billNotes').value;
             document.getElementById('billNotesArea').innerText = notes ? `توضیحات: ${notes}` : '';
 
-            document.getElementById('billTotal').innerText = document.getElementById('totalFeeVal').innerText;
+            const canonicalRial = Number(document.getElementById('totalFeeVal').dataset.rial || 0);
+            document.getElementById('billTotal').innerText = canonicalRial.toLocaleString('fa-IR');
 
             saveCaseRecord(Object.assign(buildCaseRecordFromForm(), { status: 'final', invoiceIssued: true }));
 
@@ -940,7 +980,7 @@ let currentTariff = '1405';
                 tariffYear: currentTariff,
                 category: document.getElementById('categorySelect').value,
                 amount: document.getElementById('amountInput').value || '',
-                totalFee: document.getElementById('totalFeeVal').innerText || '',
+                totalFee: (Number(document.getElementById('totalFeeVal').dataset.rial || 0).toLocaleString('fa-IR')) + ' ریال',
                 expertsSummary: experts.join('، ')
             };
             if (editingCaseId) {
@@ -953,6 +993,13 @@ let currentTariff = '1405';
             }
             return rec;
         }
+
+        window.copyCaseSummary = function (id) {
+            const c = dbRead(K.cases).find((x) => x.id === id);
+            if (!c) return;
+            const text = `پرونده: ${c.clientName || '-'}\nکلاسه: ${c.caseNum || '-'} · شعبه: ${c.courtBranch || '-'}\nرشته: ${CATEGORY_LABELS[c.category] || c.category || '-'}\nکارشناسان: ${c.expertsSummary || '-'}\nدستمزد: ${c.totalFee || '-'} ریال`;
+            if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('خلاصه پرونده کپی شد.', 'success'));
+        };
 
         window.editCase = function (id) {
             const c = dbRead(K.cases).find((x) => x.id === id);
@@ -1298,6 +1345,7 @@ let currentTariff = '1405';
            Cases / Applicants / Experts list views ---------------- */
         const selectionState = { cases: new Set(), applicants: new Set(), experts: new Set() };
         const selectionModeOn = { cases: false, applicants: false, experts: false };
+        window.__selectionModeOnRef = selectionModeOn;
 
         function getGridLayout(kind) { return getSettings()[kind + 'GridLayout'] || '1'; }
         window.setGridLayout = function (kind, cols) {
@@ -1397,6 +1445,13 @@ let currentTariff = '1405';
         }
         window.emptyStateHtml = emptyStateHtml;
 
+        function swipeHintNeeded() {
+            try { return !localStorage.getItem('swipeHintShown'); } catch (e) { return false; }
+        }
+        function markSwipeHintShown() {
+            try { localStorage.setItem('swipeHintShown', '1'); } catch (e) { /* ignore */ }
+        }
+
         function renderCases(searchTerm, statusFilter) {
             searchTerm = (searchTerm != null) ? searchTerm : (document.getElementById('caseSearchInput') ? document.getElementById('caseSearchInput').value : '');
             statusFilter = (statusFilter != null) ? statusFilter : (document.getElementById('caseStatusFilter') ? document.getElementById('caseStatusFilter').value : 'all');
@@ -1426,7 +1481,10 @@ let currentTariff = '1405';
                     ${selectionToolbarHtml('cases', cases.map((c) => c.id))}
                 </div>
                 <div class="entity-grid ${cols === '3' ? 'cols-3' : cols === '4' ? 'cols-4' : ''}">
-                ${cases.map((c) => `
+                ${cases.map((c, idx) => `
+                    <div class="swipe-wrap ${(!selOn && idx === 0 && swipeHintNeeded()) ? 'swipe-hint-demo' : ''}" data-swipe-kind="cases" data-swipe-id="${c.id}">
+                        ${(!selOn && idx === 0 && swipeHintNeeded()) ? '<div class="swipe-hint-bubble">برای حذف، بکش ⇠</div>' : ''}
+                        <div class="swipe-delete-bg">حذف</div>
                     <div class="section-box list-item ${selOn ? 'selectable' : ''} ${selectionState.cases.has(c.id) ? 'selected' : ''}" id="casesCard-${c.id}"
                          style="cursor:pointer;" onclick="${selOn ? `toggleItemSelected('cases','${c.id}')` : `toggleSection('casesCard-${c.id}')`}">
                         <div class="list-item-row">
@@ -1440,6 +1498,9 @@ let currentTariff = '1405';
                             </div>
                             ${!selOn ? `
                             <div class="list-item-actions">
+                                <button title="کپی خلاصه پرونده" onclick="event.stopPropagation(); copyCaseSummary('${c.id}')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                </button>
                                 <button title="ویرایش" onclick="event.stopPropagation(); editCase('${c.id}')">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                                 </button>
@@ -1456,8 +1517,10 @@ let currentTariff = '1405';
                                 ${c.editNote ? `<div><strong>۴. یادداشت ویرایش:</strong> ${escapeHtml(c.editNote)}</div>` : ''}
                             </div>
                         </div>
+                    </div>
                     </div>`).join('') || emptyStateHtml('موردی یافت نشد.')}
                 </div>`;
+            if (!selOn && cases.length) markSwipeHintShown();
             document.getElementById('casesContent').innerHTML = html;
         }
         window.renderCases = renderCases;
@@ -1504,7 +1567,10 @@ let currentTariff = '1405';
                 </div>
                 <div id="applicantFormBox"></div>
                 <div class="entity-grid ${cols === '3' ? 'cols-3' : cols === '4' ? 'cols-4' : ''}">
-                ${list.map((a) => `
+                ${list.map((a, idx) => `
+                    <div class="swipe-wrap ${(!selOn && idx === 0 && swipeHintNeeded()) ? 'swipe-hint-demo' : ''}" data-swipe-kind="applicants" data-swipe-id="${a.id}">
+                        ${(!selOn && idx === 0 && swipeHintNeeded()) ? '<div class="swipe-hint-bubble">برای حذف، بکش ⇠</div>' : ''}
+                        <div class="swipe-delete-bg">حذف</div>
                     <div class="list-item ${selOn ? 'selectable' : ''} ${selectionState.applicants.has(a.id) ? 'selected' : ''}" id="applicantsCard-${a.id}"
                          ${selOn ? `onclick="toggleItemSelected('applicants','${a.id}')" style="cursor:pointer;"` : ''}>
                         <div class="list-item-row">
@@ -1526,8 +1592,10 @@ let currentTariff = '1405';
                                 </button>
                             </div>` : ''}
                         </div>
+                    </div>
                     </div>`).join('') || emptyStateHtml('موردی یافت نشد.')}
                 </div>`;
+            if (!selOn && list.length) markSwipeHintShown();
             document.getElementById('applicantsContent').innerHTML = html;
         }
         window.renderApplicants = renderApplicants;
@@ -1604,7 +1672,10 @@ let currentTariff = '1405';
                 </div>
                 <div id="expertFormBox"></div>
                 <div class="entity-grid ${cols === '3' ? 'cols-3' : cols === '4' ? 'cols-4' : ''}">
-                ${list.map((e) => `
+                ${list.map((e, idx) => `
+                    <div class="swipe-wrap ${(!selOn && idx === 0 && swipeHintNeeded()) ? 'swipe-hint-demo' : ''}" data-swipe-kind="experts" data-swipe-id="${e.id}">
+                        ${(!selOn && idx === 0 && swipeHintNeeded()) ? '<div class="swipe-hint-bubble">برای حذف، بکش ⇠</div>' : ''}
+                        <div class="swipe-delete-bg">حذف</div>
                     <div class="list-item ${selOn ? 'selectable' : ''} ${selectionState.experts.has(e.id) ? 'selected' : ''}" id="expertsCard-${e.id}"
                          ${selOn ? `onclick="toggleItemSelected('experts','${e.id}')" style="cursor:pointer;"` : ''}>
                         <div class="list-item-row">
@@ -1626,8 +1697,10 @@ let currentTariff = '1405';
                                 </button>
                             </div>` : ''}
                         </div>
+                    </div>
                     </div>`).join('') || emptyStateHtml('موردی یافت نشد.')}
                 </div>`;
+            if (!selOn && list.length) markSwipeHintShown();
             document.getElementById('expertsContent').innerHTML = html;
         }
         window.renderExperts = renderExperts;
@@ -1707,6 +1780,37 @@ let currentTariff = '1405';
             printPeopleTable(kind, picked);
         };
 
+        /* Reuses the user's chosen invoice template (Settings > قالب پیش‌فاکتور)
+           for every other print output too — people lists, case lists, and
+           reports — so the whole app's printed documents share one look
+           instead of the invoice being the only "themed" one. */
+        function getPrintSkin() {
+            const tpl = (typeof getSettings === 'function' ? (getSettings().invoiceTemplate || 'modern') : 'modern');
+            const accent = getComputedStyle(document.body).getPropertyValue('--accent-glow').trim() || '#4f46e5';
+            const skins = {
+                modern: { border: accent, headerBg: accent, headerText: '#fff', font: 'inherit' },
+                formal: { border: '#0f172a', headerBg: '#0f172a', headerText: '#fff', font: 'inherit' },
+                classic: { border: '#999', headerBg: '#f4f4f4', headerText: '#111', font: 'serif' },
+                minimal: { border: '#e2e8f0', headerBg: 'transparent', headerText: '#0f172a', font: 'inherit', minimal: true },
+                colorful: { border: accent, headerBg: accent, headerText: '#fff', font: 'inherit' },
+                elegant: { border: '#92400e', headerBg: '#92400e', headerText: '#fff', font: 'inherit', elegant: true },
+                compact: { border: accent, headerBg: accent, headerText: '#fff', font: 'inherit', compact: true },
+                boldtitle: { border: '#0f172a', headerBg: '#0f172a', headerText: '#fff', font: 'inherit', bold: true },
+                watermark: { border: accent, headerBg: accent, headerText: '#fff', font: 'inherit', watermark: true }
+            };
+            return skins[tpl] || skins.modern;
+        }
+        function printSkinCss(skin) {
+            return `
+                h1, h2 { color: ${skin.headerBg === 'transparent' ? '#0f172a' : skin.headerBg}; border-bottom: 3px solid ${skin.border}; }
+                table th { background: ${skin.minimal ? 'transparent' : skin.headerBg} !important; color: ${skin.minimal ? '#0f172a' : skin.headerText} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; ${skin.minimal ? 'border-bottom: 2px solid ' + skin.border + ' !important;' : ''} }
+                table, table th, table td { border-color: ${skin.border}; font-family: ${skin.font}; }
+                ${skin.bold ? 'h1 { font-size: 22px !important; font-weight: 900; }' : ''}
+                ${skin.compact ? 'body { font-size: 10px !important; } table th, table td { padding: 3px !important; }' : ''}
+                ${skin.watermark ? `body::before { content: "کارشناس پلاس"; position: fixed; inset: 0; display:flex; align-items:center; justify-content:center; font-size: 4rem; font-weight: 900; color: rgba(0,0,0,0.05); transform: rotate(-30deg); pointer-events:none; z-index:0; } body > * { position: relative; z-index: 1; }` : ''}
+            `;
+        }
+
         function printPeopleTable(kind, picked) {
             const isApplicant = kind === 'applicants';
             const title = isApplicant ? 'فهرست متقاضیان' : 'فهرست کارشناسان';
@@ -1731,6 +1835,7 @@ let currentTariff = '1405';
                     th{background:#0f172a;color:#fff;}
                     tr:nth-child(even){background:#f8fafc;}
                     .footer{margin-top:24px;font-size:11px;color:#94a3b8;text-align:center;}
+                    ${printSkinCss(getPrintSkin())}
                 </style></head><body>
                 <h2>${title} — کارشناس پلاس</h2>
                 <div class="meta">تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')} · تعداد: ${picked.length.toLocaleString('fa-IR')} نفر</div>
@@ -1769,6 +1874,7 @@ let currentTariff = '1405';
                     th{background:#0f172a;color:#fff;}
                     tr:nth-child(even){background:#f8fafc;}
                     .footer{margin-top:24px;font-size:11px;color:#94a3b8;text-align:center;}
+                    ${printSkinCss(getPrintSkin())}
                 </style></head><body>
                 <h2>فهرست پرونده‌ها — کارشناس پلاس</h2>
                 <div class="meta">تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')} · تعداد: ${picked.length.toLocaleString('fa-IR')} پرونده</div>
@@ -1875,11 +1981,19 @@ let currentTariff = '1405';
             document.getElementById('reportsContent').innerHTML = `
                 <div class="view-header">
                     <span class="view-title">گزارش‌ها</span>
-                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <button class="nav-btn no-print" style="height:34px; padding:0 10px;" onclick="printReports()">چاپ خلاصه</button>
-                        <button class="nav-btn no-print" style="height:34px; padding:0 10px;" onclick="exportReportsCSV()">CSV خلاصه</button>
-                        <button class="nav-btn no-print" style="height:34px; padding:0 10px; font-weight:800;" onclick="printFullDetailedReport()">گزارش کامل (چاپ)</button>
-                        <button class="nav-btn no-print" style="height:34px; padding:0 10px; font-weight:800;" onclick="exportFullReportCSV()">گزارش کامل (CSV)</button>
+                    <div class="icon-action-row no-print">
+                        <button title="چاپ خلاصه گزارش" onclick="printReports()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        </button>
+                        <button title="خروجی CSV خلاصه" onclick="exportReportsCSV()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </button>
+                        <button title="گزارش کامل — چاپ تمام پرونده‌ها" onclick="printFullDetailedReport()" class="emph">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                        </button>
+                        <button title="گزارش کامل — خروجی CSV تمام پرونده‌ها" onclick="exportFullReportCSV()" class="emph">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        </button>
                     </div>
                 </div>
                 <div class="stat-grid">
@@ -1948,6 +2062,7 @@ let currentTariff = '1405';
                     .bar-chart-row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;}
                     .bar-chart-track{flex:1;background:#eef2f7;border-radius:6px;height:10px;overflow:hidden;}
                     .bar-chart-fill{background:#4f46e5;height:100%;}
+                    ${printSkinCss(getPrintSkin())}
                 </style></head><body>${box.innerHTML}</body></html>`);
             w.document.close();
             w.onload = () => { w.focus(); w.print(); };
@@ -2019,6 +2134,7 @@ let currentTariff = '1405';
                     tr:nth-child(even){background:#f8fafc;}
                     .footer{margin-top:20px;font-size:10px;color:#94a3b8;text-align:center;}
                     @page { size: A4 landscape; margin: 12mm; }
+                    ${printSkinCss(getPrintSkin())}
                 </style></head><body>
                 <h1>گزارش کامل و تفصیلی پرونده‌ها — کارشناس پلاس</h1>
                 <div class="meta">تاریخ تهیه گزارش: ${new Date().toLocaleDateString('fa-IR')} — ${new Date().toLocaleTimeString('fa-IR')}</div>
@@ -2342,6 +2458,36 @@ let currentTariff = '1405';
         window.setDensity = function (density) { applyDensity(density); saveSettings({ density: density }); };
         window.toggleReducedMotion = function (checked) { applyReducedMotion(checked); saveSettings({ reducedMotion: checked }); };
         window.toggleHighContrast = function (checked) { applyHighContrast(checked); saveSettings({ highContrast: checked }); };
+        function brandAssetRow(key, label, currentVal) {
+            return `
+                <div style="text-align:center; width:88px;">
+                    <div style="width:80px; height:80px; border:1px dashed var(--border-strong); border-radius:var(--r-md); display:flex; align-items:center; justify-content:center; overflow:hidden; background:#fff; margin-bottom:4px;">
+                        ${currentVal ? `<img src="${currentVal}" style="max-width:100%; max-height:100%;">` : `<span style="font-size:0.62rem; color:var(--text-muted);">${label}</span>`}
+                    </div>
+                    <input type="file" accept="image/*" id="file_${key}" style="display:none;" onchange="handleBrandAssetUpload('${key}', this)">
+                    <div style="display:flex; gap:4px; justify-content:center;">
+                        <button class="nav-btn" style="height:26px; padding:0 6px; font-size:0.62rem;" onclick="document.getElementById('file_${key}').click()">آپلود</button>
+                        ${currentVal ? `<button class="nav-btn" style="height:26px; padding:0 6px; font-size:0.62rem;" onclick="clearBrandAsset('${key}')">حذف</button>` : ''}
+                    </div>
+                </div>`;
+        }
+        window.handleBrandAssetUpload = function (key, input) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            if (file.size > 900 * 1024) { alert('حجم تصویر زیاد است — عکس کوچک‌تر (زیر ۹۰۰ کیلوبایت) انتخاب کن.'); return; }
+            const reader = new FileReader();
+            reader.onload = () => {
+                saveSettings({ [key]: reader.result });
+                renderSettings();
+                showToast('تصویر ذخیره شد.', 'success');
+            };
+            reader.readAsDataURL(file);
+        };
+        window.clearBrandAsset = function (key) {
+            saveSettings({ [key]: '' });
+            renderSettings();
+        };
+
         function renderSettings() {
             const s = getSettings();
             const themeOptions = [
@@ -2365,8 +2511,7 @@ let currentTariff = '1405';
                 { id: 'elegant', label: 'شیک با کادر دوتایی' },
                 { id: 'compact', label: 'فشرده (کم‌مصرف کاغذ)' },
                 { id: 'boldtitle', label: 'عنوان درشت' },
-                { id: 'watermark', label: 'با واترمارک' },
-                { id: 'stamp', label: 'با محل مهر مشخص' }
+                { id: 'watermark', label: 'با واترمارک' }
             ];
             document.getElementById('settingsContent').innerHTML = `
                 <div class="view-header"><span class="view-title">تنظیمات</span></div>
@@ -2386,6 +2531,14 @@ let currentTariff = '1405';
                         <select id="stInvoiceTemplate" style="width:auto; padding:6px 10px;" onchange="saveSettings({invoiceTemplate:this.value})">
                             ${invoiceTemplates.map((t) => `<option value="${t.id}" ${((s.invoiceTemplate || 'modern') === t.id) ? 'selected' : ''}>${t.label}</option>`).join('')}
                         </select>
+                    </div>
+                    <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:10px;">
+                        <div><div class="settings-row-label">لوگو، امضا و مهر پیش‌فاکتور</div><div class="settings-row-sub">این تصاویر روی سند چاپی پیش‌فاکتور نمایش داده می‌شوند</div></div>
+                        <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                            ${brandAssetRow('invoiceLogo', 'لوگو', s.invoiceLogo)}
+                            ${brandAssetRow('invoiceSignature', 'امضا', s.invoiceSignature)}
+                            ${brandAssetRow('invoiceStamp', 'مهر', s.invoiceStamp)}
+                        </div>
                     </div>
                     <div class="settings-row">
                         <div><div class="settings-row-label">واحد پول در نمایش سریع</div><div class="settings-row-sub">ریال یا تومان (فعلاً محاسبات بر پایه ریال است)</div></div>
@@ -2462,6 +2615,7 @@ let currentTariff = '1405';
                     <div class="settings-row">
                         <div><div class="settings-row-label">صدای آلارم یادآوری</div><div class="settings-row-sub">پخش صدا هنگام رسیدن موعد یادآوری</div></div>
                         <label class="switch"><input type="checkbox" id="stReminderSound" ${s.reminderSound !== false ? 'checked' : ''} onchange="saveSettings({reminderSound:this.checked})"><span class="switch-slider"></span></label>
+                        <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.62rem; margin-inline-start:6px;" onclick="playReminderBeep()">پخش نمونه</button>
                     </div>
                     <div class="settings-row">
                         <div><div class="settings-row-label">هشدار زودتر از موعد</div><div class="settings-row-sub">چند دقیقه قبل از سررسید هم اعلان بده</div></div>

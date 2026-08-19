@@ -157,6 +157,96 @@
     window.addEventListener('offline', updateOnlineBanner);
     updateOnlineBanner();
 
+    /* ---------------- Long-press a card to jump into selection mode ---------------- */
+    (function setupLongPressSelect() {
+        var timer = null;
+        function clear() { if (timer) clearTimeout(timer); timer = null; }
+        document.addEventListener('touchstart', function (e) {
+            var wrap = e.target.closest('.swipe-wrap');
+            if (!wrap) return;
+            timer = setTimeout(function () {
+                var kind = wrap.getAttribute('data-swipe-kind');
+                var id = wrap.getAttribute('data-swipe-id');
+                if (window.__selectionModeOnRef && !window.__selectionModeOnRef[kind] && typeof toggleSelectionMode === 'function') {
+                    toggleSelectionMode(kind);
+                    setTimeout(function () {
+                        if (typeof toggleItemSelected === 'function') toggleItemSelected(kind, id);
+                    }, 60);
+                    if ('vibrate' in navigator) { try { navigator.vibrate(15); } catch (e2) { /* ignore */ } }
+                }
+            }, 500);
+        }, { passive: true });
+        document.addEventListener('touchend', clear, { passive: true });
+        document.addEventListener('touchmove', clear, { passive: true });
+    })();
+
+    /* ---------------- Swipe-to-delete (touch devices) ----------------
+       Applies to cards rendered inside a .swipe-wrap (cases/applicants/
+       experts). Dragging the card left past a threshold reveals a red
+       "حذف" backdrop and, past a bigger threshold, triggers the same
+       delete function the trash-can button uses (so confirm-before-delete
+       settings are respected identically). */
+    (function setupSwipeToDelete() {
+        var deleteFns = {
+            cases: function (id) { if (typeof deleteCase === 'function') deleteCase(id); },
+            applicants: function (id) { if (typeof deleteApplicant === 'function') deleteApplicant(id); },
+            experts: function (id) { if (typeof deleteExpert === 'function') deleteExpert(id); }
+        };
+        var selectionOnMap = { cases: 'cases', applicants: 'applicants', experts: 'experts' };
+        var startX = 0, startY = 0, curX = 0, dragging = false, wrapEl = null, cardEl = null, lockedHorizontal = null;
+        var REVEAL_PX = 70, TRIGGER_PX = 130;
+
+        function isSelectionModeOn(kind) {
+            try {
+                // selectionModeOn lives in app.js scope; guarded read
+                return !!(window.__selectionModeOnRef && window.__selectionModeOnRef[kind]);
+            } catch (e) { return false; }
+        }
+
+        document.addEventListener('touchstart', function (e) {
+            var wrap = e.target.closest('.swipe-wrap');
+            if (!wrap) return;
+            var kind = wrap.getAttribute('data-swipe-kind');
+            if (isSelectionModeOn(kind)) return;
+            wrapEl = wrap;
+            cardEl = wrap.querySelector('.list-item');
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            curX = 0;
+            dragging = true;
+            lockedHorizontal = null;
+            wrapEl.classList.add('swiping');
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function (e) {
+            if (!dragging || !cardEl) return;
+            var dx = e.touches[0].clientX - startX;
+            var dy = e.touches[0].clientY - startY;
+            if (lockedHorizontal === null) lockedHorizontal = Math.abs(dx) > Math.abs(dy) + 4;
+            if (!lockedHorizontal) return;
+            // Only allow the "reveal" direction (drag toward start, i.e. negative in RTL)
+            curX = Math.min(0, dx);
+            cardEl.style.transform = 'translateX(' + curX + 'px)';
+        }, { passive: true });
+
+        document.addEventListener('touchend', function () {
+            if (!dragging || !cardEl) return;
+            dragging = false;
+            wrapEl.classList.remove('swiping');
+            var kind = wrapEl.getAttribute('data-swipe-kind');
+            var id = wrapEl.getAttribute('data-swipe-id');
+            if (Math.abs(curX) >= TRIGGER_PX && deleteFns[kind]) {
+                cardEl.style.transition = 'transform 0.15s ease, opacity 0.15s ease';
+                cardEl.style.transform = 'translateX(-100%)';
+                cardEl.style.opacity = '0';
+                setTimeout(function () { deleteFns[kind](id); }, 130);
+            } else {
+                cardEl.style.transform = '';
+            }
+            cardEl = null; wrapEl = null;
+        }, { passive: true });
+    })();
+
     /* ---------------- Copy final amount to clipboard ---------------- */
     window.copyTotalAmount = function () {
         var totalNode = document.getElementById('totalFeeVal');

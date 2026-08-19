@@ -828,13 +828,59 @@ input[type="range"] { accent-color: var(--accent-glow); height: 18px; cursor: po
 .entity-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .entity-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
 .entity-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
-@media (max-width: 640px) {
-    .entity-grid.cols-3, .entity-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 420px) {
-    .entity-grid.cols-3, .entity-grid.cols-4 { grid-template-columns: 1fr; }
-}
 .entity-grid .list-item { margin-bottom: 0; }
+
+/* ---------------- Swipe-to-delete (touch devices) ---------------- */
+.swipe-wrap { position: relative; overflow: hidden; border-radius: var(--r-md); }
+.swipe-delete-bg {
+    position: absolute; inset: 0; background: var(--accent-rose); color: #fff; display: flex;
+    align-items: center; justify-content: flex-start; padding-inline-start: 18px; font-weight: 800; font-size: 0.78rem;
+    border-radius: var(--r-md);
+}
+.swipe-wrap .list-item { position: relative; z-index: 1; background: var(--card-bg, var(--section-bg)); transition: transform 0.15s ease; touch-action: pan-y; }
+.swipe-wrap.swiping .list-item { transition: none; }
+
+/* First-visit teaching animation: a small wiggle + bubble showing how to swipe */
+@keyframes swipeHintWiggle {
+    0%, 100% { transform: translateX(0); }
+    30% { transform: translateX(-38px); }
+    55% { transform: translateX(-38px); }
+    80% { transform: translateX(0); }
+}
+.swipe-hint-demo .list-item { animation: swipeHintWiggle 2.2s ease-in-out 1; }
+.swipe-hint-bubble {
+    position: absolute; top: -34px; inset-inline-end: 8px; background: var(--accent-cyan); color: #fff;
+    font-size: 0.66rem; font-weight: 700; padding: 5px 10px; border-radius: var(--r-pill);
+    white-space: nowrap; z-index: 30; opacity: 0; animation: swipeHintBubble 3.2s ease forwards;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+@keyframes swipeHintBubble {
+    0% { opacity: 0; transform: translateY(4px); }
+    12% { opacity: 1; transform: translateY(0); }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
+}
+/* On phones, 3x3/4x4 still apply (the user picked them on purpose) — cards
+   just get tighter padding/type so they stay legible instead of being
+   silently forced back to a single column. */
+@media (max-width: 640px) {
+    .entity-grid.cols-3 .list-item, .entity-grid.cols-4 .list-item { padding: 8px; }
+    .entity-grid.cols-3 .list-item-title, .entity-grid.cols-4 .list-item-title { font-size: 0.72rem; }
+    .entity-grid.cols-3 .list-item-sub, .entity-grid.cols-4 .list-item-sub { font-size: 0.6rem; }
+    .entity-grid.cols-4 .list-item-actions button svg, .entity-grid.cols-3 .list-item-actions button svg { width: 11px; height: 11px; }
+}
+@media (max-width: 360px) {
+    .entity-grid.cols-4 { grid-template-columns: repeat(3, 1fr); } /* 4 columns is unusable under ~360px; 3 stays */
+}
+.icon-action-row { display: flex; gap: 6px; }
+.icon-action-row button {
+    width: 34px; height: 34px; border-radius: var(--r-md); border: 1px solid var(--border-color);
+    background: var(--input-bg); color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;
+}
+.icon-action-row button:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); transform: translateY(-1px); }
+.icon-action-row button.emph { border-color: var(--accent-cyan); color: var(--accent-cyan); background: color-mix(in srgb, var(--accent-cyan) 10%, var(--input-bg)); }
+
 .layout-picker { display: flex; gap: 4px; }
 .layout-picker button {
     width: 30px; height: 30px; border-radius: var(--r-sm); border: 1px solid var(--border-color);
@@ -1200,13 +1246,6 @@ select {
 }
 .bill-template.tpl-watermark > * { position: relative; z-index: 1; }
 
-/* --- 10. Stamp frame — dedicated circular stamp/seal placeholder near signatures --- */
-.bill-template.tpl-stamp .signature-card { position: relative; padding-top: 14px; }
-.bill-template.tpl-stamp .signature-card::after {
-    content: "محل مهر"; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-    width: 46px; height: 46px; border: 2px dashed #94a3b8; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; font-size: 0.52rem; color: #94a3b8; background: #fff;
-}
 
 /* STRICT EXACT 1-PAGE A4 PRINT CSS (Zero Multi-page/Duplicates) */
 @media print {
@@ -1245,21 +1284,18 @@ select {
     .page-subtitle { font-size: 0.76rem; }
     .view-title { font-size: 0.92rem; }
 
-    /* 2. Modals become bottom sheets — feels native, avoids awkward
-          centered boxes with dead space on narrow screens */
-    .modal-overlay { align-items: flex-end; padding: 0; }
+    /* 2. Modals: fully centered and fully visible — not a bottom sheet that
+          can get clipped by the mobile browser's address bar. dvh (dynamic
+          viewport height) instead of vh avoids the "half the text is cut
+          off" problem that 100vh has on mobile Chrome/Safari toolbars. */
+    .modal-overlay { align-items: center; padding: 14px; }
     .modal-card {
-        max-width: 100%; width: 100%; max-height: 86vh;
-        border-radius: var(--r-xl) var(--r-xl) 0 0;
-        border-bottom: none;
+        max-width: 100%; width: 100%;
+        max-height: 82dvh; max-height: 82vh; /* dvh preferred; vh as fallback for older engines */
+        border-radius: var(--r-xl);
         padding-bottom: env(safe-area-inset-bottom, 0px);
-        transform: translateY(16px); opacity: 0;
     }
-    .modal-overlay.active .modal-card { transform: translateY(0); opacity: 1; }
-    .modal-card::before {
-        content: ""; display: block; width: 36px; height: 4px; border-radius: var(--r-pill);
-        background: var(--border-strong); margin: 8px auto 0; flex-shrink: 0;
-    }
+    .modal-body { max-height: calc(82dvh - 60px); max-height: calc(82vh - 60px); overflow-y: auto; }
 
     /* 3. Momentum scrolling everywhere that scrolls */
     .modal-body, .bottom-nav, .app-container { -webkit-overflow-scrolling: touch; }

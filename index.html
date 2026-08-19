@@ -117,6 +117,9 @@
                 <button class="nav-btn" onclick="toggleTheme()" title="تغییر تم (تاریک/روشن)">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
                 </button>
+                <button class="nav-btn" onclick="takeAppScreenshot()" title="عکس فوری از صفحه">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </button>
                 <button class="nav-btn" onclick="resetForm()" title="پاکسازی فرم">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                 </button>
@@ -800,6 +803,9 @@
             </div>
             <div class="modal-body">
                 <div class="bill-template" id="billPrintArea">
+                    <div id="billLogoBox" style="display:none; text-align:center; margin-bottom:6px;">
+                        <img id="billLogoImg" style="max-height:50px; max-width:220px;" alt="لوگو">
+                    </div>
                     <div class="bill-header">
                         <h4 style="margin-bottom: 2px;">پیش‌فاکتور رسمی برآورد دستمزد کارشناسی</h4>
                         <p style="color: #475569;">تنظیم‌شده بر اساس تعرفه مصوب سال ۱۴۰۵ قوه قضائیه</p>
@@ -842,6 +848,10 @@
                     </div>
 
                     <div class="signatures-container" id="signaturesContainer"></div>
+                    <div id="billStampSigBox" style="display:none; margin-top:10px; justify-content:center; align-items:flex-end; gap:24px;">
+                        <div style="text-align:center;"><img id="billSignatureImg" style="max-height:44px; display:none;" alt="امضا"><div style="font-size:0.6rem; color:#64748b;">امضا</div></div>
+                        <div style="text-align:center;"><img id="billStampImg" style="max-height:60px; display:none;" alt="مهر"><div style="font-size:0.6rem; color:#64748b;">مهر</div></div>
+                    </div>
                 </div>
 
                 <div style="display: flex; gap: 8px; margin-top: 14px;">
@@ -856,8 +866,41 @@
     <div class="modal-overlay" id="helpModal" onclick="closeModalOnOverlay(event, 'helpModal')">
         <div class="modal-card">
             <div class="modal-header">
-                <div class="modal-title">راهنما و احکام تعرفه کارشناسی (۱۴۰۵)</div>
+                <div class="modal-title">راهنمای استفاده از برنامه</div>
                 <button class="modal-close" onclick="closeModal('helpModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="section-box" style="margin-bottom:10px;">
+                    <div class="section-title"><span>۱. محاسبه دستمزد</span></div>
+                    <p style="font-size:0.78rem; line-height:1.9;">از تب «محاسبه»، رشته کارشناسی و مبلغ موضوع را وارد کن. برنامه به‌صورت خودکار دستمزد را طبق تعرفه محاسبه می‌کند. برای «هیات کارشناسی» به‌جای «تک‌کارشناسه» کلید مربوطه را بزن و تعداد اعضا (تا ۲۱ نفر) را تنظیم کن.</p>
+                </div>
+                <div class="section-box" style="margin-bottom:10px;">
+                    <div class="section-title"><span>۲. صدور پیش‌فاکتور، ذخیره پرونده و پیش‌نویس</span></div>
+                    <p style="font-size:0.78rem; line-height:1.9;">پس از محاسبه، سه گزینه داری: «صدور پیش‌فاکتور» (سند رسمی چاپی می‌سازد)، «ذخیره پرونده» (فقط در بخش پرونده‌ها ثبت می‌کند) و «ذخیره پیش‌نویس» (برای تکمیل بعدی). هر سه، قبل از ذخیره نهایی، پنجره تکمیل مشخصات هیات و پرونده را باز می‌کنند تا اطلاعات را کامل کنی.</p>
+                </div>
+                <div class="section-box" style="margin-bottom:10px;">
+                    <div class="section-title"><span>۳. پرونده‌ها، متقاضیان و کارشناسان</span></div>
+                    <p style="font-size:0.78rem; line-height:1.9;">در هر سه بخش می‌توانی چیدمان نمایش (۱×۱ / ۳×۳ / ۴×۴) را از بالای صفحه عوض کنی، جستجو و فیلتر پوشه‌ای انجام بدهی، و با «حالت انتخاب» چند مورد را هم‌زمان انتخاب و چاپ/اشتراک‌گذاری کنی. برای حذف سریع، کارت را روی گوشی به کنار بکش (سوایپ).</p>
+                </div>
+                <div class="section-box" style="margin-bottom:10px;">
+                    <div class="section-title"><span>۴. گزارش‌ها</span></div>
+                    <p style="font-size:0.78rem; line-height:1.9;">سهم هر رشته از کل دستمزد را با نمودار دایره‌ای و جدول می‌بینی. «گزارش کامل» تمام جزئیات هر پرونده را (نه فقط جمع کلی) برای چاپ یا CSV آماده می‌کند.</p>
+                </div>
+                <div class="section-box">
+                    <div class="section-title"><span>۵. تنظیمات</span></div>
+                    <p style="font-size:0.78rem; line-height:1.9;">رنگ‌بندی، فونت، اندازه فونت، قالب پیش‌فاکتور، لوگو/امضا/مهر، واحد پول (ریال یا تومان) و یادآوری‌ها همگی از این بخش قابل تنظیم‌اند.</p>
+                </div>
+                <button class="nav-btn" style="width:100%; margin-top:10px; height:36px;" onclick="closeModal('helpModal'); openModal('lawsModal');">مشاهده مواد و قوانین تعرفه ۱۴۰۵ ←</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: LAWS & TARIFF ARTICLES -->
+    <div class="modal-overlay" id="lawsModal" onclick="closeModalOnOverlay(event, 'lawsModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">مواد و قوانین تعرفه کارشناسی (۱۴۰۵)</div>
+                <button class="modal-close" onclick="closeModal('lawsModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <p><strong>ماده ۶ - فوق‌العاده مأموریت:</strong> داخل استان روزانه ۷,۵۰۰,۰۰۰ ریال و خارج استان روزانه ۱۵,۰۰۰,۰۰۰ ریال.</p><br>
@@ -1108,6 +1151,10 @@
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01M12 8a3 3 0 0 0-3 3h1a2 2 0 1 1 2 2c-.8 0-1.5.7-1.5 1.5V15h1v-.5c0-.8.8-1.5 1.5-1.5a3 3 0 0 0 1-5.83z"/></svg>
                         <span>راهنما</span>
                     </div>
+                    <div class="more-grid-item" onclick="closeModal('sideMenu'); openModal('lawsModal');">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <span>مواد و قوانین</span>
+                    </div>
                 </div>
                 <a href="https://t.me/karshenasan_tehran" target="_blank" class="telegram-banner no-print" style="margin-top:14px;">
                     <span style="font-size:0.72rem; font-weight:800;">عضویت در کانال تخصصی کارشناسان رسمی 📢</span>
@@ -1202,6 +1249,7 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
     </button>
 
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
     <script src="app.js"></script>
     <script src="ui-enhance.js"></script>
 
