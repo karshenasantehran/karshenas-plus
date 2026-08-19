@@ -157,54 +157,49 @@
     window.addEventListener('offline', updateOnlineBanner);
     updateOnlineBanner();
 
-    /* ---------------- Long-press a card to jump into selection mode ---------------- */
-    (function setupLongPressSelect() {
-        var timer = null;
+    /* ---------------- Long-press a card = quick preview ----------------
+       Only active where swipe is active (mobile + single-column layout —
+       JS in app.js only adds data-swipe-active under those conditions). */
+    (function setupLongPressPreview() {
+        var timer = null, moved = false;
         function clear() { if (timer) clearTimeout(timer); timer = null; }
         document.addEventListener('touchstart', function (e) {
-            var wrap = e.target.closest('.swipe-wrap');
+            var wrap = e.target.closest('.swipe-wrap[data-swipe-active]');
             if (!wrap) return;
+            moved = false;
             timer = setTimeout(function () {
+                if (moved) return;
                 var kind = wrap.getAttribute('data-swipe-kind');
                 var id = wrap.getAttribute('data-swipe-id');
-                if (window.__selectionModeOnRef && !window.__selectionModeOnRef[kind] && typeof toggleSelectionMode === 'function') {
-                    toggleSelectionMode(kind);
-                    setTimeout(function () {
-                        if (typeof toggleItemSelected === 'function') toggleItemSelected(kind, id);
-                    }, 60);
-                    if ('vibrate' in navigator) { try { navigator.vibrate(15); } catch (e2) { /* ignore */ } }
-                }
+                if (typeof showEntityPreview === 'function') showEntityPreview(kind, id);
+                if ('vibrate' in navigator) { try { navigator.vibrate(15); } catch (e2) { /* ignore */ } }
             }, 500);
         }, { passive: true });
+        document.addEventListener('touchmove', function () { moved = true; clear(); }, { passive: true });
         document.addEventListener('touchend', clear, { passive: true });
-        document.addEventListener('touchmove', clear, { passive: true });
     })();
 
-    /* ---------------- Swipe-to-delete (touch devices) ----------------
-       Applies to cards rendered inside a .swipe-wrap (cases/applicants/
-       experts). Dragging the card left past a threshold reveals a red
-       "حذف" backdrop and, past a bigger threshold, triggers the same
-       delete function the trash-can button uses (so confirm-before-delete
-       settings are respected identically). */
-    (function setupSwipeToDelete() {
+    /* ---------------- Swipe actions (touch devices) ----------------
+       Only active on cards with data-swipe-active (mobile + single-column
+       layout). Swipe left reveals red "delete", swipe right reveals blue
+       "share" — both icon-only. Delete reuses the same function as the
+       trash-can button (confirm-before-delete setting is respected either
+       way); share reuses the same single-item share used elsewhere. */
+    (function setupSwipeActions() {
         var deleteFns = {
             cases: function (id) { if (typeof deleteCase === 'function') deleteCase(id); },
             applicants: function (id) { if (typeof deleteApplicant === 'function') deleteApplicant(id); },
             experts: function (id) { if (typeof deleteExpert === 'function') deleteExpert(id); }
         };
-        var selectionOnMap = { cases: 'cases', applicants: 'applicants', experts: 'experts' };
         var startX = 0, startY = 0, curX = 0, dragging = false, wrapEl = null, cardEl = null, lockedHorizontal = null;
-        var REVEAL_PX = 70, TRIGGER_PX = 130;
+        var TRIGGER_PX = 110, MAX_PX = 150;
 
         function isSelectionModeOn(kind) {
-            try {
-                // selectionModeOn lives in app.js scope; guarded read
-                return !!(window.__selectionModeOnRef && window.__selectionModeOnRef[kind]);
-            } catch (e) { return false; }
+            return !!(window.__selectionModeOnRef && window.__selectionModeOnRef[kind]);
         }
 
         document.addEventListener('touchstart', function (e) {
-            var wrap = e.target.closest('.swipe-wrap');
+            var wrap = e.target.closest('.swipe-wrap[data-swipe-active]');
             if (!wrap) return;
             var kind = wrap.getAttribute('data-swipe-kind');
             if (isSelectionModeOn(kind)) return;
@@ -224,9 +219,10 @@
             var dy = e.touches[0].clientY - startY;
             if (lockedHorizontal === null) lockedHorizontal = Math.abs(dx) > Math.abs(dy) + 4;
             if (!lockedHorizontal) return;
-            // Only allow the "reveal" direction (drag toward start, i.e. negative in RTL)
-            curX = Math.min(0, dx);
+            curX = Math.max(-MAX_PX, Math.min(MAX_PX, dx));
             cardEl.style.transform = 'translateX(' + curX + 'px)';
+            wrapEl.classList.toggle('swipe-dir-left', curX < -10);
+            wrapEl.classList.toggle('swipe-dir-right', curX > 10);
         }, { passive: true });
 
         document.addEventListener('touchend', function () {
@@ -235,14 +231,18 @@
             wrapEl.classList.remove('swiping');
             var kind = wrapEl.getAttribute('data-swipe-kind');
             var id = wrapEl.getAttribute('data-swipe-id');
-            if (Math.abs(curX) >= TRIGGER_PX && deleteFns[kind]) {
+            if (curX <= -TRIGGER_PX && deleteFns[kind]) {
                 cardEl.style.transition = 'transform 0.15s ease, opacity 0.15s ease';
                 cardEl.style.transform = 'translateX(-100%)';
                 cardEl.style.opacity = '0';
                 setTimeout(function () { deleteFns[kind](id); }, 130);
+            } else if (curX >= TRIGGER_PX) {
+                cardEl.style.transform = '';
+                if (typeof shareSingleEntity === 'function') shareSingleEntity(kind, id);
             } else {
                 cardEl.style.transform = '';
             }
+            wrapEl.classList.remove('swipe-dir-left', 'swipe-dir-right');
             cardEl = null; wrapEl = null;
         }, { passive: true });
     })();

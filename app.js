@@ -76,26 +76,30 @@ let currentTariff = '1405';
         window.applyCompactBottomNav = applyCompactBottomNav;
         window.applyTelegramBannerVisibility = applyTelegramBannerVisibility;
 
-        window.takeAppScreenshot = function () {
-            if (typeof html2canvas !== 'function') {
-                showToast('در حال آماده‌سازی ابزار عکس‌برداری... چند لحظه دیگر دوباره امتحان کن.', 'info');
-                return;
+        window.toggleFullscreen = function () {
+            if (!document.fullscreenElement) {
+                (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || function () {}).call(document.documentElement)
+                    .catch(() => showToast('حالت تمام‌صفحه روی این دستگاه/مرورگر پشتیبانی نمی‌شود.', 'error'));
+            } else {
+                (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document);
             }
-            const target = document.querySelector('.app-shell') || document.body;
-            showToast('در حال گرفتن عکس از صفحه...', 'info');
-            html2canvas(target, { useCORS: true, backgroundColor: getComputedStyle(document.body).getPropertyValue('--bg-color') || '#0b0e14' }).then((canvas) => {
-                canvas.toBlob((blob) => {
-                    if (!blob) return;
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = `karshenas-plus-screenshot-${Date.now()}.png`;
-                    link.click();
-                    showToast('عکس ذخیره شد.', 'success');
-                });
-            }).catch(() => {
-                showToast('گرفتن عکس ناموفق بود.', 'error');
-            });
         };
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('fullscreenBtn');
+            if (btn) btn.classList.toggle('active', !!document.fullscreenElement);
+        });
+
+        function applyPrintOrientationOverride() {
+            const orientation = (typeof getSettings === 'function' ? (getSettings().printOrientation || 'portrait') : 'portrait');
+            let styleEl = document.getElementById('dynamicPrintOrientation');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamicPrintOrientation';
+                document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = `@media print { @page { size: A4 ${orientation}; margin: 6mm 8mm; } }`;
+        }
+        window.applyPrintOrientationOverride = applyPrintOrientationOverride;
 
         function applySavedAppearance() {
             const saved = dbRead(K.settings)[0] || {};
@@ -113,6 +117,7 @@ let currentTariff = '1405';
             applyBackToTopVisibility();
             applyCompactBottomNav();
             applyTelegramBannerVisibility();
+            applyPrintOrientationOverride();
         }
 
         function toggleTheme() {
@@ -123,8 +128,13 @@ let currentTariff = '1405';
             document.getElementById(id).classList.toggle('expanded');
         }
 
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            try { history.pushState({ appModal: id }, '', location.href); } catch (e) { /* ignore */ }
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
         function closeModalOnOverlay(e, id) { if (e.target.id === id) closeModal(id); }
 
         function setTariff(year, btn) {
@@ -994,6 +1004,64 @@ let currentTariff = '1405';
             return rec;
         }
 
+        window.shareSingleEntity = function (kind, id) {
+            const all = getEntityList(kind);
+            const item = all.find((x) => x.id === id);
+            if (!item) return;
+            let text;
+            if (kind === 'cases') {
+                text = `پرونده: ${item.clientName || '-'}\nکلاسه: ${item.caseNum || '-'} · شعبه: ${item.courtBranch || '-'}\nدستمزد: ${item.totalFee || '-'} ریال`;
+            } else {
+                text = `${item.fullName}${item.folder ? ' — ' + item.folder : ''}${item.phone ? '\n' + item.phone : ''}`;
+            }
+            if (navigator.share) {
+                navigator.share({ title: 'کارشناس پلاس', text }).catch(() => {});
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => showToast('کپی شد.', 'success'));
+            }
+        };
+
+        window.showEntityPreview = function (kind, id) {
+            const all = getEntityList(kind);
+            const item = all.find((x) => x.id === id);
+            if (!item) return;
+            let html;
+            if (kind === 'cases') {
+                html = `
+                    <div style="font-size:0.85rem; line-height:2.1;">
+                        <div><strong>متقاضی:</strong> ${escapeHtml(item.clientName || '-')}</div>
+                        <div><strong>کلاسه:</strong> ${escapeHtml(item.caseNum || '-')} · <strong>شعبه:</strong> ${escapeHtml(item.courtBranch || '-')}</div>
+                        <div><strong>رشته:</strong> ${escapeHtml(CATEGORY_LABELS[item.category] || item.category || '-')}</div>
+                        <div><strong>تاریخ:</strong> ${escapeHtml(item.expDate || '-')}</div>
+                        <div><strong>کارشناسان:</strong> ${escapeHtml(item.expertsSummary || '-')}</div>
+                        <div><strong>دستمزد:</strong> ${escapeHtml(item.totalFee || '-')} ریال</div>
+                        <div><strong>وضعیت:</strong> ${item.status === 'draft' ? 'پیش‌نویس' : 'نهایی'}</div>
+                    </div>`;
+            } else if (kind === 'applicants') {
+                html = `
+                    <div style="font-size:0.85rem; line-height:2.1;">
+                        <div><strong>نام:</strong> ${escapeHtml(item.fullName)}</div>
+                        <div><strong>تلفن:</strong> ${escapeHtml(item.phone || '-')}</div>
+                        <div><strong>کد ملی:</strong> ${escapeHtml(item.nationalId || '-')}</div>
+                        <div><strong>آدرس:</strong> ${escapeHtml(item.address || '-')}</div>
+                        <div><strong>پوشه:</strong> ${escapeHtml(item.folder || '-')}</div>
+                        ${item.notes ? `<div><strong>یادداشت:</strong> ${escapeHtml(item.notes)}</div>` : ''}
+                    </div>`;
+            } else {
+                html = `
+                    <div style="font-size:0.85rem; line-height:2.1;">
+                        <div><strong>نام:</strong> ${escapeHtml(item.fullName)}</div>
+                        <div><strong>رشته:</strong> ${escapeHtml(item.discipline || '-')}</div>
+                        <div><strong>شماره پروانه:</strong> ${escapeHtml(item.licenseNumber || '-')}</div>
+                        <div><strong>تلفن:</strong> ${escapeHtml(item.phone || '-')}</div>
+                        <div><strong>پوشه:</strong> ${escapeHtml(item.folder || '-')}</div>
+                        ${item.notes ? `<div><strong>یادداشت:</strong> ${escapeHtml(item.notes)}</div>` : ''}
+                    </div>`;
+            }
+            document.getElementById('entityPreviewBody').innerHTML = html;
+            openModal('entityPreviewModal');
+        };
+
         window.copyCaseSummary = function (id) {
             const c = dbRead(K.cases).find((x) => x.id === id);
             if (!c) return;
@@ -1283,7 +1351,8 @@ let currentTariff = '1405';
         }
 
         /* ---------------- Navigation ---------------- */
-        function switchView(name) {
+        let navStack = ['calc'];
+        function switchView(name, skipHistory) {
             document.querySelectorAll('.app-view').forEach((v) => v.classList.remove('active'));
             const target = document.getElementById('view-' + name);
             if (target) target.classList.add('active');
@@ -1295,12 +1364,33 @@ let currentTariff = '1405';
             };
             if (renderers[name]) renderers[name]();
             window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+            if (!skipHistory) {
+                if (navStack[navStack.length - 1] !== name) navStack.push(name);
+                try { history.pushState({ appView: name }, '', location.href); } catch (e) { /* ignore */ }
+            }
         }
         window.switchView = switchView;
         window.refreshAllViews = function () {
             const active = document.querySelector('.app-view.active');
             if (active) switchView(active.id.replace('view-', ''));
         };
+
+        /* Hardware/browser back button: close an open modal first, then step
+           back through in-app views, and only actually exit the app once
+           both stacks are empty — instead of leaving on the very first
+           back-press like before. */
+        window.addEventListener('popstate', function () {
+            const openModalEl = document.querySelector('.modal-overlay.active');
+            if (openModalEl) {
+                openModalEl.classList.remove('active');
+                return;
+            }
+            if (navStack.length > 1) {
+                navStack.pop();
+                const prev = navStack[navStack.length - 1];
+                switchView(prev, true);
+            }
+        });
 
         /* ---------------- Dashboard ---------------- */
         const CATEGORY_LABELS = {
@@ -1313,16 +1403,44 @@ let currentTariff = '1405';
             const cases = dbRead(K.cases);
             const reminders = dbRead(K.reminders).filter((r) => !r.completed);
             const totalFee = cases.reduce((sum, c) => sum + (parseStoredAmount(c.totalFee)), 0);
-            const thisMonth = cases.length; // simple count, no Jalali month parsing needed for a useful glance
+            const dw = getSettings().dashboardWidgets || {};
+            const show = (key) => dw[key] !== false; // default: everything visible
+
+            const statCardDefs = [
+                { key: 'wCases', label: 'تعداد پرونده‌های ثبت‌شده', val: cases.length, money: false },
+                { key: 'wFee', label: 'جمع کل دستمزد (ریال)', val: totalFee, money: true },
+                { key: 'wExperts', label: 'کارشناسان ثبت‌شده', val: dbRead(K.experts).length, money: false },
+                { key: 'wReminders', label: 'یادآوری‌های باز', val: reminders.length, money: false }
+            ];
 
             let html = `
-                <div class="view-header"><span class="view-title">داشبورد</span></div>
-                <div class="stat-grid">
-                    <div class="stat-card"><div class="stat-val" data-countup="${cases.length}">۰</div><div class="stat-label">تعداد پرونده‌های ثبت‌شده</div></div>
-                    <div class="stat-card"><div class="stat-val" data-countup="${totalFee}" data-money="1">۰</div><div class="stat-label">جمع کل دستمزد (ریال)</div></div>
-                    <div class="stat-card"><div class="stat-val" data-countup="${dbRead(K.experts).length}">۰</div><div class="stat-label">کارشناسان ثبت‌شده</div></div>
-                    <div class="stat-card"><div class="stat-val" data-countup="${reminders.length}">۰</div><div class="stat-label">یادآوری‌های باز</div></div>
+                <div class="view-header">
+                    <span class="view-title">داشبورد</span>
+                    <button class="icon-action-row-btn" title="شخصی‌سازی داشبورد" onclick="toggleSection('sectionDashCustomize')" style="width:34px; height:34px; border-radius:var(--r-md); border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    </button>
                 </div>
+                <div class="section-box" id="sectionDashCustomize" style="margin-bottom:14px;">
+                    <div class="section-content-wrap">
+                        <div style="padding-top:4px;">
+                            <div class="settings-row-sub" style="margin-bottom:8px;">نمایش/عدم‌نمایش هر بخش از داشبورد:</div>
+                            <div style="display:flex; flex-wrap:wrap; gap:10px 18px;">
+                                ${statCardDefs.map((sc) => `
+                                    <label style="display:flex; align-items:center; gap:6px; font-size:0.74rem;">
+                                        <input type="checkbox" ${show(sc.key) ? 'checked' : ''} onchange="setDashboardWidget('${sc.key}', this.checked)"> ${sc.label}
+                                    </label>`).join('')}
+                                <label style="display:flex; align-items:center; gap:6px; font-size:0.74rem;">
+                                    <input type="checkbox" ${show('wRecent') ? 'checked' : ''} onchange="setDashboardWidget('wRecent', this.checked)"> آخرین پرونده‌ها
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-grid">
+                    ${statCardDefs.filter((sc) => show(sc.key)).map((sc) => `
+                        <div class="stat-card"><div class="stat-val" data-countup="${sc.val}" ${sc.money ? 'data-money="1"' : ''}>۰</div><div class="stat-label">${sc.label}</div></div>`).join('')}
+                </div>
+                ${show('wRecent') ? `
                 <div class="section-box">
                     <div class="section-title"><span>آخرین پرونده‌ها</span></div>
                     ${cases.slice(0, 5).map((c) => `
@@ -1334,11 +1452,19 @@ let currentTariff = '1405';
                                 </div>
                                 <div class="list-item-sub" style="font-weight:800; color:var(--accent-cyan);">${escapeHtml(c.totalFee || '')}</div>
                             </div>
-                        </div>`).join('') || '<div class="empty-state">هنوز هیچ پرونده‌ای ثبت نشده. از تب «محاسبه» شروع کن.</div>'}
-                </div>`;
+                        </div>`).join('') || emptyStateHtml('هنوز هیچ پرونده‌ای ثبت نشده. از تب «محاسبه» شروع کن.')}
+                </div>` : ''}`;
             document.getElementById('dashboardContent').innerHTML = html;
             runCountUpAnimations();
         }
+        window.setDashboardWidget = function (key, visible) {
+            const dw = getSettings().dashboardWidgets || {};
+            dw[key] = visible;
+            saveSettings({ dashboardWidgets: dw });
+            const wasOpen = document.getElementById('sectionDashCustomize')?.classList.contains('expanded');
+            renderDashboard();
+            if (wasOpen) document.getElementById('sectionDashCustomize')?.classList.add('expanded');
+        };
 
         /* ---------------- Cases History ---------------- */
         /* ---------------- Shared multi-select + grid-layout system, used by
@@ -1366,24 +1492,16 @@ let currentTariff = '1405';
             if (!selectionModeOn[kind]) return;
             const set = selectionState[kind];
             if (set.has(id)) set.delete(id); else set.add(id);
-            const card = document.getElementById(kind + 'Card-' + id);
-            if (card) card.classList.toggle('selected', set.has(id));
-            updateSelectionToolbar(kind);
+            rerenderKind(kind);
         };
         window.selectAllVisible = function (kind, ids) {
             ids.forEach((id) => selectionState[kind].add(id));
-            ids.forEach((id) => { const c = document.getElementById(kind + 'Card-' + id); if (c) c.classList.add('selected'); });
-            updateSelectionToolbar(kind);
+            rerenderKind(kind);
         };
         window.deselectAllVisible = function (kind) {
-            selectionState[kind].forEach((id) => { const c = document.getElementById(kind + 'Card-' + id); if (c) c.classList.remove('selected'); });
             selectionState[kind].clear();
-            updateSelectionToolbar(kind);
+            rerenderKind(kind);
         };
-        function updateSelectionToolbar(kind) {
-            const el = document.getElementById(kind + 'SelCount');
-            if (el) el.innerText = selectionState[kind].size.toLocaleString('fa-IR');
-        }
         function layoutPickerHtml(kind) {
             const cur = getGridLayout(kind);
             const opts = [['1', '۱×۱'], ['3', '۳×۳'], ['4', '۴×۴']];
@@ -1391,16 +1509,31 @@ let currentTariff = '1405';
         }
         function selectionToolbarHtml(kind, allIds) {
             if (!selectionModeOn[kind]) {
-                return `<button class="nav-btn" style="height:34px; padding:0 10px;" onclick="toggleSelectionMode('${kind}')">حالت انتخاب</button>`;
+                return `<button class="icon-action-row-btn" title="حالت انتخاب" onclick="toggleSelectionMode('${kind}')" style="width:34px; height:34px; border-radius:var(--r-md); border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </button>`;
             }
+            const allSelected = allIds.length > 0 && allIds.every((id) => selectionState[kind].has(id));
             return `
-                <button class="nav-btn" style="height:34px; padding:0 10px;" onclick="toggleSelectionMode('${kind}')">پایان انتخاب</button>
+                <button class="icon-action-row-btn emph" title="پایان انتخاب" onclick="toggleSelectionMode('${kind}')" style="width:34px; height:34px; border-radius:var(--r-md); border:1px solid var(--accent-cyan); background:color-mix(in srgb, var(--accent-cyan) 10%, var(--input-bg)); color:var(--accent-cyan); cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
                 <div class="selection-toolbar" style="width:100%;">
-                    <span>انتخاب‌شده: <span class="sel-count" id="${kind}SelCount">${selectionState[kind].size.toLocaleString('fa-IR')}</span></span>
-                    <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.68rem;" onclick="selectAllVisible('${kind}', ${JSON.stringify(allIds)})">انتخاب همه</button>
-                    <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.68rem;" onclick="deselectAllVisible('${kind}')">لغو انتخاب</button>
-                    <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.68rem;" onclick="printSelectedEntities('${kind}')">چاپ</button>
-                    <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.68rem;" onclick="shareSelectedEntities('${kind}')">اشتراک‌گذاری</button>
+                    <span class="sel-count">${selectionState[kind].size.toLocaleString('fa-IR')} انتخاب‌شده</span>
+                    <div class="icon-action-row">
+                        <button title="انتخاب همه" class="${allSelected ? 'emph' : ''}" onclick="selectAllVisible('${kind}', ${JSON.stringify(allIds)})">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        </button>
+                        <button title="لغو انتخاب" onclick="deselectAllVisible('${kind}')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                        </button>
+                        <button title="چاپ" onclick="printSelectedEntities('${kind}')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        </button>
+                        <button title="اشتراک‌گذاری" onclick="shareSelectedEntities('${kind}')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                        </button>
+                    </div>
                 </div>`;
         }
 
@@ -1445,6 +1578,10 @@ let currentTariff = '1405';
         }
         window.emptyStateHtml = emptyStateHtml;
 
+        function swipeShouldBeActive(cols) {
+            return cols === '1' && window.matchMedia('(max-width: 899px)').matches;
+        }
+
         function swipeHintNeeded() {
             try { return !localStorage.getItem('swipeHintShown'); } catch (e) { return false; }
         }
@@ -1482,9 +1619,9 @@ let currentTariff = '1405';
                 </div>
                 <div class="entity-grid ${cols === '3' ? 'cols-3' : cols === '4' ? 'cols-4' : ''}">
                 ${cases.map((c, idx) => `
-                    <div class="swipe-wrap ${(!selOn && idx === 0 && swipeHintNeeded()) ? 'swipe-hint-demo' : ''}" data-swipe-kind="cases" data-swipe-id="${c.id}">
+                    <div class="swipe-wrap ${(!selOn && idx === 0 && swipeHintNeeded()) ? 'swipe-hint-demo' : ''}" data-swipe-kind="cases" data-swipe-id="${c.id}" ${swipeShouldBeActive(cols) ? 'data-swipe-active' : ''}>
                         ${(!selOn && idx === 0 && swipeHintNeeded()) ? '<div class="swipe-hint-bubble">برای حذف، بکش ⇠</div>' : ''}
-                        <div class="swipe-delete-bg">حذف</div>
+                        <div class="swipe-delete-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg></div><div class="swipe-share-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
                     <div class="section-box list-item ${selOn ? 'selectable' : ''} ${selectionState.cases.has(c.id) ? 'selected' : ''}" id="casesCard-${c.id}"
                          style="cursor:pointer;" onclick="${selOn ? `toggleItemSelected('cases','${c.id}')` : `toggleSection('casesCard-${c.id}')`}">
                         <div class="list-item-row">
@@ -1568,9 +1705,9 @@ let currentTariff = '1405';
                 <div id="applicantFormBox"></div>
                 <div class="entity-grid ${cols === '3' ? 'cols-3' : cols === '4' ? 'cols-4' : ''}">
                 ${list.map((a, idx) => `
-                    <div class="swipe-wrap ${(!selOn && idx === 0 && swipeHintNeeded()) ? 'swipe-hint-demo' : ''}" data-swipe-kind="applicants" data-swipe-id="${a.id}">
+                    <div class="swipe-wrap ${(!selOn && idx === 0 && swipeHintNeeded()) ? 'swipe-hint-demo' : ''}" data-swipe-kind="applicants" data-swipe-id="${a.id}" ${swipeShouldBeActive(cols) ? 'data-swipe-active' : ''}>
                         ${(!selOn && idx === 0 && swipeHintNeeded()) ? '<div class="swipe-hint-bubble">برای حذف، بکش ⇠</div>' : ''}
-                        <div class="swipe-delete-bg">حذف</div>
+                        <div class="swipe-delete-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg></div><div class="swipe-share-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
                     <div class="list-item ${selOn ? 'selectable' : ''} ${selectionState.applicants.has(a.id) ? 'selected' : ''}" id="applicantsCard-${a.id}"
                          ${selOn ? `onclick="toggleItemSelected('applicants','${a.id}')" style="cursor:pointer;"` : ''}>
                         <div class="list-item-row">
@@ -1673,9 +1810,9 @@ let currentTariff = '1405';
                 <div id="expertFormBox"></div>
                 <div class="entity-grid ${cols === '3' ? 'cols-3' : cols === '4' ? 'cols-4' : ''}">
                 ${list.map((e, idx) => `
-                    <div class="swipe-wrap ${(!selOn && idx === 0 && swipeHintNeeded()) ? 'swipe-hint-demo' : ''}" data-swipe-kind="experts" data-swipe-id="${e.id}">
+                    <div class="swipe-wrap ${(!selOn && idx === 0 && swipeHintNeeded()) ? 'swipe-hint-demo' : ''}" data-swipe-kind="experts" data-swipe-id="${e.id}" ${swipeShouldBeActive(cols) ? 'data-swipe-active' : ''}>
                         ${(!selOn && idx === 0 && swipeHintNeeded()) ? '<div class="swipe-hint-bubble">برای حذف، بکش ⇠</div>' : ''}
-                        <div class="swipe-delete-bg">حذف</div>
+                        <div class="swipe-delete-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg></div><div class="swipe-share-bg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
                     <div class="list-item ${selOn ? 'selectable' : ''} ${selectionState.experts.has(e.id) ? 'selected' : ''}" id="expertsCard-${e.id}"
                          ${selOn ? `onclick="toggleItemSelected('experts','${e.id}')" style="cursor:pointer;"` : ''}>
                         <div class="list-item-row">
@@ -1784,6 +1921,11 @@ let currentTariff = '1405';
            for every other print output too — people lists, case lists, and
            reports — so the whole app's printed documents share one look
            instead of the invoice being the only "themed" one. */
+        function pageOrientationCss() {
+            const orientation = (typeof getSettings === 'function' ? (getSettings().printOrientation || 'portrait') : 'portrait');
+            return `@page { size: A4 ${orientation}; margin: 12mm; }`;
+        }
+
         function getPrintSkin() {
             const tpl = (typeof getSettings === 'function' ? (getSettings().invoiceTemplate || 'modern') : 'modern');
             const accent = getComputedStyle(document.body).getPropertyValue('--accent-glow').trim() || '#4f46e5';
@@ -1819,9 +1961,10 @@ let currentTariff = '1405';
                     <td>${(i + 1).toLocaleString('fa-IR')}</td>
                     <td>${escapeHtml(x.fullName)}</td>
                     ${isApplicant
-                        ? `<td>${escapeHtml(x.phone || '-')}</td><td>${escapeHtml(x.nationalId || '-')}</td>`
-                        : `<td>${escapeHtml(x.discipline || '-')}</td><td>${escapeHtml(x.licenseNumber || '-')}</td>`}
+                        ? `<td>${escapeHtml(x.phone || '-')}</td><td>${escapeHtml(x.nationalId || '-')}</td><td>${escapeHtml(x.address || '-')}</td>`
+                        : `<td>${escapeHtml(x.discipline || '-')}</td><td>${escapeHtml(x.licenseNumber || '-')}</td><td>${escapeHtml(x.phone || '-')}</td>`}
                     <td>${escapeHtml(x.folder || '-')}</td>
+                    <td>${escapeHtml(x.notes || '-')}</td>
                 </tr>`).join('');
             const w = window.open('', '_blank');
             if (!w) { alert('اجازه باز کردن پنجره چاپ داده نشد.'); return; }
@@ -1831,16 +1974,17 @@ let currentTariff = '1405';
                     h2{border-bottom:3px solid #0f172a;padding-bottom:8px;margin-bottom:4px;}
                     .meta{color:#64748b;font-size:12px;margin-bottom:18px;}
                     table{width:100%;border-collapse:collapse;}
-                    th,td{border:1px solid #cbd5e1;padding:8px;text-align:center;font-size:13px;}
+                    th,td{border:1px solid #cbd5e1;padding:8px;text-align:center;font-size:12px;}
                     th{background:#0f172a;color:#fff;}
                     tr:nth-child(even){background:#f8fafc;}
                     .footer{margin-top:24px;font-size:11px;color:#94a3b8;text-align:center;}
+                    ${pageOrientationCss()}
                     ${printSkinCss(getPrintSkin())}
                 </style></head><body>
                 <h2>${title} — کارشناس پلاس</h2>
                 <div class="meta">تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')} · تعداد: ${picked.length.toLocaleString('fa-IR')} نفر</div>
                 <table>
-                    <thead><tr><th>#</th><th>نام و نام خانوادگی</th>${isApplicant ? '<th>تلفن</th><th>کد ملی</th>' : '<th>رشته</th><th>شماره پروانه</th>'}<th>پوشه</th></tr></thead>
+                    <thead><tr><th>#</th><th>نام و نام خانوادگی</th>${isApplicant ? '<th>تلفن</th><th>کد ملی</th><th>آدرس</th>' : '<th>رشته</th><th>شماره پروانه</th><th>تلفن</th>'}<th>پوشه</th><th>یادداشت</th></tr></thead>
                     <tbody>${rows}</tbody>
                 </table>
                 <div class="footer">تولید شده توسط اپلیکیشن کارشناس پلاس</div>
@@ -1874,6 +2018,7 @@ let currentTariff = '1405';
                     th{background:#0f172a;color:#fff;}
                     tr:nth-child(even){background:#f8fafc;}
                     .footer{margin-top:24px;font-size:11px;color:#94a3b8;text-align:center;}
+                    ${pageOrientationCss()}
                     ${printSkinCss(getPrintSkin())}
                 </style></head><body>
                 <h2>فهرست پرونده‌ها — کارشناس پلاس</h2>
@@ -2062,6 +2207,7 @@ let currentTariff = '1405';
                     .bar-chart-row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;}
                     .bar-chart-track{flex:1;background:#eef2f7;border-radius:6px;height:10px;overflow:hidden;}
                     .bar-chart-fill{background:#4f46e5;height:100%;}
+                    ${pageOrientationCss()}
                     ${printSkinCss(getPrintSkin())}
                 </style></head><body>${box.innerHTML}</body></html>`);
             w.document.close();
@@ -2133,7 +2279,7 @@ let currentTariff = '1405';
                     th{background:#0f172a;color:#fff;}
                     tr:nth-child(even){background:#f8fafc;}
                     .footer{margin-top:20px;font-size:10px;color:#94a3b8;text-align:center;}
-                    @page { size: A4 landscape; margin: 12mm; }
+                    ${pageOrientationCss()}
                     ${printSkinCss(getPrintSkin())}
                 </style></head><body>
                 <h1>گزارش کامل و تفصیلی پرونده‌ها — کارشناس پلاس</h1>
@@ -2277,14 +2423,32 @@ let currentTariff = '1405';
         };
         function playReminderBeep() {
             try {
+                const s = (typeof getSettings === 'function') ? getSettings() : {};
+                const soundType = s.reminderSoundType || 'beep';
+                const duration = s.reminderSoundDuration || 'short';
+                const reps = duration === 'long' ? 4 : (duration === 'medium' ? 2 : 1);
+                const patterns = {
+                    beep: [{ freq: 880, type: 'sine', len: 0.35 }],
+                    chime: [{ freq: 659, type: 'sine', len: 0.18 }, { freq: 988, type: 'sine', len: 0.28 }],
+                    bell: [{ freq: 523, type: 'triangle', len: 0.5 }],
+                    alert: [{ freq: 440, type: 'square', len: 0.12 }, { freq: 440, type: 'square', len: 0.12 }]
+                };
+                const seq = patterns[soundType] || patterns.beep;
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.type = 'sine'; osc.frequency.value = 880;
-                gain.gain.setValueAtTime(0.15, ctx.currentTime);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.35);
+                let t = ctx.currentTime;
+                for (let r = 0; r < reps; r++) {
+                    seq.forEach((note) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain); gain.connect(ctx.destination);
+                        osc.type = note.type; osc.frequency.value = note.freq;
+                        gain.gain.setValueAtTime(0.15, t);
+                        osc.start(t);
+                        osc.stop(t + note.len);
+                        t += note.len + 0.06;
+                    });
+                    t += 0.25; // gap between repeats
+                }
             } catch (e) {}
         }
         function checkReminderAlarms() {
@@ -2478,14 +2642,18 @@ let currentTariff = '1405';
             const reader = new FileReader();
             reader.onload = () => {
                 saveSettings({ [key]: reader.result });
+                const wasOpen = document.getElementById('sectionBrandAssets')?.classList.contains('expanded');
                 renderSettings();
+                if (wasOpen) document.getElementById('sectionBrandAssets')?.classList.add('expanded');
                 showToast('تصویر ذخیره شد.', 'success');
             };
             reader.readAsDataURL(file);
         };
         window.clearBrandAsset = function (key) {
             saveSettings({ [key]: '' });
+            const wasOpen = document.getElementById('sectionBrandAssets')?.classList.contains('expanded');
             renderSettings();
+            if (wasOpen) document.getElementById('sectionBrandAssets')?.classList.add('expanded');
         };
 
         function renderSettings() {
@@ -2532,12 +2700,27 @@ let currentTariff = '1405';
                             ${invoiceTemplates.map((t) => `<option value="${t.id}" ${((s.invoiceTemplate || 'modern') === t.id) ? 'selected' : ''}>${t.label}</option>`).join('')}
                         </select>
                     </div>
-                    <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:10px;">
-                        <div><div class="settings-row-label">لوگو، امضا و مهر پیش‌فاکتور</div><div class="settings-row-sub">این تصاویر روی سند چاپی پیش‌فاکتور نمایش داده می‌شوند</div></div>
-                        <div style="display:flex; flex-wrap:wrap; gap:12px;">
-                            ${brandAssetRow('invoiceLogo', 'لوگو', s.invoiceLogo)}
-                            ${brandAssetRow('invoiceSignature', 'امضا', s.invoiceSignature)}
-                            ${brandAssetRow('invoiceStamp', 'مهر', s.invoiceStamp)}
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">جهت کاغذ پرینت</div><div class="settings-row-sub">در تمام چاپ‌ها (فاکتور، گزارش، فهرست‌ها) اعمال می‌شود</div></div>
+                        <select style="width:auto; padding:6px 10px;" onchange="saveSettings({printOrientation:this.value}); applyPrintOrientationOverride();">
+                            <option value="portrait" ${(s.printOrientation||'portrait')==='portrait'?'selected':''}>عمودی</option>
+                            <option value="landscape" ${(s.printOrientation||'portrait')==='landscape'?'selected':''}>افقی</option>
+                        </select>
+                    </div>
+                    <div class="section-box" id="sectionBrandAssets" style="margin:8px 0;">
+                        <div class="section-title collapsible" onclick="toggleSection('sectionBrandAssets')">
+                            <span>لوگو، امضا و مهر پیش‌فاکتور</span>
+                            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="section-content-wrap">
+                            <div style="padding-top:10px;">
+                                <div class="settings-row-sub" style="margin-bottom:8px;">این تصاویر روی سند چاپی پیش‌فاکتور نمایش داده می‌شوند</div>
+                                <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                                    ${brandAssetRow('invoiceLogo', 'لوگو', s.invoiceLogo)}
+                                    ${brandAssetRow('invoiceSignature', 'امضا', s.invoiceSignature)}
+                                    ${brandAssetRow('invoiceStamp', 'مهر', s.invoiceStamp)}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="settings-row">
@@ -2615,6 +2798,23 @@ let currentTariff = '1405';
                     <div class="settings-row">
                         <div><div class="settings-row-label">صدای آلارم یادآوری</div><div class="settings-row-sub">پخش صدا هنگام رسیدن موعد یادآوری</div></div>
                         <label class="switch"><input type="checkbox" id="stReminderSound" ${s.reminderSound !== false ? 'checked' : ''} onchange="saveSettings({reminderSound:this.checked})"><span class="switch-slider"></span></label>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">نوع صدا</div><div class="settings-row-sub">آهنگ آلارم یادآوری</div></div>
+                        <select style="width:auto; padding:6px 10px;" onchange="saveSettings({reminderSoundType:this.value})">
+                            <option value="beep" ${(s.reminderSoundType||'beep')==='beep'?'selected':''}>بیپ ساده</option>
+                            <option value="chime" ${(s.reminderSoundType||'beep')==='chime'?'selected':''}>زنگوله</option>
+                            <option value="bell" ${(s.reminderSoundType||'beep')==='bell'?'selected':''}>زنگ</option>
+                            <option value="alert" ${(s.reminderSoundType||'beep')==='alert'?'selected':''}>هشدار</option>
+                        </select>
+                    </div>
+                    <div class="settings-row">
+                        <div><div class="settings-row-label">مدت آلارم</div><div class="settings-row-sub">چند بار صدا تکرار شود</div></div>
+                        <select style="width:auto; padding:6px 10px;" onchange="saveSettings({reminderSoundDuration:this.value})">
+                            <option value="short" ${(s.reminderSoundDuration||'short')==='short'?'selected':''}>کوتاه</option>
+                            <option value="medium" ${(s.reminderSoundDuration||'short')==='medium'?'selected':''}>متوسط</option>
+                            <option value="long" ${(s.reminderSoundDuration||'short')==='long'?'selected':''}>بلند</option>
+                        </select>
                         <button class="nav-btn" style="height:28px; padding:0 8px; font-size:0.62rem; margin-inline-start:6px;" onclick="playReminderBeep()">پخش نمونه</button>
                     </div>
                     <div class="settings-row">

@@ -117,8 +117,8 @@
                 <button class="nav-btn" onclick="toggleTheme()" title="تغییر تم (تاریک/روشن)">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
                 </button>
-                <button class="nav-btn" onclick="takeAppScreenshot()" title="عکس فوری از صفحه">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <button class="nav-btn" onclick="toggleFullscreen()" title="حالت تمام‌صفحه" id="fullscreenBtn">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
                 </button>
                 <button class="nav-btn" onclick="resetForm()" title="پاکسازی فرم">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
@@ -143,7 +143,7 @@
 
             <div class="page-header">
                 <div class="page-eyebrow">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="14" x2="8" y2="18"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="16" y1="14" x2="16" y2="18"/><line x1="7" y1="10" x2="17" y2="10"/></svg>
                     محاسبه‌گر تعرفه
                 </div>
                 <div class="page-header-row">
@@ -928,6 +928,16 @@
     </div>
 
     <!-- MODAL: SELECTIVE PRINT (applicants/experts list) -->
+    <div class="modal-overlay" id="entityPreviewModal" onclick="closeModalOnOverlay(event, 'entityPreviewModal')">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">پیش‌نمایش سریع</div>
+                <button class="modal-close" onclick="closeModal('entityPreviewModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="entityPreviewBody"></div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="printPickModal" onclick="closeModalOnOverlay(event, 'printPickModal')">
         <div class="modal-card">
             <div class="modal-header">
@@ -1151,10 +1161,6 @@
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16h.01M12 8a3 3 0 0 0-3 3h1a2 2 0 1 1 2 2c-.8 0-1.5.7-1.5 1.5V15h1v-.5c0-.8.8-1.5 1.5-1.5a3 3 0 0 0 1-5.83z"/></svg>
                         <span>راهنما</span>
                     </div>
-                    <div class="more-grid-item" onclick="closeModal('sideMenu'); openModal('lawsModal');">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                        <span>مواد و قوانین</span>
-                    </div>
                 </div>
                 <a href="https://t.me/karshenasan_tehran" target="_blank" class="telegram-banner no-print" style="margin-top:14px;">
                     <span style="font-size:0.72rem; font-weight:800;">عضویت در کانال تخصصی کارشناسان رسمی 📢</span>
@@ -1249,7 +1255,6 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
     </button>
 
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
     <script src="app.js"></script>
     <script src="ui-enhance.js"></script>
 
